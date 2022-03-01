@@ -1,0 +1,28 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+    <title>Chemists' Assistant</title>
+
+    <script src="./data_entry_handler.js"></script>
+</head>
+    
+<body>
+    <label for="wpercent">Weight Percent</label>
+    <input type="radio" name="proportion" value="wpercent" id="wpercent" class="input_field string" checked>
+    <label for="mpercent">Mole Percent</label>
+    <input type="radio" name="proportion" value="mpercent" id="mpercent" class="input_field string">
+    <br>
+    <input type="text" name=funcA_name" placeholder="Functional Group A" id="funcA_name" class="input_field string">
+    <input type="text" name=funcB_name" placeholder="Functional Group B" id="funcB_name" class="input_field string">
+    <br>
+    <input type="text" name=funcA_num" placeholder="1" id="funcA_num" class="input_field int">
+    <input type="text" name=funcB_num" placeholder="2" id="funcB_num" class="input_field int">
+    <br>
+    <input type="text" name=funcA_eq" placeholder="1.0" id="funcA_eq" class="input_field float">
+    <input type="text" name=funcB_eq" placeholder="1.0" id="funcB_eq" class="input_field float">
+    <br>
+    <button type="button" onclick="getInputValues()">Submit</button>
+
+</body>
+
+</html>
