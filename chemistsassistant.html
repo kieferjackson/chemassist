@@ -3,7 +3,8 @@
 <head>
     <title>Chemists' Assistant</title>
 
-    <script src="./data_entry_handler.js"></script>
+    <script src="data_entry_handler.js"></script>
+    <script src="form_generator.js"></script>
 </head>
     
 <body>
@@ -22,6 +23,9 @@
     <input type="text" name=funcB_eq" placeholder="1.0" id="funcB_eq" class="input_field float">
     <br>
     <button type="button" onclick="getInputValues()">Submit</button>
+
+    <h3 id="monomer_data_entry"></h3>
+    <div class="dynamic_form"></div>
 
 </body>
 

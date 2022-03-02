@@ -21,15 +21,20 @@ class Monomer {
 function getInputValues() {
     var inputs = document.getElementsByClassName("input_field");
 
-    inputsAcceptable = validate(inputs);
+    let inputsAcceptable = validate(inputs);
 
-    percent_type = percentTypeChecker();
+    let percent_type = percentTypeChecker();
 
-    const funcA = new Substituent(percent_type, inputs[2].value, parseInt(inputs[4].value), parseFloat(inputs[6].value));
-    const funcB = new Substituent(percent_type, inputs[3].value, parseInt(inputs[5].value), parseFloat(inputs[7].value));
+    var funcStats = [];
 
-    console.log(funcA);
-    console.log(funcB);
+    for (var i = 0 ; i < 2 ; i++) {
+        funcStats[i] = new Substituent(percent_type, inputs[i + 2].value, parseInt(inputs[i + 4].value), parseFloat(inputs[i + 6].value));
+    }
+
+    console.log(funcStats[0]);
+    console.log(funcStats[1]);
+
+    addElement();
 }
 
 function validate(values) {
