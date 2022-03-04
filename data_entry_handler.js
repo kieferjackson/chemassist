@@ -18,39 +18,46 @@ class Monomer {
     }
 }
 
+funcStats = [];
+
 function getInputValues() {
     var inputs = document.getElementsByClassName("input_field");
 
     let inputsAcceptable = validate(inputs);
 
-    let percent_type = percentTypeChecker();
+    if (inputsAcceptable === false) {
+        console.log(inputsAcceptable);
+    } else {
+        let percent_type = percentTypeChecker();
 
-    var funcStats = [];
-
-    for (var i = 0 ; i < 2 ; i++) {
-        funcStats[i] = new Substituent(percent_type, inputs[i + 2].value, parseInt(inputs[i + 4].value), parseFloat(inputs[i + 6].value));
+        funcStats = [];
+    
+        for (var i = 0 ; i < 2 ; i++) {
+            funcStats[i] = new Substituent(percent_type, inputs[i + 2].value, parseInt(inputs[i + 4].value), parseFloat(inputs[i + 6].value));
+        }
+    
+        console.log(funcStats[0]);
+        console.log(funcStats[1]);
+    
+        generateForm();
     }
 
-    console.log(funcStats[0]);
-    console.log(funcStats[1]);
-
-    addElement();
 }
 
-function validate(values) {
-    if (typeof values[2] === 'string') {
+function validate(inputs) {
+    if (typeof (inputs[2].value && typeof inputs[3].value) === 'string') {
         var nameAcceptable = true;
     } else {
         var nameAcceptable = false;
     }
 
-    if (typeof parseInt(values[4].value) === 'number') {
+    if (inputs[4].value.match(/\d+/) && inputs[5].value.match(/\d+/) != null) {
         var numAcceptable = true;
     } else {
         var numAcceptable = false;
     }
 
-    if (typeof parseFloat(values[6].value) === 'number') {
+    if (inputs[6].value.match(/\d+/) && inputs[7].value.match(/\d+/) != null) {
         var eqAcceptable = true;
     } else {
         var eqAcceptable = false;
