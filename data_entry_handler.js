@@ -26,7 +26,11 @@ monomerStats = [];
 function getInputValues() {
     var inputs = document.getElementsByClassName("input_field");
 
-    let inputsAcceptable = checkDataTypes(inputs);
+    let stringAcceptable = checkDataTypes("string", "input_field");
+    let intAcceptable = checkDataTypes("int", "input_field");
+    let floatAcceptable = checkDataTypes("float", "input_field");
+
+    let inputsAcceptable = stringAcceptable && intAcceptable && floatAcceptable;
 
     if (inputsAcceptable === false) {
         console.log("inputsAcceptable: " + inputsAcceptable);
@@ -73,43 +77,78 @@ function getDynamicFormData() {
 
 }
 
-function checkDataTypes(inputs) {
-    // String Checker
-    if ((inputs[2].value || inputs[3].value) === "") {
-        console.log("A valid name must be entered");
-        var nameAcceptable = false;
-    } else if (checkParity(inputs[2].value, inputs[3].value) === true) {
-        console.log("A valid name must be entered (cannot be identical)");
-        var nameAcceptable = false;
-    } else if (typeof (inputs[2].value && typeof inputs[3].value) === 'string') {
-        var nameAcceptable = true;
-    } else {
-        var nameAcceptable = false;
+function checkDataTypes(data_type, input_class) {
+
+    switch (data_type) {
+        case 'int':     // Integer Checker
+            console.log("checking integer values...");
+            let raw_int_data = document.getElementsByClassName(input_class + " int");
+
+            var i = 0;
+            do {
+
+                if (parseInt(raw_int_data[i].value) <= 0) {
+                    console.log("Number values must be greater than 0.");
+                    var intAcceptable = false;
+                } else if (raw_int_data[i].value.match(/\d+/) != null) {
+                    var intAcceptable = true;
+                } else {
+                    var intAcceptable = false;
+                    console.log("ERROR - Invalid data at checkDataTypes function (Integer)\nOne of your input fields may be missing a value.");
+                }
+
+                i++;
+
+            } while (intAcceptable === true && i < raw_int_data.length);
+
+            return intAcceptable;
+
+        case 'string':  // String Checker
+            console.log("checking string values...");
+            let raw_string_data = document.getElementsByClassName(input_class + " string");
+
+            if ((raw_string_data[2].value || raw_string_data[3].value) === "") {
+                console.log("A valid name must be entered");
+                var nameAcceptable = false;
+            } else if (checkParity(raw_string_data[2].value, raw_string_data[3].value) === true) {
+                console.log("A valid name must be entered (cannot be identical)");
+                var nameAcceptable = false;
+            } else if (typeof (raw_string_data[2].value && typeof raw_string_data[3].value) === 'string') {
+                var nameAcceptable = true;
+            } else {
+                var nameAcceptable = false;
+            }
+
+            return nameAcceptable;
+
+        case 'float':   // Float Checker
+            console.log("checking float values...");
+            let raw_float_data = document.getElementsByClassName(input_class + " float");
+
+            var i = 0;
+            do {
+                console.log(raw_float_data[i].value);
+                if (raw_float_data[i].value <= 0) {
+                    console.log("Number values must be greater than 0.");
+                    var floatAcceptable = false;
+                } else if (raw_float_data[i].value.match(/\d+/) != null) {
+                    var floatAcceptable = true;
+                } else {
+                    var floatAcceptable = false;
+                    console.log("ERROR - Invalid data at checkDataTypes function (Float)\nOne of your input fields may be missing a value.");
+                }
+
+                i++;
+
+            } while (floatAcceptable === true && i < raw_float_data.length);
+
+            return floatAcceptable;
+
+        default:
+            console.log("ERROR - Unknown datatype.");
     }
 
-    // Integer Checker
-    if ((inputs[4].value || inputs[5].value) == 0) {
-        console.log("0 is not an acceptable input for num.");
-        var numAcceptable = false;
-    } else if (inputs[4].value.match(/\d+/) && inputs[5].value.match(/\d+/) != null) {
-        var numAcceptable = true;
-    } else {
-        var numAcceptable = false;
-        console.log("ERROR - Invalid data at checkDataTypes function (Integer)\nOne of your input fields may be missing a value.");
-    }
-
-    // Float Checker
-    if (inputs[6].value == 0 || inputs[7].value == 0) {
-        console.log("0 is not an acceptable input for eq.");
-        var eqAcceptable = false;
-    } else if (inputs[6].value.match(/\d+/) && inputs[7].value.match(/\d+/) != null) {
-        var eqAcceptable = true;
-    } else {
-        var eqAcceptable = false;
-        console.log("ERROR - Invalid data at checkDataTypes function (Float)");
-    }
-
-    return nameAcceptable && numAcceptable && eqAcceptable;
+    return false;
 }
 
 function checkParity(var1, var2) {
