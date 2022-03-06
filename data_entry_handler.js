@@ -63,17 +63,23 @@ function getDynamicFormData() {
     var dynFormData = document.getElementsByClassName("dyn_input_field");
     console.log(dynFormData);
 
-    for (var i = 0 ; i < 2 ; i++) {
-        for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
-            monomerStats[q] = {
-                mass: parseFloat(dynFormData[0 + q * 3].value),
-                percent: parseFloat(dynFormData[1 + q * 3].value),
-                molar_mass: parseFloat(dynFormData[2 + q * 3].value)
-            };
+    let inputsAcceptable = checkDataTypes("float", "dyn_input_field");
 
-            console.log(monomerStats[q]);
+    if (inputsAcceptable === false) {
+        console.log("inputsAcceptable: " + inputsAcceptable);
+    } else {
+        for (var i = 0 ; i < 2 ; i++) {
+            for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
+                monomerStats[q] = {
+                    mass: parseFloat(dynFormData[0 + q * 3].value),
+                    percent: parseFloat(dynFormData[1 + q * 3].value),
+                    molar_mass: parseFloat(dynFormData[2 + q * 3].value)
+                };
+            }
         }
     }
+    
+    startDataSorting();
 
 }
 

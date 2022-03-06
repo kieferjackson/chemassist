@@ -4,10 +4,13 @@
     <title>Chemists' Assistant</title>
 
     <script src="data_entry_handler.js"></script>
+    <script src="data_sorting.js"></script>
     <script src="form_generator.js"></script>
+    
 </head>
     
 <body>
+<form name="initial_data_entry">
     <label for="wpercent">Weight Percent</label>
     <input type="radio" name="proportion" value="wpercent" id="wpercent" class="input_field string" checked>
     <label for="mpercent">Mole Percent</label>
@@ -23,6 +26,7 @@
     <input type="text" name=funcB_eq" placeholder="1.0" id="funcB_eq" class="input_field float">
     <br>
     <button type="button" onclick="getInputValues()">Submit</button>
+</form>
 
     <h3 id="monomer_data_entry"></h3>
     <div class="dynamic_form"></div>

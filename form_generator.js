@@ -18,6 +18,10 @@ function generateForm () {
         var form = document.createElement("form");
         form.setAttribute("name", funcStats[i].name + "_entry");    // Should declare a unique form name
         form.setAttribute("id", funcStats[i].name + "_entry");      // Unique id is generated from user inputted name
+
+        h2 = document.createElement("h1");
+        h2.innerHTML = funcStats[i].name;
+        form.append(h2);
         
         // Generate input fields for each monomer to enter mass and/or percent and molar mass. 
         for (var q = 0 ; q < funcStats[i].num ; q++) {
@@ -41,11 +45,11 @@ function generateForm () {
             molar_mass.required = true; // Molar mass MUST always be entered for all monomers.
 
             // Appending input fields to form; this process will be repeated for each functional group for however many monomers it contains (num)
-                form.appendChild(br.cloneNode());
-                form.appendChild(mass);
-                form.appendChild(percent);
-                form.appendChild(molar_mass);
-                form.appendChild(br.cloneNode());
+            form.appendChild(br.cloneNode());
+            form.appendChild(mass);
+            form.appendChild(percent);
+            form.appendChild(molar_mass);
+            form.appendChild(br.cloneNode());
 
             var form_attachment = document.querySelector(".dynamic_form");
 
