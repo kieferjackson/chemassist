@@ -1,16 +1,5 @@
 
-class Substituent {
-    constructor(percent_type, name, num, molar_eq) {
-        this.percent_type = percent_type;
-        this.name = name;
-        this.num = num;
-        this.molar_eq = molar_eq;
-        this.start = start;
-        this.end = end;
-    }
-}
-
-class Monomer extends Substituent {
+class Monomer {
     constructor(mass, wpercent, mpercent, molar_mass, moles) {
         this.mass = mass;
         this.wpercent = wpercent;
@@ -50,9 +39,6 @@ function getInputValues() {
             }; 
         }
     
-        console.log(funcStats[0]);
-        console.log(funcStats[1]);
-    
         generateForm();
     }
 
@@ -61,7 +47,6 @@ function getInputValues() {
 function getDynamicFormData() {
 
     var dynFormData = document.getElementsByClassName("dyn_input_field");
-    console.log(dynFormData);
 
     let inputsAcceptable = checkDataTypes("float", "dyn_input_field");
 
@@ -72,23 +57,42 @@ function getDynamicFormData() {
         for (var i = 0 ; i < 2 ; i++) {
             for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
 
-                // Initialize monomerStats object
+                // Initialize monomerStats object to zero
                 monomerStats[q] = {
-                    mass: 0,
-                    percent: 0,
-                    molar_mass: 0
-                };
+                    mass:       0,
+                    wpercent:   0,
+                    mpercent:   0,
+                    molar_mass: 0,
+                    moles:      0
+                }
+                console.log(monomerStats[q]);
 
-                if (dynFormData[0 + q * 3].value != '') {
-                    monomerStats[q].mass = parseFloat(dynFormData[0 + q * 3].value);
+                mass_input = dynFormData[0 + q * 3];
+                percent_input = dynFormData[1 + q * 3];
+                molar_mass_input = dynFormData[2 + q * 3];
+
+                if (mass_input.value != '') {
+                    monomerStats[q].mass = parseFloat(mass_input.value);
+                    console.log("Mass for " + funcStats[i].name + funcStats[i].num + ": " + monomerStats[q].mass);
                 }
 
-                if (dynFormData[1 + q * 3].value != '') {
-                    monomerStats[q].percent = parseFloat(dynFormData[1 + q * 3].value);
+                if (percent_input.value != '') {
+                    switch (funcStats[i].percent_type) {
+                        case 'weight':
+                            monomerStats[q].wpercent = parseFloat(percent_input.value);
+                            console.log("Wt Percent for " + funcStats[i].name + funcStats[i].num + ": " + monomerStats[q].wpercent);
+                            break;
+
+                        case 'mole':
+                            monomerStats[q].mpercent = parseFloat(percent_input.value);
+                            console.log("Ml Percent for " + funcStats[i].name + funcStats[i].num + ": " + monomerStats[q].mpercent);
+                            break;
+                    }
                 }
 
-                if (dynFormData[2 + q * 3].value != '') {
-                    monomerStats[q].molar_mass = parseFloat(dynFormData[2 + q * 3].value);
+                if (molar_mass_input.value != '') {
+                    monomerStats[q].molar_mass = parseFloat(molar_mass_input.value);
+                    console.log("Molar Mass for " + funcStats[i].name + funcStats[i].num + ": " + monomerStats[q].molar_mass);
                 }
                 
             }
