@@ -67,19 +67,38 @@ function getDynamicFormData() {
 
     if (inputsAcceptable === false) {
         console.log("inputsAcceptable: " + inputsAcceptable);
+        monomerStats = [];
     } else {
         for (var i = 0 ; i < 2 ; i++) {
             for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
+
+                // Initialize monomerStats object
                 monomerStats[q] = {
-                    mass: parseFloat(dynFormData[0 + q * 3].value),
-                    percent: parseFloat(dynFormData[1 + q * 3].value),
-                    molar_mass: parseFloat(dynFormData[2 + q * 3].value)
+                    mass: 0,
+                    percent: 0,
+                    molar_mass: 0
                 };
+
+                if (dynFormData[0 + q * 3].value != '') {
+                    monomerStats[q].mass = parseFloat(dynFormData[0 + q * 3].value);
+                }
+
+                if (dynFormData[1 + q * 3].value != '') {
+                    monomerStats[q].percent = parseFloat(dynFormData[1 + q * 3].value);
+                }
+
+                if (dynFormData[2 + q * 3].value != '') {
+                    monomerStats[q].molar_mass = parseFloat(dynFormData[2 + q * 3].value);
+                }
+                
             }
         }
-    }
+
+        console.log(monomerStats);
     
-    startDataSorting();
+        startDataSorting();
+
+    }
 
 }
 
@@ -134,14 +153,17 @@ function checkDataTypes(data_type, input_class) {
             var i = 0;
             do {
                 console.log(raw_float_data[i].value);
-                if (raw_float_data[i].value <= 0) {
-                    console.log("Number values must be greater than 0.");
+
+                if (input_class === "dyn_input_field" && raw_float_data[i].value === '') {
+                    var floatAcceptable = true;
+                } else if (raw_float_data[i].value <= 0) {
+                    console.log("ERROR - Invalid data at checkDataTypes function (Float)\n\t*Values of 0 or blank strings are not accepted.");
                     var floatAcceptable = false;
                 } else if (raw_float_data[i].value.match(/\d+/) != null) {
                     var floatAcceptable = true;
                 } else {
                     var floatAcceptable = false;
-                    console.log("ERROR - Invalid data at checkDataTypes function (Float)\nOne of your input fields may be missing a value.");
+                    console.log("ERROR - Invalid data at checkDataTypes function (Float)\n\t*One of your input fields may be missing a value.");
                 }
 
                 i++;
