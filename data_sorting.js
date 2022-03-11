@@ -16,7 +16,7 @@ function startDataSorting() {
             percent:      0,
             zprMethod:    0,
             tts_ref:      0,
-            tts_refFound: 0
+            tts_refFound: false
         }
 
         for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
@@ -107,12 +107,15 @@ function startDataSorting() {
     ref_route = routeFinder(func_ref, "REFERENCE");
     // Perform reference calculations
     doReferenceCalculations(ref_route);
+    console.log("Finished Calculations for Reference Group Yielded:");
+    console.log(monomerStats);
 
     // Find calculation route for complimentary group
     //comp_route = routeFinder(func_comp, "COMPLIMENTARY");
     // Perform complimentary calculations
     //doComplimentaryCalculations(comp_route);
-
+    //console.log("Finished Calculations for Complimentary Group Yielded:");
+    //console.log(monomerStats);
 }
 
 function routeFinder(i, funcType) {
@@ -131,9 +134,9 @@ function routeFinder(i, funcType) {
     let almost_all_mass = monomerStatCount[i].mass === funcStats[i].num - 1;
     let almost_all_percent = monomerStatCount[i].percent === funcStats[i].num - 1;
 
-    let percent_and_mass = (all_percent || almost_all_percent) && mass_present;   // Checks if all weight percents are known and there is at least one mass
+    let percent_and_mass = all_percent && mass_present;   // Checks if all weight percents are known and there is at least one mass
 
-    let zpr_possible = monomerStatCount[i].zprMethod === funcStats[i].num;
+    let zpr_possible = monomerStatCount[i].zprMethod === funcStats[i].num && mass_present === true;
     let tetris_possible = monomerStatCount[i].tts_refFound === true && funcStats[i].unknown != null;
 
     // (2)
@@ -147,23 +150,36 @@ function routeFinder(i, funcType) {
             else if (zpr_possible === true) {
                 switch (funcStats[func_ref].percent_type) {
                     case 'weight':
-                        console.log("Your calculation route for reference group is: Zipper");
+                        console.log("Your calculation route for reference group is: wt% Zipper");
                         return 'WTP_ZIPPERROUTE';
                     case 'mole':
-                        console.log("Your calculation route for reference group is: Zipper");
+                        console.log("Your calculation route for reference group is: ml% Zipper");
                         return 'MLP_ZIPPERROUTE';
                 }
                 
             }
 
             else if (tetris_possible === true) {
-                console.log("Your calculation route for reference group is: Tetris");
-                return 'TETRISROUTE';
-            }
+                switch (funcStats[func_ref].percent_type) {
+                    case 'weight':
+                        console.log("Your calculation route for reference group is: wt% Zipper");
+                        return 'WTP_TETRISROUTE';
+                    case 'mole':
+                        console.log("Your calculation route for reference group is: ml% Zipper");
+                        return 'MLP_TETRISROUTE';
+                }
 
+            }
+            
             else if (percent_and_mass === true) {
-                console.log("Your calculation route for reference group is: All Percent");
-                return 'ALLPERCENTROUTE';
+                switch (funcStats[func_ref].percent_type) {
+                    case 'weight':
+                        console.log("Your calculation route for reference group is: All wt%");
+                        return 'WTP_ALLPERCENT';
+                    case 'mole':
+                        console.log("Your calculation route for reference group is: All ml%");
+                        return 'MLP_ALLPERCENT';
+                }
             }
             
             else {

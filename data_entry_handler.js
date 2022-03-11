@@ -74,6 +74,7 @@ function getDynamicFormData() {
                 percent_input = dynFormData[1 + q * 3];
                 molar_mass_input = dynFormData[2 + q * 3];
 
+                // Check for unknown monomers (missing information for mass and percent)
                 if (mass_input.value === '' && percent_input.value === '') {
                     unknownCount[i]++;
                     funcStats[i].unknown = q;
@@ -110,8 +111,8 @@ function getDynamicFormData() {
                 
             }
         }
-    
-        if ((unknownCount[0] && unknownCount[1]) <= 1) {
+        debugger;
+        if (unknownCount[0] <= 1 && unknownCount[1] <= 1) {
             startDataSorting();
         } else {
             console.log("There is not enough monomer information given for calculations to be possible.");
