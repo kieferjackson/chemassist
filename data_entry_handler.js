@@ -35,7 +35,8 @@ function getInputValues() {
                 num: parseInt(inputs[i + 4].value),
                 molar_eq: parseFloat(inputs[i + 6].value),
                 start: 0 + parseInt(inputs[4].value) * i,
-                end: parseInt(inputs[4].value) + parseInt(inputs[5].value) * i
+                end: parseInt(inputs[4].value) + parseInt(inputs[5].value) * i,
+                unknown: null
             }; 
         }
     
@@ -55,6 +56,8 @@ function getDynamicFormData() {
         monomerStats = [];
     } else {
         for (var i = 0 ; i < 2 ; i++) {
+            var unknownCount = [0, 0];
+
             for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
 
                 // Initialize monomerStats object to zero
@@ -65,11 +68,21 @@ function getDynamicFormData() {
                     molar_mass: 0,
                     moles:      0
                 }
-                console.log(monomerStats[q]);
+                console.log(monomerStats[q].moles);
 
                 mass_input = dynFormData[0 + q * 3];
                 percent_input = dynFormData[1 + q * 3];
                 molar_mass_input = dynFormData[2 + q * 3];
+
+                if (mass_input.value === '' && percent_input.value === '') {
+                    unknownCount[i]++;
+                    funcStats[i].unknown = q;
+
+                    if (unknownCount[i] > 1) {
+                        debugger;
+                        console.log("Your unknowns for functional group: " + funcStats[i].name + " has exceeded 1. Please enter more information for your input to be accepted.");
+                    }
+                }
 
                 if (mass_input.value != '') {
                     monomerStats[q].mass = parseFloat(mass_input.value);
@@ -97,10 +110,12 @@ function getDynamicFormData() {
                 
             }
         }
-
-        console.log(monomerStats);
     
-        startDataSorting();
+        if ((unknownCount[0] && unknownCount[1]) <= 1) {
+            startDataSorting();
+        } else {
+            console.log("There is not enough monomer information given for calculations to be possible.");
+        }
 
     }
 

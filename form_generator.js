@@ -14,12 +14,11 @@ function generateForm () {
     var br = document.createElement("br");
 
     for (var i = 0 ; i < 2 ; i++) {
-        console.log(funcStats[i]);
         var form = document.createElement("form");
         form.setAttribute("name", funcStats[i].name + "_entry");    // Should declare a unique form name
         form.setAttribute("id", funcStats[i].name + "_entry");      // Unique id is generated from user inputted name
 
-        h2 = document.createElement("h1");
+        h2 = document.createElement("h2");
         h2.innerHTML = funcStats[i].name;
         form.append(h2);
         

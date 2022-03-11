@@ -11,13 +11,14 @@ function startDataSorting() {
         /*  Stat Counter - If a value is not 0, the stat count increments by one to indicate the number of known values for mass and percent. 
             Molar mass is assumed to be known for all monomers, so it is not considered.
         */
-       monomerStatCount[i] = {
-           mass:         0,
-           percent:      0,
-           zprMethod:    0,
-           tts_ref:      0,
-           tts_refFound: 0
-       }
+        monomerStatCount[i] = {
+            mass:         0,
+            percent:      0,
+            zprMethod:    0,
+            tts_ref:      0,
+            tts_refFound: 0
+        }
+
         for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
             // Increment Mass Count if it is a positive number
             if (monomerStats[q].mass != 0) {
@@ -29,14 +30,22 @@ function startDataSorting() {
                 monomerStatCount[i].percent += 1;
             }
 
-            // Increment Zipper Method if Mass is known but Weight Percent is unknown, and vice-versa
-            if (funcStats[i].num >= 3 && ((monomerStats[q].mass != 0 && monomerStats[q].wpercent === 0) || (monomerStats[q].mass === 0 && monomerStats[q].wpercent != 0))) {
-                monomerStatCount[i].zprMethod += 1;
-            }
-
-            // Increment Zipper Method if Mass is known but Mole Percent is unknown, and vice-versa
-            if (funcStats[i].num >= 3 && ((monomerStats[q].mass != 0 && monomerStats[q].mpercent === 0) || (monomerStats[q].mass === 0 && monomerStats[q].mpercent != 0))) {
-                monomerStatCount[i].zprMethod += 1;
+            if (funcStats[i].num >= 2) {
+                switch (funcStats[i].percent_type) {
+                    // Increment Zipper Method if Mass is known but Weight Percent is unknown, and vice-versa
+                    case 'weight':
+                        if ((monomerStats[q].mass != 0 && monomerStats[q].wpercent === 0) || (monomerStats[q].mass === 0 && monomerStats[q].wpercent != 0)) {
+                            monomerStatCount[i].zprMethod += 1;
+                        }
+                        break;
+    
+                    // Increment Zipper Method if Mass is known but Mole Percent is unknown, and vice-versa
+                    case 'mole':
+                        if ((monomerStats[q].mass != 0 && monomerStats[q].mpercent === 0) || (monomerStats[q].mass === 0 && monomerStats[q].mpercent != 0)) {
+                            monomerStatCount[i].zprMethod += 1;
+                        }
+                        break;
+                }
             }
 
             // Set Tetris Method values if conditions are met
@@ -63,7 +72,12 @@ function startDataSorting() {
     funcStats[FUNC_B].isReference = false;
 
     for (var i = 0 ; i < 2 ; i++) {
-        funcStats[i].isReference = monomerStatCount[i].mass >= 1 && ((monomerStatCount[i].mass + monomerStatCount[i].percent) >= funcStats[i].num)
+        funcStats[i].isReference = monomerStatCount[i].mass >= 1 && ((monomerStatCount[i].mass + monomerStatCount[i].percent) >= funcStats[i].num);
+        func_ref = i;
+
+        if (func_ref === FUNC_B) {
+            func_comp = FUNC_A;
+        }
     }
 
     // If both functional groups are valid as reference groups for any reason(s), the one with more knowns and/or masses will be chosen as the reference group
@@ -120,7 +134,7 @@ function routeFinder(i, funcType) {
     let percent_and_mass = (all_percent || almost_all_percent) && mass_present;   // Checks if all weight percents are known and there is at least one mass
 
     let zpr_possible = monomerStatCount[i].zprMethod === funcStats[i].num;
-    let tetris_possible = monomerStatCount[i].tts_refFound === true;
+    let tetris_possible = monomerStatCount[i].tts_refFound === true && funcStats[i].unknown != null;
 
     // (2)
     switch(funcType) {
@@ -131,8 +145,15 @@ function routeFinder(i, funcType) {
             }
 
             else if (zpr_possible === true) {
-                console.log("Your calculation route for reference group is: Zipper");
-                return 'ZIPPERROUTE';
+                switch (funcStats[func_ref].percent_type) {
+                    case 'weight':
+                        console.log("Your calculation route for reference group is: Zipper");
+                        return 'WTP_ZIPPERROUTE';
+                    case 'mole':
+                        console.log("Your calculation route for reference group is: Zipper");
+                        return 'MLP_ZIPPERROUTE';
+                }
+                
             }
 
             else if (tetris_possible === true) {
