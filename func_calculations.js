@@ -215,8 +215,223 @@ function doReferenceCalculations(route) {
         }
 }
 
-function doComplimentaryCalculations() {
-    
+function doComplimentaryCalculations(route) {
+    switch(route) {
+        case 'ALLPERCENTROUTE':
+        {
+            var mol_sum = [];
+            
+            if (funcStats[func_comp].num > 1 && monomerStatCount[func_comp].percent == funcStats[func_comp].num - 1) {
+                switch(funcStats[func_comp].percent_type) {
+                    case 'weight':
+                        var part_percent_sum = sumMonomerStat(func_comp, "wpercent");
+                        monomerStats[funcStats[func_comp].unknown].wpercent = 100.0 - part_percent_sum;
+                        debugger;
+                        break;
+                    case 'mole':
+                        var part_percent_sum = sumMonomerStat(func_comp, "mpercent");
+                        monomerStats[funcStats[func_comp].unknown].mpercent = 100.0 - part_percent_sum;
+                        break;
+                }
+            } else if (funcStats[func_comp].num === 1) {
+                monomerStats[funcStats[func_comp].unknown].wpercent = 100.0;
+                monomerStats[funcStats[func_comp].unknown].mpercent = 100.0;
+            }
+            
+            if (funcStats[func_comp].num > 1 && funcStats[func_comp].percent_type === 'weight')
+            {
+                var wtp_proportion_sum = 0.0, wtp_proportion = [];
+                for (var w = 0 ; w < funcStats[func_comp].num ; w++)
+                {
+                    let q = w + funcStats[func_comp].start;
+                    wtp_proportion[w] = monomerStats[q].wpercent / monomerStats[q].molar_mass;
+                    wtp_proportion_sum += wtp_proportion[w];
+                    debugger;
+                }
+                
+                // Converting Weight Percent to Mole Percent
+                for (var w = 0 ; w < funcStats[func_comp].num ; w++)
+                {
+                    let q = w + funcStats[func_comp].start;
+                    monomerStats[q].mpercent = (wtp_proportion[w] / wtp_proportion_sum) * 100.0;
+                    debugger;
+                }
+            }
+            
+            mol_sum[func_ref] = sumMonomerStat(func_ref, "moles");
+            mol_sum[func_comp] = (mol_sum[func_ref] / funcStats[func_ref].molar_eq) * funcStats[func_comp].molar_eq;
+            debugger;
+            
+            for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
+            {
+                if (monomerStats[q].mpercent != 0.0 && monomerStats[q].mass == 0.0)
+                {
+                    monomerStats[q].moles = mol_sum[func_comp] * (monomerStats[q].mpercent / 100.0);
+                    monomerStats[q].mass = monomerStats[q].moles * monomerStats[q].molar_mass;
+                }
+                
+                else if (monomerStats[q].mass != 0.0 && monomerStats[q].mpercent == 0.0)
+                {
+                    monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
+                    monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum[func_comp]) * 100.0;
+                }
+            }
+            
+            if (funcStats[func_comp].percent_type === 'mole')
+            {
+                var mass_sum = sumMonomerStat(func_comp, "mass");
+                
+                for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
+                    monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
+            }
+            
+            break;
+        }
+
+        case 'GIVENMASSROUTE':
+        {
+            var mol_sum = [];
+            
+            mol_sum[func_ref] = sumMonomerStat(func_ref, "moles");
+            mol_sum[func_comp] = (mol_sum[func_ref] / funcStats[func_ref].molar_eq) * funcStats[func_comp].molar_eq;
+            
+            var part_mol_sum = 0.0, part_percent_sum = 0.0, mol_per_percent = 0.0;
+            
+            for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
+            {
+                if (monomerStats[q].mass != 0.0)
+                {
+                    monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
+                    monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum[func_comp]) * 100.0;
+                    
+                    part_mol_sum += monomerStats[q].moles;
+                    part_percent_sum += monomerStats[q].mpercent;
+                }
+                
+                if (part_mol_sum >= mol_sum[func_comp])
+                {
+                    console.log("ERROR - Inputted mass is greater than molar equivalent for complementary group. Program will continue with given input.");
+                }
+            }
+            
+            var q = funcStats[func_comp].start;
+            
+            do {
+                mol_per_percent = monomerStats[q].moles / monomerStats[q].mpercent;
+                q++;
+            } while (mol_per_percent == 0.0);
+            
+            monomerStats[funcStats[func_comp].unknown].mpercent = 100.0 - part_percent_sum;
+            monomerStats[funcStats[func_comp].unknown].moles = (monomerStats[funcStats[func_comp].unknown].mpercent / 100.0) * mol_sum[func_comp];
+            monomerStats[funcStats[func_comp].unknown].mass = monomerStats[funcStats[func_comp].unknown].moles * monomerStats[funcStats[func_comp].unknown].molar_mass;
+            
+            var mass_sum = sumMonomerStat(func_comp, "mass");
+            
+            for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
+                monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
+            
+            break;
+        }
+
+        case 'MLP_ZIPPERROUTE':
+        {
+            var mol_sum = [], mass_sum = 0.0;
+            
+            mol_sum[func_ref] = sumMonomerStat(func_ref, "moles");
+            mol_sum[func_comp] = (mol_sum[func_ref] / funcStats[func_ref].molar_eq) * funcStats[func_comp].molar_eq;
+            
+            var part_percent_sum = 0.0;
+            
+            for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
+            {
+                if (monomerStats[q].mpercent != 0.0)
+                {
+                    monomerStats[q].moles = mol_sum[func_comp] * (monomerStats[q].mpercent / 100.0);
+                    monomerStats[q].mass = monomerStats[q].moles * monomerStats[q].molar_mass;
+                }
+                
+                else if (monomerStats[q].mass != 0.0)
+                {
+                    monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
+                    monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum[func_comp]) * 100.0;
+                }
+                
+                part_percent_sum += monomerStats[q].mpercent;
+            }
+            
+            monomerStats[funcStats[func_comp].unknown].mpercent = 100.0 - part_percent_sum;
+            monomerStats[funcStats[func_comp].unknown].moles = (monomerStats[funcStats[func_comp].unknown].mpercent / 100.0) * mol_sum[func_comp];
+            monomerStats[funcStats[func_comp].unknown].mass = monomerStats[funcStats[func_comp].unknown].moles * monomerStats[funcStats[func_comp].unknown].molar_mass;
+            
+            mass_sum = sumMonomerStat(func_comp, "mass");
+            
+            for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
+                monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
+            
+            break;
+        }
+
+        case 'WTP_ZIPPERROUTE':
+        {
+            var mol_sum = [];
+            
+            mol_sum[func_ref] = sumMonomerStat(func_ref, "moles");
+            mol_sum[func_comp] = (mol_sum[func_ref] / funcStats[func_ref].molar_eq) * funcStats[func_comp].molar_eq;
+            
+            var part_percent_sum = 0.0;
+            var part_mol_sum = mol_sum[func_comp];
+            var unknown_mol_offset = 0.0;
+            var percent_contribution_to_mol_sum = 0.0;
+            
+            for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
+            {
+                if (monomerStats[q].mass != 0.0)
+                {
+                    monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
+                    monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum[func_comp]) * 100.0;
+                    
+                    unknown_mol_offset += (monomerStats[q].mass / monomerStats[funcStats[func_comp].unknown].molar_mass);
+                    
+                    part_mol_sum -= monomerStats[q].moles;
+
+                }
+                
+                else if (monomerStats[q].wpercent != 0.0)
+                {
+                    let wumbo_factor = (monomerStats[q].wpercent / 100.0) / monomerStats[q].molar_mass;
+                    percent_contribution_to_mol_sum += wumbo_factor;
+                    
+                    part_percent_sum += monomerStats[q].wpercent;
+                }
+            }
+            
+            let all_non_mass_mol_contribution = percent_contribution_to_mol_sum + (((100.0 - part_percent_sum) / 100.0) / monomerStats[funcStats[func_comp].unknown].molar_mass);
+            var mass_sum = (part_mol_sum + unknown_mol_offset) / all_non_mass_mol_contribution;
+            
+            for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
+            {
+                if (monomerStats[q].mass != 0.0)
+                {
+                    monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
+                    part_percent_sum += monomerStats[q].wpercent;
+                }
+                
+                else if (monomerStats[q].wpercent != 0.0)
+                {
+                    monomerStats[q].mass = (monomerStats[q].wpercent / 100.0) * mass_sum;
+                    monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
+                    monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum[func_comp]) * 100.0;
+                }
+            }
+            
+            monomerStats[funcStats[func_comp].unknown].wpercent = 100.0 - part_percent_sum;
+            monomerStats[funcStats[func_comp].unknown].mass = (monomerStats[funcStats[func_comp].unknown].wpercent / 100.0) * mass_sum;
+            monomerStats[funcStats[func_comp].unknown].moles = monomerStats[funcStats[func_comp].unknown].mass / monomerStats[funcStats[func_comp].unknown].molar_mass;
+            monomerStats[funcStats[func_comp].unknown].mpercent = (monomerStats[funcStats[func_comp].unknown].moles / mol_sum[func_comp]) * 100.0;
+            
+            break;
+        }
+    }
 }
 
 function sumMonomerStat(func_group, object_stat) {

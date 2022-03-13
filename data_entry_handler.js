@@ -51,13 +51,14 @@ function getDynamicFormData() {
 
     let inputsAcceptable = checkDataTypes("float", "dyn_input_field");
 
+    var unknownCount = [0, 0];
+
     if (inputsAcceptable === false) {
         console.log("inputsAcceptable: " + inputsAcceptable);
         monomerStats = [];
     } else {
         for (var i = 0 ; i < 2 ; i++) {
-            var unknownCount = [0, 0];
-
+            
             for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
 
                 // Initialize monomerStats object to zero

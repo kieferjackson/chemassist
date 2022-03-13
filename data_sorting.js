@@ -73,11 +73,16 @@ function startDataSorting() {
 
     for (var i = 0 ; i < 2 ; i++) {
         funcStats[i].isReference = monomerStatCount[i].mass >= 1 && ((monomerStatCount[i].mass + monomerStatCount[i].percent) >= funcStats[i].num);
-        func_ref = i;
+        if (funcStats[i].isReference === true) {
+            func_ref = i;
+        }
 
-        if (func_ref === FUNC_B) {
+        if (func_ref === FUNC_A) {
+            func_comp = FUNC_B;
+        } else if (func_ref === FUNC_B) {
             func_comp = FUNC_A;
         }
+        debugger;
     }
 
     // If both functional groups are valid as reference groups for any reason(s), the one with more knowns and/or masses will be chosen as the reference group
@@ -100,7 +105,7 @@ function startDataSorting() {
             func_ref = FUNC_B;
             func_comp = FUNC_A;
         }
-
+    
     }
 
     // Find calculation route for reference group
@@ -111,11 +116,13 @@ function startDataSorting() {
     console.log(monomerStats);
 
     // Find calculation route for complimentary group
-    //comp_route = routeFinder(func_comp, "COMPLIMENTARY");
+    comp_route = routeFinder(func_comp, "COMPLIMENTARY");
     // Perform complimentary calculations
-    //doComplimentaryCalculations(comp_route);
-    //console.log("Finished Calculations for Complimentary Group Yielded:");
-    //console.log(monomerStats);
+    doComplimentaryCalculations(comp_route);
+    console.log("Finished Calculations for Complimentary Group Yielded:");
+    console.log(monomerStats);
+
+    displayFinalResults();
 }
 
 function routeFinder(i, funcType) {
@@ -201,12 +208,12 @@ function routeFinder(i, funcType) {
 
             else if (monomerStatCount[i].zprMethod === (funcStats[i].num - 1) && funcStats[i].percent_type === 'mole') {
                 console.log("Your calculation route for complimentary group is: Mol Percent Zipper");
-                return 'MOLP_ZIPPERROUTE';
+                return 'MLP_ZIPPERROUTE';
             }
 
             else if (monomerStatCount[i].zprMethod === (funcStats[i].num - 1) && funcStats[i].percent_type === 'weight') {
                 console.log("Your calculation route for complimentary group is: Wt Percent Zipper");
-                return 'MOLP_ZIPPERROUTE';
+                return 'WTP_ZIPPERROUTE';
             }
 
             else {
