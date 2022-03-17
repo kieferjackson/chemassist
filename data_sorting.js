@@ -82,7 +82,6 @@ function startDataSorting() {
         } else if (func_ref === FUNC_B) {
             func_comp = FUNC_A;
         }
-        debugger;
     }
 
     // If both functional groups are valid as reference groups for any reason(s), the one with more knowns and/or masses will be chosen as the reference group

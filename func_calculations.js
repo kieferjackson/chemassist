@@ -96,7 +96,8 @@ function doReferenceCalculations(route) {
 
             case 'WTP_TETRISROUTE':
             {
-                
+
+                monomerStats[monomerStatCount[func_ref].tts_ref].moles = monomerStats[monomerStatCount[func_ref].tts_ref].mass / monomerStats[monomerStatCount[func_ref].tts_ref].molar_mass;
                 var g_per_percent = monomerStats[monomerStatCount[func_ref].tts_ref].mass / monomerStats[monomerStatCount[func_ref].tts_ref].wpercent;
                 
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
@@ -154,7 +155,7 @@ function doReferenceCalculations(route) {
                 monomerStats[funcStats[func_ref].unknown].mpercent = 100.0 - part_percent_sum;
                 monomerStats[funcStats[func_ref].unknown].moles = monomerStats[funcStats[func_ref].unknown].mpercent * mol_per_percent;
                 monomerStats[funcStats[func_ref].unknown].mass = monomerStats[funcStats[func_ref].unknown].moles * monomerStats[funcStats[func_ref].unknown].molar_mass;
-                
+
                 var mass_sum = sumMonomerStat(func_ref, "mass");
                 
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
@@ -226,7 +227,6 @@ function doComplimentaryCalculations(route) {
                     case 'weight':
                         var part_percent_sum = sumMonomerStat(func_comp, "wpercent");
                         monomerStats[funcStats[func_comp].unknown].wpercent = 100.0 - part_percent_sum;
-                        debugger;
                         break;
                     case 'mole':
                         var part_percent_sum = sumMonomerStat(func_comp, "mpercent");
@@ -246,7 +246,6 @@ function doComplimentaryCalculations(route) {
                     let q = w + funcStats[func_comp].start;
                     wtp_proportion[w] = monomerStats[q].wpercent / monomerStats[q].molar_mass;
                     wtp_proportion_sum += wtp_proportion[w];
-                    debugger;
                 }
                 
                 // Converting Weight Percent to Mole Percent
@@ -254,13 +253,11 @@ function doComplimentaryCalculations(route) {
                 {
                     let q = w + funcStats[func_comp].start;
                     monomerStats[q].mpercent = (wtp_proportion[w] / wtp_proportion_sum) * 100.0;
-                    debugger;
                 }
             }
             
             mol_sum[func_ref] = sumMonomerStat(func_ref, "moles");
             mol_sum[func_comp] = (mol_sum[func_ref] / funcStats[func_ref].molar_eq) * funcStats[func_comp].molar_eq;
-            debugger;
             
             for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
             {

@@ -81,7 +81,6 @@ function getDynamicFormData() {
                     funcStats[i].unknown = q;
 
                     if (unknownCount[i] > 1) {
-                        debugger;
                         console.log("Your unknowns for functional group: " + funcStats[i].name + " has exceeded 1. Please enter more information for your input to be accepted.");
                     }
                 }
@@ -112,7 +111,7 @@ function getDynamicFormData() {
                 
             }
         }
-        debugger;
+        
         if (unknownCount[0] <= 1 && unknownCount[1] <= 1) {
             startDataSorting();
         } else {

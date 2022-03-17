@@ -1,5 +1,13 @@
 function displayFinalResults() {
-    console.log("Hello, this is the displayFinalResults function.");
+    // Check if there are existing elements generated
+    if (document.querySelector(".final_results").childElementCount > 0) {
+        // Select any dynamic forms that were previously generated
+        let display_elements1 = document.getElementById(funcStats[0].name + "_results");
+        let display_elements2 = document.getElementById(funcStats[1].name + "_results");
+        // Remove previous elements to generate new ones
+        display_elements1.remove();
+        display_elements2.remove();
+    }
 
     const final_results = document.querySelector(".final_results");
     var br = document.createElement("br");
@@ -7,10 +15,30 @@ function displayFinalResults() {
     var quality = ['mass', 'wpercent', 'mpercent', 'molar_mass', 'moles'];
 
     for (var i = 0 ; i < 2 ; i++) {
+
+        const funcDisplay = document.createElement("div");
+        funcDisplay.setAttribute("id", funcStats[i].name + "_results"); 
+
         let h2 = document.createElement("h2");
+
+        //var percentsOK = sumMonomerStat(i, "wpercent") === 100 && sumMonomerStat(i, "mpercent") === 100;
+
         let heading_content = `${funcStats[i].name}:`;
-        h2.innerHTML = heading_content;
-        final_results.append(h2);
+        h2.innerHTML = heading_content; // remove this if the temporarily commented code is returned
+
+        /* TEMPORARILY COMMENTED OUT
+        if (percentsOK === true) {
+            heading_content += ` | Percents OK`;
+            h2.innerHTML = heading_content;
+            h2.style.color = 'green';
+        } else {
+            heading_content += ` | Percents Bad:`;
+            h2.innerHTML = heading_content;
+            h2.style.color = 'red';
+        }
+        */
+
+        funcDisplay.append(h2);
 
         for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
             for (w = 0 ; w < 5 ; w++) {
@@ -19,7 +47,7 @@ function displayFinalResults() {
 
                 monomerDisplay.innerHTML = content;
                 
-                final_results.append(monomerDisplay);
+                funcDisplay.append(monomerDisplay);
 
                 // Color monomer value red if something went wrong with their calculation
                 if (monomerStats[q][quality[w]] <= 0.0) {
@@ -27,9 +55,12 @@ function displayFinalResults() {
                 }
             }
             
-            final_results.appendChild(br.cloneNode());;
+            funcDisplay.appendChild(br.cloneNode());
 
         }
+
+        final_results.append(funcDisplay);
+
     }
 
 }
