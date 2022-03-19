@@ -13,6 +13,6 @@ Once all of these goals have been completed, potential additions could be the ab
 
 *Acknowledgments:*
 
-I would like to thank James [Redacted] for consulting me through the chemistry aspect of the program. Specifically, understanding what the application should feature to aid chemists, in addition to his help making sense of the varying parameters of copolymer synthesis and their significance.
+I would like to thank James Brown for consulting me through the chemistry aspect of the program. Specifically, understanding what the application should feature to aid chemists, in addition to his help making sense of the varying parameters of copolymer synthesis and their significance.
 
-I would also like to thank Matt [Redacted] for his help overlooking my code and providing programming guidance.
+I would also like to thank Matt Hamada for his help overlooking my code and providing programming guidance.
