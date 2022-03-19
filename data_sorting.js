@@ -94,12 +94,14 @@ function startDataSorting() {
         funcB_mass_offset = monomerStatCount[FUNC_B].mass - funcStats[FUNC_B].num;
 
         if (funcA_mass_offset > funcB_mass_offset || funcA_known_offset > funcB_known_offset) {
-            funcStats[FUNC_A].isReference === true
+            funcStats[FUNC_A].isReference = true;
+            funcStats[FUNC_B].isReference = false;
 
             func_ref = FUNC_A;
             func_comp = FUNC_B;
         } else {
-            funcStats[FUNC_B].isReference === true
+            funcStats[FUNC_B].isReference = true;
+            funcStats[FUNC_A].isReference = false;
 
             func_ref = FUNC_B;
             func_comp = FUNC_A;

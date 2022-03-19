@@ -1,4 +1,6 @@
+
 function displayFinalResults() {
+    
     // Check if there are existing elements generated
     if (document.querySelector(".final_results").childElementCount > 0) {
         // Select any dynamic forms that were previously generated
