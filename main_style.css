@@ -1,0 +1,71 @@
+
+* {
+    font-family: 'Quicksand', Helvetica, sans-serif;
+}
+
+.form_container {
+    font-family: Helvetica, Arial, sans-serif;
+
+    background: #ddd;
+
+    padding: 20px;
+    width: fit-content;
+}
+
+form {
+    padding: 0.5rem;
+}
+
+label {
+    color:#1968f1;
+}
+
+input #wpercent, input #mpercent {
+    outline: unset; /* This doesn't work for some reason */
+}
+
+input {
+    background-color: #fff;
+    color:#1968f1;
+    border: unset;
+    outline: 1px solid #1968f1;
+    border-radius: 5px;
+
+    padding: 4px;
+}
+
+input:focus, textarea:focus {
+    outline: 1px solid #111;
+}
+
+#neutral .square_button{
+    display: block;
+    background-color: #fff;
+    color:#1968f1;
+    border: 1px solid #1968f1;
+    border-radius: 5px;
+
+    padding: 8px;
+}
+
+#xs_B .square_button, #xs_A .square_button{
+    display: block;
+    background-color: #1968f1;
+    color: #fff;
+    border: 1px solid #1968f1;
+    border-radius: 5px;
+
+    padding: 8px;
+}
+
+.submit_button {
+    display: block;
+    font-family: ;
+    background-color: yellow;
+    color:#4d4d4d;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    border: unset;
+    border-radius: 5px;
+
+    padding: 8px;
+}
