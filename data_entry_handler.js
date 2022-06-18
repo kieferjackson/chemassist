@@ -42,11 +42,11 @@ function getInputValues() {
 
             funcStats[i] = {
                 percent_type: percentTypeChecker(),
-                name: inputs[i + 2].value,
-                num: parseInt(inputs[i + 4].value),
+                name: inputs[2 + (2 * i)].value,
+                num: parseInt(inputs[3 + (2 * i)].value),
                 molar_eq: molar_eq_value,
-                start: 0 + parseInt(inputs[4].value) * i,
-                end: parseInt(inputs[4].value) + parseInt(inputs[5].value) * i,
+                start: 0 + parseInt(inputs[3].value) * i,
+                end: parseInt(inputs[3].value) + parseInt(inputs[5].value) * i,
                 unknown: null
             }; 
         }
@@ -211,6 +211,25 @@ function checkDataTypes(data_type, input_class) {
     return false;
 }
 
+function toggleCheckBox(check_box_type) {
+    switch(check_box_type) {
+        case 'molar_eq':
+            var current_state = document.getElementsByName("molar_eq_check")[0].id;
+
+            switch(current_state) {
+                case 'inactive':
+                    document.getElementsByName("molar_eq_check")[0].id = 'active';
+                    document.getElementById("molar_eq_container").class = 'visible';
+                    break;
+                case 'active':
+                    document.getElementsByName("molar_eq_check")[0].id = 'inactive';
+                    document.getElementById("molar_eq_container").class = 'hidden';
+                    break;
+            }
+
+    }
+}
+
 function toggleMolarEQ(xs_func_group) {
     console.log(xs_func_group);
 
@@ -219,11 +238,9 @@ function toggleMolarEQ(xs_func_group) {
     switch (current_state) {
         case 'neutral':
             let eq = document.getElementById("func" + xs_func_group + "_eq");
-            let f = createInputField(xs_func_group);
-            eq.append(f);
 
-            updated_state = "xs_" + xs_func_group;
-            document.getElementsByName("molar_eq")[0].id = updated_state;
+            button_name = "xs_" + xs_func_group;
+            document.getElementsByName(updated_state)[0].class = updated_state;
             console.log(document.getElementsByName("molar_eq")[0].id);
             break;
 
