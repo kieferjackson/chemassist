@@ -87,7 +87,7 @@ button {cursor: pointer;}
     outline: 2px solid #1968f1;
 }
 
-#active {
+.checked {
     background-color: #1968f1;
     outline: 2px solid #134fb6;
 }
@@ -120,13 +120,13 @@ button {cursor: pointer;}
     display: inline;
 }
 
-.neutral .square_button{
+.unselected .square_button{
     background-color: #fff;
     color:#1968f1;
     border: 1px solid #1968f1;
 }
 
-#xs_B .square_button, #xs_A .square_button{
+.selected .square_button{
     background-color: #1d7fff;
     color: #fff;
     border: 1px solid #1968f1;

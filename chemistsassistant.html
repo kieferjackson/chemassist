@@ -55,20 +55,20 @@
                 <section class="optional">
                     <div class="input_block">
                         <label for="molar_eq_check">Is either group in excess?</label>
-                        <button type="button" onclick="toggleCheckBox('molar_eq')" id="inactive" name="molar_eq_check" class="check_box"></button>
+                        <button type="button" onclick="toggleCheckBox('molar_eq')" name="molar_eq_check" class="check_box unchecked"></button>
                     </div>
                 </section>
                 <br>
                 <div id="molar_eq_container" class="hidden">
                     <div class="input_block">
-                        <div class="neutral" id="funcA_eq">
-                            <button type="button" name="xs_A" onclick="toggleMolarEQ('A')" class="input_field_float square_button">A</button>
+                        <div class="unselected" id="funcA_eq">
+                            <button type="button" name="xs_A" onclick="toggleMolarEQ('A')" class="square_button inactive_button">A</button>
                         </div>
-                        <div class="neutral" id="funcB_eq">
-                            <button type="button" name="xs_B" onclick="toggleMolarEQ('B')" class="input_field_float square_button">B</button>
+                        <div class="unselected" id="funcB_eq">
+                            <button type="button" name="xs_B" onclick="toggleMolarEQ('B')" class="square_button inactive_button">B</button>
                         </div>
                         <label for="func_xs">Molar Equivalents</label>
-                        <input type="text" name="func_xs" placeholder="1.1" id="funcA_num" class="input_field float">
+                        <input type="text" name="func_xs" placeholder="1.1" id="func_xs" class="input_field float">
                     </div>
                 </div>
                     

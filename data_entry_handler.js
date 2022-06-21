@@ -33,9 +33,24 @@ function getInputValues() {
         for (var i = 0 ; i < 2 ; i++) {
 
             var molar_eq_value;
+            const molar_eq_is_checked = document.getElementsByName("molar_eq_check")[0].classList[1] === 'checked';
 
-            if (document.getElementById("func" + funcID[i] + "_eq").childElementCount > 1) {
-                molar_eq_value = parseFloat(document.getElementById("molar_eq_input_field_" + funcID[i]).value);
+            if (molar_eq_is_checked) {
+                // Define parameters for A
+                const a_eq = document.getElementById("funcA_eq");
+                const a_status = a_eq.className;
+
+                // Define parameters for B
+                const b_eq = document.getElementById("funcB_eq");
+                const b_status = b_eq.className;
+
+                if (a_status === 'selected' && funcID[i] === 'A') {
+                    molar_eq_value = parseFloat(document.getElementById("func_xs").value);
+                } else if (b_status === 'selected' && funcID[i] === 'B') {
+                    molar_eq_value = parseFloat(document.getElementById("func_xs").value);
+                } else {
+                    molar_eq_value = 1.0;
+                }
             } else {
                 molar_eq_value = 1.0;
             }
@@ -49,6 +64,7 @@ function getInputValues() {
                 end: parseInt(inputs[3].value) + parseInt(inputs[5].value) * i,
                 unknown: null
             }; 
+            console.log(funcStats[i]);
         }
     
         generateForm();
@@ -188,6 +204,8 @@ function checkDataTypes(data_type, input_class) {
 
                 if (input_class === "dyn_input_field" && raw_float_data[i].value === '') {
                     floatAcceptable = true;
+                } else if (document.getElementsByName("molar_eq_check")[0].classList[1] === 'unchecked'){
+                    floatAcceptable = true;
                 } else if (raw_float_data[i].value <= 0) {
                     console.log("ERROR - Invalid data at checkDataTypes function (Float)\n\t*Values less than or equal to 0 are not accepted.");
                     floatAcceptable = false;
@@ -214,16 +232,24 @@ function checkDataTypes(data_type, input_class) {
 function toggleCheckBox(check_box_type) {
     switch(check_box_type) {
         case 'molar_eq':
-            var current_state = document.getElementsByName("molar_eq_check")[0].id;
+            // Selecting Check Box and Molar EQ Sections
+            const check_box = document.getElementsByName("molar_eq_check")[0];
+            const molar_eq_section = document.getElementById("molar_eq_container");
+
+            // Saving and Resetting Current State of Check Box
+            const current_state = check_box.classList[1];
+            check_box.classList.remove(current_state);
 
             switch(current_state) {
-                case 'inactive':
-                    document.getElementsByName("molar_eq_check")[0].id = 'active';
-                    document.getElementById("molar_eq_container").class = 'visible';
+                case 'unchecked':
+                    check_box.classList.add("checked");
+                    // The checkbox is checked, so the molar eq section should be visible
+                    molar_eq_section.className = 'visible';
                     break;
-                case 'active':
-                    document.getElementsByName("molar_eq_check")[0].id = 'inactive';
-                    document.getElementById("molar_eq_container").class = 'hidden';
+                case 'checked':
+                    check_box.classList.add("unchecked");
+                    // The checkbox is unchecked, so the molar eq section should be hidden
+                    molar_eq_section.className = 'hidden';
                     break;
             }
 
@@ -233,63 +259,49 @@ function toggleCheckBox(check_box_type) {
 function toggleMolarEQ(xs_func_group) {
     console.log(xs_func_group);
 
-    var current_state = document.getElementsByName("molar_eq")[0].id;
+    // Define parameters for A
+    const a_eq = document.getElementById("funcA_eq");
+    const a_status = a_eq.className;
 
-    switch (current_state) {
-        case 'neutral':
-            let eq = document.getElementById("func" + xs_func_group + "_eq");
+    // Define parameters for B
+    const b_eq = document.getElementById("funcB_eq");
+    const b_status = b_eq.className;
 
-            button_name = "xs_" + xs_func_group;
-            document.getElementsByName(updated_state)[0].class = updated_state;
-            console.log(document.getElementsByName("molar_eq")[0].id);
-            break;
+    switch (xs_func_group) {
+        case 'A':
+            //Toggle off B
+            b_eq.className = 'unselected';
 
-        case 'xs_A':
-            // Toggle A off
-            fieldToRemove = document.getElementById("molar_eq_input_field_A");
-            fieldToRemove.remove();
-
-            switch (xs_func_group) {
-                case 'A':
-                    // Update status
-                    document.getElementsByName("molar_eq")[0].id = 'neutral';
-
+            switch (a_status) {
+                case 'unselected':
+                    // Toggle off Molar EQ for B
+                    a_eq.className = 'selected';
                     break;
 
-                case 'B':
-                    let eq = document.getElementById("func" + xs_func_group + "_eq");
-                    let f = createInputField(xs_func_group);
-                    eq.append(f);
-
-                    updated_state = "xs_" + xs_func_group;
-                    document.getElementsByName("molar_eq")[0].id = updated_state;
-                    console.log(document.getElementsByName("molar_eq")[0].id);
+                case 'selected':
+                    // Toggle off Molar EQ for A
+                    a_eq.className = 'unselected';
                     break;
             }
+            
             break;
 
-        case 'xs_B':
-            // Toggle B off
-            fieldToRemove = document.getElementById("molar_eq_input_field_B");
-            fieldToRemove.remove();
-
-            switch (xs_func_group) {
-                case 'B':
-                    // Update status
-                    document.getElementsByName("molar_eq")[0].id = 'neutral';
-
+        case 'B':
+            //Toggle off A
+            a_eq.className = 'unselected';
+            
+            switch (b_status) {
+                case 'unselected':
+                    // Toggle off Molar EQ for B
+                    b_eq.className = 'selected';
                     break;
 
-                case 'A':
-                    let eq = document.getElementById("func" + xs_func_group + "_eq");
-                    let f = createInputField(xs_func_group);
-                    eq.append(f);
-
-                    updated_state = "xs_" + xs_func_group;
-                    document.getElementsByName("molar_eq")[0].id = updated_state;
-                    console.log(document.getElementsByName("molar_eq")[0].id);
+                case 'selected':
+                    // Toggle off Molar EQ for B
+                    b_eq.className = 'unselected';
                     break;
             }
+
             break;
     }
     
