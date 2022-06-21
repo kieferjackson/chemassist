@@ -29,8 +29,33 @@ body {
     padding: 10px;
 }
 
-.ag_box h1 {
+.dynamic_form {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
+.dyn_heading {
+    background: linear-gradient(225deg, #1d7fff 0%, rgb(79, 16, 250) 80%, rgb(93, 39, 219) 100%);
+    color: #fff;
+
+    padding: 5px;
+}
+
+.dynamic_form .ag_box {
+    margin-top: 20px;
+}
+
+.dynamic_form label {
+    margin-right: 5px;
+    margin-left: 5px;
+}
+
+.ag_box h1, .ag_box_dyn_heading h6 {
     color:#4d4d4d;
+}
+
+.final_results {
+    padding: 10px;
 }
 
 form {
