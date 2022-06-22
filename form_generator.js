@@ -31,37 +31,37 @@ function generateForm () {
         for (var q = 0 ; q < funcStats[i].num ; q++) {
             // Generating 
             h6 = document.createElement("h2");
-            h6.innerHTML = funcStats[i].name + " " + (q + 1) + " Monomer";
+            h6.innerHTML = `${funcStats[i].name} ${q + 1} Monomer`;
             h6.className = "ag_box_dyn_heading";
 
             // Generates label for Mass field
             var mass_label = document.createElement("label");
-            mass_label.setAttribute("for", "mass" + funcStats[i].name + "-" + (q + 1));
+            mass_label.setAttribute("for", `mass${funcStats[i].name}-${q + 1}`);
             mass_label.innerHTML = "Mass";
             // Generates form for entering mass
             var mass = document.createElement("input");
             mass.setAttribute("type", "text");
-            mass.setAttribute("name", "mass" + funcStats[i].name + "-" + (q + 1));
+            mass.setAttribute("name", `mass${funcStats[i].name}-${q + 1}`);
             mass.setAttribute("class", "dyn_input_field float");
 
             // Generates label for Percent field
             var percent_label = document.createElement("label");
-            percent_label.setAttribute("for", "percent" + funcStats[i].name + "-" + (q + 1));
+            percent_label.setAttribute("for", `percent${funcStats[i].name}-${q + 1}`);
             percent_label.innerHTML = "Percent";
             // Generates form for entering percent
             var percent = document.createElement("input");
             percent.setAttribute("type", "text");
-            percent.setAttribute("name", "percent" + funcStats[i].name + "-" + (q + 1));
+            percent.setAttribute("name", `percent${funcStats[i].name}-${q + 1}`);
             percent.setAttribute("class", "dyn_input_field float");
 
             // Generates label for Molar Mass field
             var molar_mass_label = document.createElement("label");
-            molar_mass_label.setAttribute("for", "molar_mass" + funcStats[i].name + "-" + (q + 1));
+            molar_mass_label.setAttribute("for", `molar_mass${funcStats[i].name}-${q + 1}`);
             molar_mass_label.innerHTML = "Molar Mass";
             // Generates form for entering molar mass
             var molar_mass = document.createElement("input");
             molar_mass.setAttribute("type", "text");
-            molar_mass.setAttribute("name", "molar_mass" + funcStats[i].name + "-" + (q + 1));
+            molar_mass.setAttribute("name", `molar_mass${funcStats[i].name}-${q + 1}`);
             molar_mass.setAttribute("class", "dyn_input_field float");
             molar_mass.required = true; // Molar mass MUST always be entered for all monomers.
 

@@ -15,6 +15,15 @@ monomerStats = [];
 funcID = ['A', 'B'];
 
 function getInputValues() {
+    // Check that Molar EQ section has all necessary input if the option is checked
+    const molar_eq_is_checked = document.getElementsByName("molar_eq_check")[0].classList[1] === 'checked';
+    const molar_eq_selected = document.getElementsByClassName("selected").length === 1;
+
+    if (molar_eq_is_checked && !molar_eq_selected) {
+        console.log("You must choose a excess functional group to proceed.");
+        return false;
+    }
+
     var inputs = document.getElementsByClassName("input_field");
 
     let stringAcceptable = checkDataTypes("string", "input_field");
@@ -33,7 +42,6 @@ function getInputValues() {
         for (var i = 0 ; i < 2 ; i++) {
 
             var molar_eq_value;
-            const molar_eq_is_checked = document.getElementsByName("molar_eq_check")[0].classList[1] === 'checked';
 
             if (molar_eq_is_checked) {
                 // Define parameters for A
@@ -196,15 +204,18 @@ function checkDataTypes(data_type, input_class) {
         case 'float':   // Float Checker
             console.log("checking float values...");
             let raw_float_data = document.getElementsByClassName(input_class + " float");
-            var floatAcceptable = true;
+            let molar_eq_is_unchecked = document.getElementsByName("molar_eq_check")[0].classList[1] === 'unchecked';
+            let xs_func_group_selected = document.getElementsByClassName("selected").length === 1;
 
+            var floatAcceptable = true;
+            
             var i = 0;
             if (raw_float_data.length > 0) while (floatAcceptable === true && i < raw_float_data.length) {
                 console.log(raw_float_data[i].value);
 
                 if (input_class === "dyn_input_field" && raw_float_data[i].value === '') {
                     floatAcceptable = true;
-                } else if (document.getElementsByName("molar_eq_check")[0].classList[1] === 'unchecked'){
+                } else if (input_class === "input_field" && molar_eq_is_unchecked && !xs_func_group_selected){
                     floatAcceptable = true;
                 } else if (raw_float_data[i].value <= 0) {
                     console.log("ERROR - Invalid data at checkDataTypes function (Float)\n\t*Values less than or equal to 0 are not accepted.");

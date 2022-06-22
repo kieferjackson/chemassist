@@ -159,6 +159,9 @@ button {cursor: pointer;}
 
 .submit_button {
     font-size: large;
+    color:#4d4d4d;
+    font-style: italic;
+    font-weight: bold;
 
     display: block;
     padding: 8px;
@@ -166,7 +169,6 @@ button {cursor: pointer;}
     margin: auto 10px 10px auto;
 
     background-color: yellow;
-    color:#4d4d4d;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
     border: unset;
     border-radius: 5px;
