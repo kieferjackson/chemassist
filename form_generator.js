@@ -30,7 +30,7 @@ function generateForm () {
         // Generate input fields for each monomer to enter mass and/or percent and molar mass. 
         for (var q = 0 ; q < funcStats[i].num ; q++) {
             // Generating 
-            h6 = document.createElement("h2");
+            h6 = document.createElement("h3");
             h6.innerHTML = `${funcStats[i].name} ${q + 1} Monomer`;
             h6.className = "ag_box_dyn_heading";
 
@@ -66,7 +66,6 @@ function generateForm () {
             molar_mass.required = true; // Molar mass MUST always be entered for all monomers.
 
             // Append input fields for comonomer to ag_box
-            ag_box.appendChild(br.cloneNode());
             ag_box.appendChild(h6);
             ag_box.appendChild(mass_label);
             ag_box.appendChild(mass);

@@ -17,80 +17,75 @@
 </head>
     
 <body>
-    <div class="main">
-        <div class="form_container">
-            <form id="initial_data_entry">
-                <section class="percent_type">
-                    <label for="wpercent">Weight %</label>
-                    <input type="radio" name="proportion" value="wpercent" id="wpercent" class="input_field string" checked>
-                    <label for="mpercent">Mole %</label>
-                    <input type="radio" name="proportion" value="mpercent" id="mpercent" class="input_field string">
-                </section>
-                <br>
-                <section class="ag_box">
-                    <h1>Functional Group A</h1>
-                    <div class="input_block">
-                        <label for="funcA_name">Substituent Name</label>
-                        <input type="text" name="funcA_name" placeholder="Functional Group A" id="funcA_name" class="input_field string">
-                    </div>
-                    <br>
-                    <div class="input_block">
-                        <label for="funcA_num">Number of Comonomers</label>
-                        <input type="text" name="funcA_num" placeholder="1" id="funcA_num" class="input_field int">
-                    </div>
-                    
-                    <br>
-                    <h1>Functional Group B</h1>
-                    <div class="input_block">
-                        <label for="funcA_name">Substituent Name</label>
-                        <input type="text" name="funcB_name" placeholder="Functional Group B" id="funcB_name" class="input_field string">
-                    </div>
-                    <br>
-                    <div class="input_block">
-                        <label for="funcA_num">Number of Comonomers</label>
-                        <input type="text" name="funcB_num" placeholder="2" id="funcB_num" class="input_field int">
-                    </div>
-                </section>
-                <br>
-                <section class="optional">
-                    <div class="input_block">
-                        <label for="molar_eq_check">Is either group in excess?</label>
-                        <button type="button" onclick="toggleCheckBox('molar_eq')" name="molar_eq_check" class="check_box unchecked"></button>
-                    </div>
-                </section>
-                <br>
-                <div id="molar_eq_container" class="hidden">
-                    <div class="input_block">
-                        <div class="unselected" id="funcA_eq">
-                            <button type="button" name="xs_A" onclick="toggleMolarEQ('A')" class="square_button inactive_button">A</button>
-                        </div>
-                        <div class="unselected" id="funcB_eq">
-                            <button type="button" name="xs_B" onclick="toggleMolarEQ('B')" class="square_button inactive_button">B</button>
-                        </div>
-                        <label for="func_xs">Molar Equivalents</label>
-                        <input type="text" name="func_xs" placeholder="1.1" id="func_xs" class="input_field float">
-                    </div>
+    <div class="form_container">
+        <form id="initial_data_entry">
+            <section class="percent_type">
+                <label for="wpercent">Weight %</label>
+                <input type="radio" name="proportion" value="wpercent" id="wpercent" class="input_field string" checked>
+                <label for="mpercent">Mole %</label>
+                <input type="radio" name="proportion" value="mpercent" id="mpercent" class="input_field string">
+            </section>
+            <section class="ag_box">
+                <h1>Functional Group A</h1>
+                <div class="input_block">
+                    <label for="funcA_name">Substituent Name</label>
+                    <input type="text" name="funcA_name" placeholder="Functional Group A" id="funcA_name" class="input_field string">
                 </div>
-                    
+                <br>
+                <div class="input_block">
+                    <label for="funcA_num">Number of Comonomers</label>
+                    <input type="text" name="funcA_num" placeholder="1" id="funcA_num" class="input_field int">
+                </div>
                 
-
-                <button type="button" onclick="getInputValues()" class="submit_button">Next</button>
-            </form>
-        </div>
+                <br>
+                <h1>Functional Group B</h1>
+                <div class="input_block">
+                    <label for="funcA_name">Substituent Name</label>
+                    <input type="text" name="funcB_name" placeholder="Functional Group B" id="funcB_name" class="input_field string">
+                </div>
+                <br>
+                <div class="input_block">
+                    <label for="funcA_num">Number of Comonomers</label>
+                    <input type="text" name="funcB_num" placeholder="2" id="funcB_num" class="input_field int">
+                </div>
+            </section>
+            <br>
+            <section class="optional">
+                <div class="input_block">
+                    <label for="molar_eq_check">Is either group in excess?</label>
+                    <button type="button" onclick="toggleCheckBox('molar_eq')" name="molar_eq_check" class="check_box unchecked"></button>
+                </div>
+            </section>
+            <br>
+            <div id="molar_eq_container" class="hidden">
+                <div class="input_block">
+                    <div class="unselected" id="funcA_eq">
+                        <button type="button" name="xs_A" onclick="toggleMolarEQ('A')" class="square_button inactive_button">A</button>
+                    </div>
+                    <div class="unselected" id="funcB_eq">
+                        <button type="button" name="xs_B" onclick="toggleMolarEQ('B')" class="square_button inactive_button">B</button>
+                    </div>
+                    <label for="func_xs">Molar Equivalents</label>
+                    <input type="text" name="func_xs" placeholder="1.1" id="func_xs" class="input_field float">
+                </div>
+            </div>
+                
+            <button type="button" onclick="getInputValues()" class="submit_button">Next</button>
+        </form>
     </div>
     
-    <div class="main">
-        <div class="form_container">
-            <h3 id="monomer_data_entry"></h3>
-            <div class="dynamic_form"></div>
-        </div>
+
+    <div class="form_container">
+        <h3 id="monomer_data_entry"></h3>
+        <div class="dynamic_form"></div>
     </div>
 
-    <div class="main">
-        <div class="form_container">
-            <div class="final_results"></div>
-        </div>
+
+
+    <div class="form_container">
+        <div class="final_results"></div>
     </div>
+
     
 
 </body>
