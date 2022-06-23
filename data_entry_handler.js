@@ -37,10 +37,14 @@ function getInputValues() {
     } else {
         console.log("inputsAcceptable: " + inputsAcceptable);
 
+        // Remove the previous forms generated if they exist
+        removeElement("dynamic_form", "_entry");
+        removeElement("final_results", "_results");
+
         funcStats = [];
     
         for (var i = 0 ; i < 2 ; i++) {
-
+            
             var molar_eq_value;
 
             if (molar_eq_is_checked) {
@@ -74,7 +78,8 @@ function getInputValues() {
             }; 
             console.log(funcStats[i]);
         }
-    
+
+        // Create the form and append to the page
         generateForm();
     }
 
@@ -353,6 +358,19 @@ function createInputField(xs_func_group) {
     field.setAttribute("class", "input_field float");
 
     return field;
+}
+
+function removeElement (element_class, element_type) {
+// Check if there are existing forms generated
+if (document.querySelector(`.${element_class}`).childElementCount > 0) {
+    // Select any dynamic forms that were previously generated
+    let form1 = document.getElementById(funcStats[0].name + element_type);
+    let form2 = document.getElementById(funcStats[1].name + element_type);
+    
+    // Remove previous forms to generate a new one
+    form1.remove();
+    form2.remove();
+}
 }
 
 function checkParity(var1, var2) {

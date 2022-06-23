@@ -17,6 +17,39 @@
 </head>
     
 <body>
+    <section class="welcome_banner">
+        <h1>Copoly-Calc</h1>
+        <p>
+            Welcome to Copoly-Calc!<br>
+            Copoly-Calc (name not final) is a work-in-progress web application designed to perform copolymerization reactions with minimal user input.<br>
+            'Minimal user input' requires that:
+        </p>
+
+        <h3>For both Functional Groups</h3>
+        <ol>
+            <li>A unique name must be given</li>
+            <li>Number of comonomers must be given</li>
+            <li>Molar mass for every comonomer must be given</li>
+            <li>For <em>n - 1</em> comonomers, mass/percent must be given</li>
+        </ol>
+
+        <h3>For Reference Group</h3>
+        <ol>
+            <li>At least one (1) mass must be given</li>
+            <li>The number of values given for mass and percent combined must be greater than or equal to <em>n</em></li>
+        </ol>
+
+        <h3>For Complimentary Group</h3>
+        <ol>
+            <li>The number of values given must be greater than or equal to <em>n - 1</em></li>
+        </ol>
+
+        <aside>
+            <em>n</em> - Number of comonomers given for an individual functional group.
+        </aside>
+        
+    </section>
+
     <div class="form_container">
         <form id="initial_data_entry">
             <section class="percent_type">
@@ -29,7 +62,7 @@
                 <h1>Functional Group A</h1>
                 <div class="input_block">
                     <label for="funcA_name">Substituent Name</label>
-                    <input type="text" name="funcA_name" placeholder="Functional Group A" id="funcA_name" class="input_field string">
+                    <input type="text" name="funcA_name" placeholder="e.g. 'diester'" id="funcA_name" class="input_field string">
                 </div>
                 <br>
                 <div class="input_block">
@@ -46,12 +79,12 @@
                 <br>
                 <h1>Functional Group B</h1>
                 <div class="input_block">
-                    <label for="funcA_name">Substituent Name</label>
-                    <input type="text" name="funcB_name" placeholder="Functional Group B" id="funcB_name" class="input_field string">
+                    <label for="funcB_name">Substituent Name</label>
+                    <input type="text" name="funcB_name" placeholder="e.g. 'diol'" id="funcB_name" class="input_field string">
                 </div>
                 <br>
                 <div class="input_block">
-                    <label for="funcA_num">Number of Comonomers</label>
+                    <label for="funcB_num">Number of Comonomers</label>
                     <input type="text" name="funcB_num" placeholder="2" id="funcB_num" class="input_field int">
                     <button type="button" name="minus" onclick="add_subtractField('funcB_num', 'subtract')" class="square_button plus_minus">
                         <div>-</div>
@@ -67,20 +100,20 @@
                     <label for="molar_eq_check">Is either group in excess?</label>
                     <button type="button" onclick="toggleCheckBox('molar_eq')" name="molar_eq_check" class="check_box unchecked"></button>
                 </div>
-            </section>
-            <br>
-            <div id="molar_eq_container" class="hidden">
-                <div class="input_block">
-                    <div class="unselected" id="funcA_eq">
-                        <button type="button" name="xs_A" onclick="toggleMolarEQ('A')" class="square_button inactive_button">A</button>
+                <br>
+                <div id="molar_eq_container" class="hidden">
+                    <div class="input_block">
+                        <div class="unselected" id="funcA_eq">
+                            <button type="button" name="xs_A" onclick="toggleMolarEQ('A')" class="square_button inactive_button">A</button>
+                        </div>
+                        <div class="unselected" id="funcB_eq">
+                            <button type="button" name="xs_B" onclick="toggleMolarEQ('B')" class="square_button inactive_button">B</button>
+                        </div>
+                        <label for="func_xs">Molar Equivalents</label>
+                        <input type="text" name="func_xs" placeholder="1.1" id="func_xs" class="input_field float">
                     </div>
-                    <div class="unselected" id="funcB_eq">
-                        <button type="button" name="xs_B" onclick="toggleMolarEQ('B')" class="square_button inactive_button">B</button>
-                    </div>
-                    <label for="func_xs">Molar Equivalents</label>
-                    <input type="text" name="func_xs" placeholder="1.1" id="func_xs" class="input_field float">
                 </div>
-            </div>
+            </section>
             
             <div class="submit_container">
                 <button type="button" onclick="getInputValues()" class="submit_button">Next</button>
@@ -93,8 +126,6 @@
         <div class="dynamic_form"></div>
     </div>
 
-
-
     <div class="form_container">
         <div class="final_results"></div>
     </div>
@@ -102,5 +133,14 @@
     
 
 </body>
+<!-- 
+    This website was designed by Kiefer Jackson. 
+    
+    Acknowledgments: 
+    James Brown for understanding the chemistry aspect of the program.
+    
+    Matt Hamada for overlooking code and offering feedback. 
 
+
+-->
 </html>

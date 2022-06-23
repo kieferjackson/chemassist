@@ -1,19 +1,10 @@
 
 function generateForm () {
-
-    // Check if there are existing forms generated
-    if (document.querySelector(".dynamic_form").childElementCount > 0) {
-        // Select any dynamic forms that were previously generated
-        let form1 = document.getElementById(funcStats[0].name + "_entry");
-        let form2 = document.getElementById(funcStats[1].name + "_entry");
-        // Remove previous forms to generate a new one
-        form1.remove();
-        form2.remove();
-    }
-    
     var br = document.createElement("br");
 
     for (var i = 0 ; i < 2 ; i++) {
+        let func_name = toUpperCase(funcStats[i].name);
+
         var form = document.createElement("form");
         form.setAttribute("name", funcStats[i].name + "_entry");    // Should declare a unique form name
         form.setAttribute("id", funcStats[i].name + "_entry");      // Unique id is generated from user inputted name
@@ -22,25 +13,25 @@ function generateForm () {
         ag_box.setAttribute("class", "ag_box");
 
         // Generate and append the heading for the whole functional group
-        let h2 = generateHeading("h2", funcStats[i].name, "dyn_heading", "Group");
+        let h2 = generateHeading("h2", func_name, "dyn_heading", "Group");
         form.append(h2);
         
         // Generate input fields for each monomer to enter mass and/or percent and molar mass. 
         for (var q = 0 ; q < funcStats[i].num ; q++) {
             // Generates the heading for each individual comonomer of their respective group
-            let h3 = generateHeading("h3", funcStats[i].name, "ag_box_dyn_heading", `${q + 1} Monomer`);
+            let h3 = generateHeading("h3", func_name, "ag_box_dyn_heading", `${q + 1} Monomer`);
 
             // Generates Mass field
-            let mass_label = generateLabel("Mass (g)", "mass", funcStats[i].name, q)
-            let mass = generateInputField("mass", funcStats[i].name, q);
+            let mass_label = generateLabel("Mass (g)", "mass", func_name, q)
+            let mass = generateInputField("mass", func_name, q);
 
             // Generates Percent field
-            let percent_label = generateLabel("Percent (%)", "percent", funcStats[i].name, q)
-            let percent = generateInputField("percent", funcStats[i].name, q);
+            let percent_label = generateLabel("Percent (%)", "percent", func_name, q)
+            let percent = generateInputField("percent", func_name, q);
 
             // Generates Molar Mass field
-            let molar_mass_label = generateLabel("Molar Mass (g/mol)", "molar_mass", funcStats[i].name, q)
-            let molar_mass = generateInputField("molar_mass", funcStats[i].name, q);
+            let molar_mass_label = generateLabel("Molar Mass (g/mol)", "molar_mass", func_name, q)
+            let molar_mass = generateInputField("molar_mass", func_name, q);
             molar_mass.required = true; // Molar mass MUST always be entered for all monomers.
 
             // Append heading and input fields for comonomer to ag_box

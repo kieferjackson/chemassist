@@ -17,6 +17,45 @@ body {
     display: contents;
 }
 
+.welcome_banner {
+    background-color: #fff;
+    box-shadow: 0px 1px 5px 0px rgba(131, 131, 131, 0.9);
+
+    margin: 1vh auto;
+
+    border-radius: 25px;
+    padding: 10px;
+    width: 50%;
+    max-width: fit-content;
+}
+
+.welcome_banner h1 {
+    text-align: center;
+    font-size: xx-large;
+    color: #1968f1;
+}
+
+.welcome_banner p {
+    background: linear-gradient(225deg, #1d7fff 0%, rgb(79, 16, 250) 80%, rgb(93, 39, 219) 100%);
+    color: #fff;
+    font-weight: bold;
+
+    padding: 10px;
+    width: 80%;
+    margin: 0 auto;
+}
+
+.welcome_banner em {
+    color: #1968f1;
+    font-weight: bold;
+}
+
+.welcome_banner aside {
+    border-radius: 15px;
+    background: linear-gradient(225deg, #fff 0%, #efefefff 80%, #f3f3f3ff 100%);
+    padding: 10px;
+}
+
 /* ---General Form Styling - shared between multiple elements--- */
 .form_container {
     background-color: #fff;
@@ -83,6 +122,10 @@ input:focus {
 
 #wpercent, #mpercent {
     outline: unset;
+}
+
+.optional {
+    margin: 0 auto 0 10px;
 }
 
 #funcA_eq, #funcB_eq {
@@ -192,11 +235,15 @@ button {cursor: pointer;}
     font-weight: bold;
 
     display: block;
-    padding: 8px;
+    padding: 8px 16px;
     margin: auto 0px 0px auto;
 
     background-color: yellow;
-    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.10);
     border: unset;
     border-radius: 5px;
+}
+
+.submit_button:hover {
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }

@@ -123,6 +123,9 @@ function startDataSorting() {
     console.log("Finished Calculations for Complimentary Group Yielded:");
     console.log(monomerStats);
 
+    // Remove the previous results generated if they exist
+    removeElement("final_results", "_results");
+
     displayFinalResults();
 }
 
