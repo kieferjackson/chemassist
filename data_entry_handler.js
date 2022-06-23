@@ -240,6 +240,34 @@ function checkDataTypes(data_type, input_class) {
     return false;
 }
 
+function add_subtractField (field_id, add_or_subtract) {
+    let field = document.getElementById(field_id);
+    current_value = field.value;
+    
+    if (current_value === '' || current_value <= 0) {
+        field.value = 1;
+        
+    } else if (current_value > 0) {
+        switch (add_or_subtract) {
+            case 'add':
+                field.value++;
+                
+                break;
+            case 'subtract':
+
+                if (current_value > 1) {
+                    field.value--;
+                } else {
+                    console.log("Your input will not be decremented because it is not allowed to be zero.")
+                }
+                
+                break;
+        }
+    } else {
+        field.value = 1;
+    }
+}
+
 function toggleCheckBox(check_box_type) {
     switch(check_box_type) {
         case 'molar_eq':

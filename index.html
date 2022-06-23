@@ -35,6 +35,12 @@
                 <div class="input_block">
                     <label for="funcA_num">Number of Comonomers</label>
                     <input type="text" name="funcA_num" placeholder="1" id="funcA_num" class="input_field int">
+                    <button type="button" name="minus" onclick="add_subtractField('funcA_num', 'subtract')" class="square_button plus_minus">
+                        <div>-</div>
+                    </button>
+                    <button type="button" name="plus" onclick="add_subtractField('funcA_num', 'add')" class="square_button plus_minus">
+                        <div>+</div>
+                    </button>
                 </div>
                 
                 <br>
@@ -47,6 +53,12 @@
                 <div class="input_block">
                     <label for="funcA_num">Number of Comonomers</label>
                     <input type="text" name="funcB_num" placeholder="2" id="funcB_num" class="input_field int">
+                    <button type="button" name="minus" onclick="add_subtractField('funcB_num', 'subtract')" class="square_button plus_minus">
+                        <div>-</div>
+                    </button>
+                    <button type="button" name="plus" onclick="add_subtractField('funcB_num', 'add')" class="square_button plus_minus">
+                        <div>+</div>
+                    </button>
                 </div>
             </section>
             <br>
@@ -69,14 +81,15 @@
                     <input type="text" name="func_xs" placeholder="1.1" id="func_xs" class="input_field float">
                 </div>
             </div>
-                
-            <button type="button" onclick="getInputValues()" class="submit_button">Next</button>
+            
+            <div class="submit_container">
+                <button type="button" onclick="getInputValues()" class="submit_button">Next</button>
+            </div>
         </form>
     </div>
     
 
     <div class="form_container">
-        <h3 id="monomer_data_entry"></h3>
         <div class="dynamic_form"></div>
     </div>
 

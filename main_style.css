@@ -20,9 +20,10 @@ body {
 /* ---General Form Styling - shared between multiple elements--- */
 .form_container {
     background-color: #fff;
-    margin: 0 auto;
+    margin: 2vh auto;
     width: 40%;
     min-width: fit-content;
+    /* max-width: max-content; */
 
     box-shadow: 0px 1px 5px 0px rgba(131, 131, 131, 0.9);
 }
@@ -71,9 +72,9 @@ input:focus {
 }
 
 /* ---Initial Data Entry Styling--- */
-#initial_data_entry {
+/* #initial_data_entry {
     padding-bottom: 10px;
-}
+} */
 
 .percent_type {
     font-size: 1.5rem;
@@ -89,10 +90,10 @@ input:focus {
 }
 
 /* ---Monomer (Dynamic) Data Entry Styling--- */
-.dynamic_form {
+/* .dynamic_form {
     padding-top: 10px;
     padding-bottom: 10px;
-}
+} */
 
 .dyn_heading {
     background: linear-gradient(225deg, #1d7fff 0%, rgb(79, 16, 250) 80%, rgb(93, 39, 219) 100%);
@@ -108,8 +109,22 @@ input:focus {
 }
 
 /* ---Final Results Styling--- */
-.final_results {
-    padding: 10px;
+.final_results .group_heading {
+    background: linear-gradient(225deg, #42474d 0%, rgb(35, 22, 71) 80%, rgb(19, 6, 49) 100%);
+    color: #fff;
+
+    margin-bottom: 0;
+    padding: 16px;
+}
+
+.display_box {
+    background-color: #fff;
+    padding: 5px;
+    border-radius: 5px;
+}
+
+.results_label {
+    font-weight: bold;
 }
 
 /* ---Button Styling--- */
@@ -138,7 +153,7 @@ button {cursor: pointer;}
 
 /* Square Button Styling - Excess functional group selectors and increment/decrement buttons */
 .square_button {
-    display: block;
+    display:inline;
     border-radius: 5px;
 
     font-weight: bold;
@@ -148,19 +163,28 @@ button {cursor: pointer;}
     padding: 8px;
 }
 
-.unselected .square_button{
+.unselected .square_button, .square_button.plus_minus {
     background-color: #fff;
     color:#1968f1;
     border: 1px solid #1968f1;
 }
 
-.selected .square_button{
+.square_button.plus_minus {
+    padding: 0;
+    font-size: large;
+}
+
+.selected .square_button {
     background-color: #1d7fff;
     color: #fff;
     border: 1px solid #1968f1;
 }
 
 /* Submit Button Styling */
+.submit_container {
+    padding: 10px;
+}
+
 .submit_button {
     font-size: large;
     color:#4d4d4d;
@@ -169,7 +193,7 @@ button {cursor: pointer;}
 
     display: block;
     padding: 8px;
-    margin: auto 10px 5px auto;
+    margin: auto 0px 0px auto;
 
     background-color: yellow;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);

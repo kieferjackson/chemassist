@@ -18,55 +18,33 @@ function generateForm () {
         form.setAttribute("name", funcStats[i].name + "_entry");    // Should declare a unique form name
         form.setAttribute("id", funcStats[i].name + "_entry");      // Unique id is generated from user inputted name
 
-        var ag_box = document.createElement("section");
+        let ag_box = document.createElement("section");
         ag_box.setAttribute("class", "ag_box");
 
-        h2 = document.createElement("h2");
-        h2.innerHTML = funcStats[i].name;
-        h2.className = "dyn_heading";
+        // Generate and append the heading for the whole functional group
+        let h2 = generateHeading("h2", funcStats[i].name, "dyn_heading", "Group");
         form.append(h2);
-        // ag_box.append(h2);
         
         // Generate input fields for each monomer to enter mass and/or percent and molar mass. 
         for (var q = 0 ; q < funcStats[i].num ; q++) {
-            // Generating 
-            h6 = document.createElement("h3");
-            h6.innerHTML = `${funcStats[i].name} ${q + 1} Monomer`;
-            h6.className = "ag_box_dyn_heading";
+            // Generates the heading for each individual comonomer of their respective group
+            let h3 = generateHeading("h3", funcStats[i].name, "ag_box_dyn_heading", `${q + 1} Monomer`);
 
-            // Generates label for Mass field
-            var mass_label = document.createElement("label");
-            mass_label.setAttribute("for", `mass${funcStats[i].name}-${q + 1}`);
-            mass_label.innerHTML = "Mass";
-            // Generates form for entering mass
-            var mass = document.createElement("input");
-            mass.setAttribute("type", "text");
-            mass.setAttribute("name", `mass${funcStats[i].name}-${q + 1}`);
-            mass.setAttribute("class", "dyn_input_field float");
+            // Generates Mass field
+            let mass_label = generateLabel("Mass (g)", "mass", funcStats[i].name, q)
+            let mass = generateInputField("mass", funcStats[i].name, q);
 
-            // Generates label for Percent field
-            var percent_label = document.createElement("label");
-            percent_label.setAttribute("for", `percent${funcStats[i].name}-${q + 1}`);
-            percent_label.innerHTML = "Percent";
-            // Generates form for entering percent
-            var percent = document.createElement("input");
-            percent.setAttribute("type", "text");
-            percent.setAttribute("name", `percent${funcStats[i].name}-${q + 1}`);
-            percent.setAttribute("class", "dyn_input_field float");
+            // Generates Percent field
+            let percent_label = generateLabel("Percent (%)", "percent", funcStats[i].name, q)
+            let percent = generateInputField("percent", funcStats[i].name, q);
 
-            // Generates label for Molar Mass field
-            var molar_mass_label = document.createElement("label");
-            molar_mass_label.setAttribute("for", `molar_mass${funcStats[i].name}-${q + 1}`);
-            molar_mass_label.innerHTML = "Molar Mass";
-            // Generates form for entering molar mass
-            var molar_mass = document.createElement("input");
-            molar_mass.setAttribute("type", "text");
-            molar_mass.setAttribute("name", `molar_mass${funcStats[i].name}-${q + 1}`);
-            molar_mass.setAttribute("class", "dyn_input_field float");
+            // Generates Molar Mass field
+            let molar_mass_label = generateLabel("Molar Mass (g/mol)", "molar_mass", funcStats[i].name, q)
+            let molar_mass = generateInputField("molar_mass", funcStats[i].name, q);
             molar_mass.required = true; // Molar mass MUST always be entered for all monomers.
 
-            // Append input fields for comonomer to ag_box
-            ag_box.appendChild(h6);
+            // Append heading and input fields for comonomer to ag_box
+            ag_box.appendChild(h3);
             ag_box.appendChild(mass_label);
             ag_box.appendChild(mass);
             ag_box.appendChild(percent_label);
@@ -77,18 +55,54 @@ function generateForm () {
         }
         // Append finished ag_box to form (this operation will be completed twice. One ag_box for each functional group)
         form.append(ag_box);
+
         // Set the anchor point for the new form
-        var form_attachment = document.querySelector(".dynamic_form");
+        let form_attachment = document.querySelector(".dynamic_form");
+
         // Attach the form to the anchor element
         form_attachment.append(form);
     }
     // Generate the form submission button
-    var s = document.createElement("button");
+    let s = document.createElement("button");
     s.setAttribute("type", "button");
     s.setAttribute("onclick", "getDynamicFormData()");
     s.setAttribute("class", "submit_button");
     s.textContent = "Next";
 
-    form.appendChild(s);
+    // Generate submission button container
+    let c = document.createElement("div");
+    c.setAttribute("class", "submit_container");
+    // Append Submit button to its container
+    c.appendChild(s);
 
+    form.appendChild(c);
+
+}
+
+function generateHeading (heading_type, func_name, class_name, plurality) {
+    // Generates heading for dynamic form section
+    h = document.createElement(heading_type);
+    h.innerHTML = `${func_name} ${plurality}`; // NOTE: plurality signifies whether or not the heading is for an individual monomer or the group
+    h.className = class_name;
+
+    return h;
+}
+
+function generateLabel (display_text, input_type, func_name, q) {
+    // Generates label for Input field
+    var label = document.createElement("label");
+    label.setAttribute("for", `${input_type}${func_name}-${q + 1}`);
+    label.innerHTML = display_text;
+
+    return label;
+}
+
+function generateInputField (input_type, func_name, q) {
+    // Generates form for entering input type's data (mass, percent, or molar mass)
+    var field = document.createElement("input");
+    field.setAttribute("type", "text");
+    field.setAttribute("name", `${input_type}${func_name}-${q + 1}`);
+    field.setAttribute("class", "dyn_input_field float");
+
+    return field;
 }
