@@ -247,3 +247,68 @@ button {cursor: pointer;}
 .submit_button:hover {
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
 }
+
+/***********************************************************************************************************************/
+
+/* ---Mobile styling (phones, tablets)--- */
+@media screen
+and (min-device-width: 320px)
+and (max-device-width: 960px)
+and (-webkit-min-device-pixel-ratio: 2) {
+    * {
+        font-size: 2vh;
+    }
+
+    .welcome_banner p, 
+    .welcome_banner li, 
+    .welcome_banner em, 
+    .welcome_banner aside {
+        font-size: 12px;
+        padding: 10px;
+    }
+
+    .form_container, .welcome_banner {
+        width: 90%;
+    }
+
+    .percent_type label {
+        font-size: 3vh;
+    }
+
+    .input_block {
+        margin: 0 auto;
+    }
+
+    .input_block input {
+        margin: 0;
+        display: block;
+    }
+
+    .dynamic_form label,
+    .dynamic_form input {
+        display: block;
+    }
+
+    .dynamic_form label, .dynamic_form h3 {
+        text-align: center;
+    }
+
+    .square_button {
+        width: 3vh;
+        height: 3vh;
+    }
+
+    .check_box {
+        width: 3vh;
+        height: 3vh;
+    }
+
+    .submit_button {
+        font-size: 2vh;
+    
+        /* display: block;
+        padding: 8px 16px;
+        margin: auto 0px 0px auto; */
+    }
+
+}
