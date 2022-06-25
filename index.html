@@ -24,30 +24,30 @@
             Copoly-Calc (name not final) is a work-in-progress web application designed to perform copolymerization reactions with minimal user input.<br>
             'Minimal user input' requires that:
         </p>
-
-        <h3>For both Functional Groups</h3>
-        <ol>
-            <li>A unique name must be given</li>
-            <li>Number of comonomers must be given</li>
-            <li>Molar mass for every comonomer must be given</li>
-            <li>For <em>n - 1</em> comonomers, mass/percent must be given</li>
-        </ol>
-
-        <h3>For Reference Group</h3>
-        <ol>
-            <li>At least one (1) mass must be given</li>
-            <li>The number of values given for mass and percent combined must be greater than or equal to <em>n</em></li>
-        </ol>
-
-        <h3>For Complimentary Group</h3>
-        <ol>
-            <li>The number of values given must be greater than or equal to <em>n - 1</em></li>
-        </ol>
-
-        <aside>
-            <em>n</em> - Number of comonomers given for an individual functional group.
-        </aside>
-        
+        <section class="explanation">
+            <h3>For both Functional Groups</h3>
+            <ol>
+                <li>A unique name must be given</li>
+                <li>Number of comonomers must be given</li>
+                <li>Molar mass for every comonomer must be given</li>
+                <li>For <em>n - 1</em> comonomers, mass/percent must be given</li>
+            </ol>
+    
+            <h3>For Reference Group</h3>
+            <ol>
+                <li>At least one (1) mass must be given</li>
+                <li>The number of values given for mass and percent combined must be greater than or equal to <em>n</em></li>
+            </ol>
+    
+            <h3>For Complimentary Group</h3>
+            <ol>
+                <li>The number of values given must be greater than or equal to <em>n - 1</em></li>
+            </ol>
+    
+            <aside>
+                <em>n</em> - Number of comonomers given for an individual functional group.
+            </aside>
+        </section>
     </section>
 
     <div class="form_container">
@@ -68,10 +68,18 @@
                 <div class="input_block">
                     <label for="funcA_num">Number of Comonomers</label>
                     <input type="text" name="funcA_num" placeholder="1" id="funcA_num" class="input_field int">
-                    <button type="button" name="minus" onclick="add_subtractField('funcA_num', 'subtract')" class="square_button plus_minus">
+                    <button 
+                        type="button" name="minus" 
+                        onclick="add_subtractField('funcA_num', 'subtract')" 
+                        class="square_button plus_minus" tabindex="-1"
+                    >
                         <div>-</div>
                     </button>
-                    <button type="button" name="plus" onclick="add_subtractField('funcA_num', 'add')" class="square_button plus_minus">
+                    <button 
+                        type="button" name="plus" 
+                        onclick="add_subtractField('funcA_num', 'add')" 
+                        class="square_button plus_minus" tabindex="-1"
+                    >
                         <div>+</div>
                     </button>
                 </div>
@@ -86,10 +94,18 @@
                 <div class="input_block">
                     <label for="funcB_num">Number of Comonomers</label>
                     <input type="text" name="funcB_num" placeholder="2" id="funcB_num" class="input_field int">
-                    <button type="button" name="minus" onclick="add_subtractField('funcB_num', 'subtract')" class="square_button plus_minus">
+                    <button 
+                        type="button" name="minus" 
+                        onclick="add_subtractField('funcB_num', 'subtract')" 
+                        class="square_button plus_minus" tabindex="-1"
+                    >
                         <div>-</div>
                     </button>
-                    <button type="button" name="plus" onclick="add_subtractField('funcB_num', 'add')" class="square_button plus_minus">
+                    <button 
+                        type="button" name="plus" 
+                        onclick="add_subtractField('funcB_num', 'add')" 
+                        class="square_button plus_minus" tabindex="-1"
+                    >
                         <div>+</div>
                     </button>
                 </div>
@@ -98,7 +114,11 @@
             <section class="optional">
                 <div class="input_block">
                     <label for="molar_eq_check">Is either group in excess?</label>
-                    <button type="button" onclick="toggleCheckBox('molar_eq')" name="molar_eq_check" class="check_box unchecked"></button>
+                    <button 
+                        type="button" name="molar_eq_check" 
+                        onclick="toggleCheckBox('molar_eq')" 
+                        class="check_box unchecked" tabindex="-1"
+                    ></button>
                 </div>
                 <br>
                 <div id="molar_eq_container" class="hidden">
@@ -140,7 +160,5 @@
     James Brown for understanding the chemistry aspect of the program.
     
     Matt Hamada for overlooking code and offering feedback. 
-
-
 -->
 </html>

@@ -18,13 +18,26 @@ function displayFinalResults() {
 
         let ag_box = document.createElement("section");
         ag_box.setAttribute("class", "ag_box");
+        
+        var wpercent_sum = sumMonomerStat(i, "wpercent");
+        var mpercent_sum = sumMonomerStat(i, "mpercent");
 
+        let wpercentsOK = wpercent_sum > 99.9999 && wpercent_sum < 100.0001;
+        let mpercentsOK = mpercent_sum > 99.9999 && mpercent_sum < 100.0001;
+        
         var h2;
-        var percentsOK = sumMonomerStat(i, "wpercent") === 100 && sumMonomerStat(i, "mpercent") === 100;
 
-        if (percentsOK) {
+        if (wpercentsOK && mpercentsOK) {
             h2 = generateHeading("h2", func_name, "group_heading", "Results")
             console.log("Percent values are OK!");
+        } else if (wpercentsOK) {
+            h2 = generateHeading("h2", func_name, "group_heading", "Results | Bad Weight Percent(s)");
+            console.log("Something is wrong with the given or calculated weight percent values.");
+            h2.style.color = 'red';
+        } else if (mpercentsOK) {
+            h2 = generateHeading("h2", func_name, "group_heading", "Results | Bad Moles Percent(s)");
+            console.log("Something is wrong with the given or calculated mole percent values.");
+            h2.style.color = 'red';
         } else {
             h2 = generateHeading("h2", func_name, "group_heading", "Results | Bad Percent Values?");
             console.log("Something is wrong with the given or calculated percent values.");
