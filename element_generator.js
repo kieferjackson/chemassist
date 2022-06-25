@@ -30,11 +30,11 @@ function displayFinalResults() {
         if (wpercentsOK && mpercentsOK) {
             h2 = generateHeading("h2", func_name, "group_heading", "Results")
             console.log("Percent values are OK!");
-        } else if (wpercentsOK) {
+        } else if (!wpercentsOK) {
             h2 = generateHeading("h2", func_name, "group_heading", "Results | Bad Weight Percent(s)");
             console.log("Something is wrong with the given or calculated weight percent values.");
             h2.style.color = 'red';
-        } else if (mpercentsOK) {
+        } else if (!mpercentsOK) {
             h2 = generateHeading("h2", func_name, "group_heading", "Results | Bad Moles Percent(s)");
             console.log("Something is wrong with the given or calculated mole percent values.");
             h2.style.color = 'red';
@@ -46,8 +46,8 @@ function displayFinalResults() {
 
         funcDisplay.append(h2);
 
-        for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
-            let h3 = generateHeading("h3", func_name, "ag_box_dyn_heading", `${q + 1} Monomer:`);
+        for (var q = funcStats[i].start, monomer_num = 1 ; q < funcStats[i].end ; q++, monomer_num++) {
+            let h3 = generateHeading("h3", func_name, "ag_box_dyn_heading", `${monomer_num} Monomer:`);
             ag_box.appendChild(h3);
 
             // Create a box to display the calculated values
