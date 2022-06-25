@@ -9,7 +9,7 @@ This project stems from a previous, unfinished program developed by me (Kiefer J
  
     (3) - Implement a real-time 'data-processing' that dynamically determines the validity of a user's inputs
     
-Once all of these goals have been completed, potential additions could be the ability of save reaction conditions (e.g. number of monomers, name of functional groups, etc) for future use, in addition to supplemental analytical tools for copolymer and homopolymer synthesis.
+Once all of these goals have been completed, potential additions could be the ability to save reaction conditions (e.g. number of monomers, name of functional groups, etc) for future use, in addition to supplemental analytical tools for copolymer and homopolymer synthesis.
 
 *Acknowledgments:*
 
