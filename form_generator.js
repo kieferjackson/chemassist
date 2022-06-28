@@ -26,13 +26,49 @@ function generateForm () {
             let mass = generateInputField("mass", func_name, q);
 
             // Generates Percent field
-            let percent_label = generateLabel("Percent (%)", "percent", func_name, q)
+            let percent_label;
+            switch (funcStats[i].percent_type) {
+                case 'weight':
+                    percent_label = generateLabel("Weight Percent (%)", "percent", func_name, q);
+                    break;
+                case 'mole':
+                    percent_label = generateLabel("Mole Percent (%)", "percent", func_name, q);
+                    break;
+            }
+            
             let percent = generateInputField("percent", func_name, q);
 
             // Generates Molar Mass field
             let molar_mass_label = generateLabel("Molar Mass (g/mol)", "molar_mass", func_name, q)
             let molar_mass = generateInputField("molar_mass", func_name, q);
             molar_mass.required = true; // Molar mass MUST always be entered for all monomers.
+
+            // Check if there is previous input, set the newly generated fields with these values if so
+            if (previous_A_inputs.length > 0 || previous_B_inputs.length > 0) {
+                switch(funcID[i]) {
+                    case 'A':
+                        if (previous_A_inputs[q * 3] != undefined) {
+                            mass.value = previous_A_inputs[q * 3];
+                            percent.value = previous_A_inputs[1 + (q * 3)];
+                            molar_mass.value = previous_A_inputs[2 + (q * 3)];
+                        } else {
+                            mass.value = percent.value = molar_mass.value = '';
+                        }
+                        
+                        break
+
+                    case 'B':
+                        if (previous_B_inputs[q * 3] != undefined) {
+                            mass.value = previous_B_inputs[q * 3];
+                            percent.value = previous_B_inputs[1 + (q * 3)];
+                            molar_mass.value = previous_B_inputs[2 + (q * 3)];
+                        } else {
+                            mass.value = percent.value = molar_mass.value = '';
+                        }
+                        
+                        break;
+                }
+            }
 
             // Append heading and input fields for comonomer to ag_box
             ag_box.appendChild(h3);

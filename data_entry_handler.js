@@ -14,6 +14,9 @@ monomerStats = [];
 
 funcID = ['A', 'B'];
 
+previous_A_inputs = [];
+previous_B_inputs = [];
+
 function getInputValues() {
     // Check that Molar EQ section has all necessary input if the option is checked
     const molar_eq_is_checked = document.getElementsByName("molar_eq_check")[0].classList[1] === 'checked';
@@ -28,7 +31,15 @@ function getInputValues() {
 
     let stringAcceptable = checkDataTypes("string", "input_field");
     let intAcceptable = checkDataTypes("int", "input_field");
-    let floatAcceptable = checkDataTypes("float", "input_field");
+    // If no groups are in excess, then the float should not be checked and should be considered acceptable
+    let floatAcceptable;
+    if (molar_eq_is_checked) {
+        // Excess groups selected, therefore check float fields
+        floatAcceptable = checkDataTypes("float", "input_field"); 
+    } else {
+        // No excess groups selected, therefore do not check float fields
+        floatAcceptable = true;
+    }
 
     let inputsAcceptable = stringAcceptable && intAcceptable && floatAcceptable;
 
@@ -36,6 +47,9 @@ function getInputValues() {
         console.log("inputsAcceptable: " + inputsAcceptable);
     } else {
         console.log("inputsAcceptable: " + inputsAcceptable);
+
+        // Save previously entered values
+        savePreviousValues("dyn_input_field");
 
         // Remove the previous forms generated if they exist
         removeElement("dynamic_form", "_entry");
@@ -209,8 +223,6 @@ function checkDataTypes(data_type, input_class) {
         case 'float':   // Float Checker
             console.log("checking float values...");
             let raw_float_data = document.getElementsByClassName(input_class + " float");
-            let molar_eq_is_unchecked = document.getElementsByName("molar_eq_check")[0].classList[1] === 'unchecked';
-            let xs_func_group_selected = document.getElementsByClassName("selected").length === 1;
 
             var floatAcceptable = true;
             
@@ -219,8 +231,6 @@ function checkDataTypes(data_type, input_class) {
                 console.log(raw_float_data[i].value);
 
                 if (input_class === "dyn_input_field" && raw_float_data[i].value === '') {
-                    floatAcceptable = true;
-                } else if (input_class === "input_field" && molar_eq_is_unchecked && !xs_func_group_selected){
                     floatAcceptable = true;
                 } else if (raw_float_data[i].value <= 0) {
                     console.log("ERROR - Invalid data at checkDataTypes function (Float)\n\t*Values less than or equal to 0 are not accepted.");
@@ -360,17 +370,39 @@ function createInputField(xs_func_group) {
     return field;
 }
 
-function removeElement (element_class, element_type) {
-// Check if there are existing forms generated
-if (document.querySelector(`.${element_class}`).childElementCount > 0) {
-    // Select any dynamic forms that were previously generated
-    let form1 = document.getElementById(funcStats[0].name + element_type);
-    let form2 = document.getElementById(funcStats[1].name + element_type);
-    
-    // Remove previous forms to generate a new one
-    form1.remove();
-    form2.remove();
+function savePreviousValues(element_class) {
+    if (document.querySelectorAll(`.${element_class}`).length > 0) {
+        // Clear previous inputs
+        previous_A_inputs = [];
+        previous_B_inputs = [];
+
+        // Select any dynamic forms that were previously generated
+        A_fields = document.getElementsByName(`${funcStats[0].name}_entry`)[0];
+        B_fields = document.getElementsByName(`${funcStats[1].name}_entry`)[0];
+
+        // Get current values for A form
+        for (var i = 0 ; i < A_fields.length ; i++) {
+            previous_A_inputs[i] = A_fields[i].value;
+        }
+
+        // Get current values for B form
+        for (var i = 0 ; i < B_fields.length ; i++) {
+            previous_B_inputs[i] = B_fields[i].value;
+        }
+    }
 }
+
+function removeElement (element_class, element_type) {
+    // Check if there are existing forms generated
+    if (document.querySelector(`.${element_class}`).childElementCount > 0) {
+        // Select any dynamic forms that were previously generated
+        let form1 = document.getElementById(funcStats[0].name + element_type);
+        let form2 = document.getElementById(funcStats[1].name + element_type);
+        
+        // Remove previous forms to generate a new one
+        form1.remove();
+        form2.remove();
+    }
 }
 
 function checkParity(var1, var2) {

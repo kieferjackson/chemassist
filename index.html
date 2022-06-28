@@ -21,7 +21,7 @@
         <h1>Copoly-Calc</h1>
         <p>
             Welcome to Copoly-Calc!<br>
-            Copoly-Calc (name not final) is a work-in-progress web application designed to perform copolymerization reactions with minimal user input.<br>
+            Copoly-Calc (name not final) is a work-in-progress web application designed to perform copolymerization calculations with minimal user input.<br>
             'Minimal user input' requires that:
         </p>
         <section class="explanation">
@@ -67,7 +67,7 @@
                 <br>
                 <div class="input_block">
                     <label for="funcA_num">Number of Comonomers</label>
-                    <input type="text" name="funcA_num" placeholder="1" id="funcA_num" class="input_field int">
+                    <input type="text" name="funcA_num" placeholder="e.g. '1'" id="funcA_num" class="input_field int">
                     <button 
                         type="button" name="minus" 
                         onclick="add_subtractField('funcA_num', 'subtract')" 
@@ -93,7 +93,7 @@
                 <br>
                 <div class="input_block">
                     <label for="funcB_num">Number of Comonomers</label>
-                    <input type="text" name="funcB_num" placeholder="2" id="funcB_num" class="input_field int">
+                    <input type="text" name="funcB_num" placeholder="e.g. '2'" id="funcB_num" class="input_field int">
                     <button 
                         type="button" name="minus" 
                         onclick="add_subtractField('funcB_num', 'subtract')" 
@@ -130,7 +130,7 @@
                             <button type="button" name="xs_B" onclick="toggleMolarEQ('B')" class="square_button inactive_button">B</button>
                         </div>
                         <label for="func_xs">Molar Equivalents</label>
-                        <input type="text" name="func_xs" placeholder="1.1" id="func_xs" class="input_field float">
+                        <input type="text" name="func_xs" placeholder="e.g. '1.1'" id="func_xs" class="input_field float">
                     </div>
                 </div>
             </section>
