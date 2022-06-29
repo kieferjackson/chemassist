@@ -30,6 +30,7 @@ function startDataSorting() {
                 monomerStatCount[i].percent += 1;
             }
 
+            // Zipper Route - Requires that the number of comonomers is greater than or equal to 2 and that every comonomer either has only mass or percent known (one unknown is allowed)
             if (funcStats[i].num >= 2) {
                 switch (funcStats[i].percent_type) {
                     // Increment Zipper Method if Mass is known but Weight Percent is unknown, and vice-versa
@@ -48,7 +49,7 @@ function startDataSorting() {
                 }
             }
 
-            // Set Tetris Method values if conditions are met
+            // Tetris Route - Requires a reference comonomer with both mass and percent known
             if (monomerStatCount[i].tts_refFound === false && monomerStats[q].mass != 0 && (monomerStats[q].wpercent != 0 || monomerStats[q].mpercent != 0)) {
                 monomerStatCount[i].tts_ref = q;
                 monomerStatCount[i].tts_refFound = true;
@@ -124,7 +125,7 @@ function startDataSorting() {
     console.log(monomerStats);
 
     // Remove the previous results generated if they exist
-    removeElement("final_results", "_results");
+    removeElement("final_results", "_results", false);
 
     displayFinalResults();
 }

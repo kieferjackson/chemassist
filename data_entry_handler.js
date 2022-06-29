@@ -18,67 +18,78 @@ previous_A_inputs = [];
 previous_B_inputs = [];
 
 function getInputValues() {
-    // Check that Molar EQ section has all necessary input if the option is checked
-    const molar_eq_is_checked = document.getElementsByName("molar_eq_check")[0].classList[1] === 'checked';
-    const molar_eq_selected = document.getElementsByClassName("selected").length === 1;
+    /*  
+     *  Set Molar EQ section options status - If excess groups is selected, then an excess group (A or B) must be selected
+     *  We determine if an excess group is selected based off of the classname of the container. Only one group may be se-
+     *  lected at a time.
+     */ 
+    let xs_A_selected = document.getElementById("funcA_eq").className === 'selected';
+    let xs_B_selected = document.getElementById("funcB_eq").className === 'selected';
+
+    const molar_eq_is_checked = document.getElementById("molar_eq_check").classList[1] === 'checked';
+    const molar_eq_selected = xs_A_selected || xs_B_selected;
 
     if (molar_eq_is_checked && !molar_eq_selected) {
         console.log("You must choose a excess functional group to proceed.");
         return false;
     }
 
+    // Get Initial Data Entry Form Input Fields
     var inputs = document.getElementsByClassName("input_field");
 
+    // Validate datatypes of entered field values
     let stringAcceptable = checkDataTypes("string", "input_field");
     let intAcceptable = checkDataTypes("int", "input_field");
-    // If no groups are in excess, then the float should not be checked and should be considered acceptable
+
+    // If no optional float fields are checked, then their fields should not be validated
     let floatAcceptable;
     if (molar_eq_is_checked) {
-        // Excess groups selected, therefore check float fields
+        // Excess group selected, therefore check float fields
         floatAcceptable = checkDataTypes("float", "input_field"); 
     } else {
-        // No excess groups selected, therefore do not check float fields
+        // No excess group selected, therefore do not check float fields
         floatAcceptable = true;
     }
 
     let inputsAcceptable = stringAcceptable && intAcceptable && floatAcceptable;
 
-    if (inputsAcceptable === false) {
-        console.log("inputsAcceptable: " + inputsAcceptable);
-    } else {
+    if (inputsAcceptable) {
+        // All necessary fields have valid input necessary for defining copolymer functional groups, therefore proceed
         console.log("inputsAcceptable: " + inputsAcceptable);
 
-        // Save previously entered values
+        // Save previously entered values for monomer data entry if they exist
         savePreviousValues("dyn_input_field");
 
-        // Remove the previous forms generated if they exist
-        removeElement("dynamic_form", "_entry");
-        removeElement("final_results", "_results");
+        // Remove the previous monomer data entry forms generated if they exist
+        removeElement("dynamic_form", "_entry", true);
+        removeElement("final_results", "_results", false);
+
+        /*  
+         *  Reset funcStats which defines the various parameters of a functional group necessary for subsequent calculatio-
+         *  ns and setting id/classnames for elements. For the latter reason, the functional group name must be unique for
+         *  each one so that there are no repeated element ids.
+         * 
+         *  It is necessary to reset this array if new input is submitted to clear the previous functional group data.
+         */
 
         funcStats = [];
     
         for (var i = 0 ; i < 2 ; i++) {
-            
+            // Initialize variable for molar equivalent value
             var molar_eq_value;
 
-            if (molar_eq_is_checked) {
-                // Define parameters for A
-                const a_eq = document.getElementById("funcA_eq");
-                const a_status = a_eq.className;
+            if (molar_eq_is_checked && xs_A_selected && funcID[i] === 'A') {
+                // Excess A selected and current group being defined is A, therefore set its molar excess
+                molar_eq_value = parseFloat(document.getElementById("func_xs").value);
 
-                // Define parameters for B
-                const b_eq = document.getElementById("funcB_eq");
-                const b_status = b_eq.className;
+            } else if (molar_eq_is_checked && xs_B_selected && funcID[i] === 'B') {
+                // Excess B selected and current group being defined is B, therefore set its molar excess
+                molar_eq_value = parseFloat(document.getElementById("func_xs").value);
 
-                if (a_status === 'selected' && funcID[i] === 'A') {
-                    molar_eq_value = parseFloat(document.getElementById("func_xs").value);
-                } else if (b_status === 'selected' && funcID[i] === 'B') {
-                    molar_eq_value = parseFloat(document.getElementById("func_xs").value);
-                } else {
-                    molar_eq_value = 1.0;
-                }
             } else {
+                // No excess group selected or current group being defined is not the chosen group in excess
                 molar_eq_value = 1.0;
+
             }
 
             funcStats[i] = {
@@ -95,27 +106,38 @@ function getInputValues() {
 
         // Create the form and append to the page
         generateForm();
+        
+    } else {
+        // One or more fields contained invalid inputs, therefore reject submission request
+        console.log("inputsAcceptable: " + inputsAcceptable);
+        
     }
 
 }
 
 function getDynamicFormData() {
-
+    // Get Monomer Data Entry Form Input Fields
     var dynFormData = document.getElementsByClassName("dyn_input_field");
 
+    // Only float values or blank strings are acceptable for the monomer fields, so do not check for integer/string values
     let inputsAcceptable = checkDataTypes("float", "dyn_input_field");
+
+    /*  Initialize number of unknowns for both functional groups, their number of unknowns are defined as the number of co-
+     *  monomers in a functional group where neither mass nor their chosen percent value are known. There can only be up to
+     *  one unknown for a single functional group, regardless if they are the reference or complimentary group.
+     */
 
     var unknownCount = [0, 0];
 
-    if (inputsAcceptable === false) {
-        console.log("inputsAcceptable: " + inputsAcceptable);
-        monomerStats = [];
-    } else {
+    if (inputsAcceptable) {
+
+        // Monomer inputs valid, loop through the two functional groups to set their monomer values
         for (var i = 0 ; i < 2 ; i++) {
-            
+
+            // Loop through each comonomer in each functional group to set their inputted value
             for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
 
-                // Initialize monomerStats object to zero
+                // Initialize monomerStats object values to zero
                 monomerStats[q] = {
                     mass:       0,
                     wpercent:   0,
@@ -125,6 +147,7 @@ function getDynamicFormData() {
                 }
                 console.log(monomerStats[q].moles);
 
+                // Set current comonomer input fields for mass, chosen percent, and molar mass
                 mass_input = dynFormData[0 + q * 3];
                 percent_input = dynFormData[1 + q * 3];
                 molar_mass_input = dynFormData[2 + q * 3];
@@ -135,15 +158,19 @@ function getDynamicFormData() {
                     funcStats[i].unknown = q;
 
                     if (unknownCount[i] > 1) {
+                        // Unknown count cannot exceed 1 for either functional group
                         console.log("Your unknowns for functional group: " + funcStats[i].name + " has exceeded 1. Please enter more information for your input to be accepted.");
+                        inputsAcceptable = false;
                     }
                 }
 
+                // Set entered mass for current comonomer
                 if (mass_input.value != '') {
                     monomerStats[q].mass = parseFloat(mass_input.value);
                     console.log("Mass for " + funcStats[i].name + funcStats[i].num + ": " + monomerStats[q].mass);
                 }
 
+                // Set chosen percent for current comonomer
                 if (percent_input.value != '') {
                     switch (funcStats[i].percent_type) {
                         case 'weight':
@@ -158,20 +185,29 @@ function getDynamicFormData() {
                     }
                 }
 
+                // Set entered molar mass for current comonomer, reject user input if molar mass field is blank
                 if (molar_mass_input.value != '') {
                     monomerStats[q].molar_mass = parseFloat(molar_mass_input.value);
                     console.log("Molar Mass for " + funcStats[i].name + funcStats[i].num + ": " + monomerStats[q].molar_mass);
+                } else {
+                    // Molar mass must be known for all comonomers for calculations to be possible
+                    console.log(`No molar mass entered for ${funcStats[i].name} ${(q - funcStats[i].start) + 1}`);
+                    inputsAcceptable = false;
                 }
                 
             }
         }
         
-        if (unknownCount[0] <= 1 && unknownCount[1] <= 1) {
+        if (inputsAcceptable) {
             startDataSorting();
         } else {
             console.log("There is not enough monomer information given for calculations to be possible.");
         }
 
+    } else {
+        // One or more fields contained invalid inputs, therefore reject submission request and reset monomerStats array
+        console.log("inputsAcceptable: " + inputsAcceptable);
+        monomerStats = [];
     }
 
 }
@@ -189,7 +225,8 @@ function checkDataTypes(data_type, input_class) {
                 if (parseInt(raw_int_data[i].value) <= 0) {
                     console.log("Number values must be greater than 0.");
                     var intAcceptable = false;
-                } else if (raw_int_data[i].value.match(/\d+/) != null) {
+                } else if (raw_int_data[i].value.match(/\d+/) != null && raw_int_data[i].value % 1 === 0) {
+                    // The input value is a positive non-zero number that it is a whole number, therefore it is acceptable
                     var intAcceptable = true;
                 } else {
                     var intAcceptable = false;
@@ -231,11 +268,13 @@ function checkDataTypes(data_type, input_class) {
                 console.log(raw_float_data[i].value);
 
                 if (input_class === "dyn_input_field" && raw_float_data[i].value === '') {
+                    // This is an exception case for the monomer data entry, where empty fields are acceptable
                     floatAcceptable = true;
                 } else if (raw_float_data[i].value <= 0) {
                     console.log("ERROR - Invalid data at checkDataTypes function (Float)\n\t*Values less than or equal to 0 are not accepted.");
                     floatAcceptable = false;
                 } else if (raw_float_data[i].value.match(/\d+/) != null) {
+                    // The input value is a positive non-zero number, therefore it is acceptable
                     floatAcceptable = true;
                 } else {
                     floatAcceptable = false;
@@ -257,7 +296,7 @@ function checkDataTypes(data_type, input_class) {
 
 function add_subtractField (field_id, add_or_subtract) {
     let field = document.getElementById(field_id);
-    current_value = field.value;
+    let current_value = field.value;
     
     if (current_value === '' || current_value <= 0) {
         field.value = 1;
@@ -265,13 +304,23 @@ function add_subtractField (field_id, add_or_subtract) {
     } else if (current_value > 0) {
         switch (add_or_subtract) {
             case 'add':
-                field.value++;
+                if (current_value % 1 === 0) {
+                    field.value++;
+                } else {
+                    field.value = Math.floor(field.value);
+                    field.value++;
+                }
                 
                 break;
             case 'subtract':
 
-                if (current_value > 1) {
+                if (current_value > 1 && current_value % 1 === 0) {
                     field.value--;
+                } else if (current_value > 2 && current_value % 1 !== 0) {
+                    field.value = Math.floor(field.value);
+                    field.value--;
+                } else if (current_value > 1 && current_value < 2 && current_value % 1 !== 0) {
+                    field.value = 1;
                 } else {
                     console.log("Your input will not be decremented because it is not allowed to be zero.")
                 }
@@ -392,16 +441,22 @@ function savePreviousValues(element_class) {
     }
 }
 
-function removeElement (element_class, element_type) {
+function removeElement (element_class, element_type, isForm) {
     // Check if there are existing forms generated
     if (document.querySelector(`.${element_class}`).childElementCount > 0) {
         // Select any dynamic forms that were previously generated
-        let form1 = document.getElementById(funcStats[0].name + element_type);
-        let form2 = document.getElementById(funcStats[1].name + element_type);
+        let element1 = document.getElementById(funcStats[0].name + element_type);
+        let element2 = document.getElementById(funcStats[1].name + element_type);
         
         // Remove previous forms to generate a new one
-        form1.remove();
-        form2.remove();
+        element1.remove();
+        element2.remove();
+        
+        // Select dynamically generated submit button container and its children
+        if (isForm) {
+            submit = document.getElementById("monomer_submit_container");
+            submit.remove();
+        }
     }
 }
 

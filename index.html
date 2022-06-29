@@ -116,6 +116,7 @@
                     <label for="molar_eq_check">Is either group in excess?</label>
                     <button 
                         type="button" name="molar_eq_check" 
+                        id="molar_eq_check"
                         onclick="toggleCheckBox('molar_eq')" 
                         class="check_box unchecked" tabindex="-1"
                     ></button>
@@ -143,7 +144,7 @@
     
 
     <div class="form_container">
-        <div class="dynamic_form"></div>
+        <div id="monomer_data_entry" class="dynamic_form"></div>
     </div>
 
     <div class="form_container">

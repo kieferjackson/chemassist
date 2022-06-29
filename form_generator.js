@@ -45,12 +45,14 @@ function generateForm () {
 
             // Check if there is previous input, set the newly generated fields with these values if so
             if (previous_A_inputs.length > 0 || previous_B_inputs.length > 0) {
+                let field_set = q * 3;
+
                 switch(funcID[i]) {
                     case 'A':
-                        if (previous_A_inputs[q * 3] != undefined) {
-                            mass.value = previous_A_inputs[q * 3];
-                            percent.value = previous_A_inputs[1 + (q * 3)];
-                            molar_mass.value = previous_A_inputs[2 + (q * 3)];
+                        if (previous_A_inputs[field_set] != undefined) {
+                            mass.value = previous_A_inputs[field_set];
+                            percent.value = previous_A_inputs[field_set + 1];
+                            molar_mass.value = previous_A_inputs[field_set + 2];
                         } else {
                             mass.value = percent.value = molar_mass.value = '';
                         }
@@ -58,10 +60,10 @@ function generateForm () {
                         break
 
                     case 'B':
-                        if (previous_B_inputs[q * 3] != undefined) {
-                            mass.value = previous_B_inputs[q * 3];
-                            percent.value = previous_B_inputs[1 + (q * 3)];
-                            molar_mass.value = previous_B_inputs[2 + (q * 3)];
+                        if (previous_B_inputs[field_set] != undefined) {
+                            mass.value = previous_B_inputs[field_set];
+                            percent.value = previous_B_inputs[field_set + 1];
+                            molar_mass.value = previous_B_inputs[field_set + 2];
                         } else {
                             mass.value = percent.value = molar_mass.value = '';
                         }
@@ -98,11 +100,15 @@ function generateForm () {
 
     // Generate submission button container
     let c = document.createElement("div");
+    c.setAttribute("id", "monomer_submit_container");
     c.setAttribute("class", "submit_container");
+
     // Append Submit button to its container
     c.appendChild(s);
 
-    form.appendChild(c);
+    base_form = document.getElementById("monomer_data_entry");
+
+    base_form.appendChild(c);
 
 }
 
