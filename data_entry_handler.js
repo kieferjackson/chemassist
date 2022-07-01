@@ -145,7 +145,6 @@ function getDynamicFormData() {
                     molar_mass: 0,
                     moles:      0
                 }
-                console.log(monomerStats[q].moles);
 
                 // Set current comonomer input fields for mass, chosen percent, and molar mass
                 mass_input = dynFormData[0 + q * 3];
@@ -155,6 +154,7 @@ function getDynamicFormData() {
                 // Check for unknown monomers (missing information for mass and percent)
                 if (mass_input.value === '' && percent_input.value === '') {
                     unknownCount[i]++;
+                    // An unknown has been found for the group currently being assigned, and its index has been saved for future reference
                     funcStats[i].unknown = q;
 
                     if (unknownCount[i] > 1) {
@@ -199,6 +199,15 @@ function getDynamicFormData() {
         }
         
         if (inputsAcceptable) {
+            /* 
+             *  Initial data analysis indicates that there are no obvious issues with the given values. 
+             *  Further analysis is required to determine whether or not calculations are possible.
+             *  
+             *  Data Sorting counts up the number of known values for mass and percent for each functional
+             *  group. In addition, it will determine whether or not the 'Zipper' or 'Tetris' routes have
+             *  adequate information given for their calculation routes to be possible.
+             * 
+             */
             startDataSorting();
         } else {
             console.log("There is not enough monomer information given for calculations to be possible.");
@@ -213,19 +222,34 @@ function getDynamicFormData() {
 }
 
 function checkDataTypes(data_type, input_class) {
+    /*  
+     *  Since JavaScript cannot adequately check datatypes for variables, particularly for integer values. This function
+     *  is designed to accept parameters for the data type being analysed in addition to the input field class which specifies
+     *  which fields are being analysed.  
+     * 
+     *  Field elements have two classes: '*_input_field' and '[data type]'. 
+     *      The former is to select which form fields are selected
+     *      with either the initial data entry fields ('input_field') or the monomer entry fields ('dyn_input_fields'). 
+     *      
+     *      The latter is to further specify which fields are selected based on their accepted data types and also
+     *      allow for the branching within this function.
+     * 
+     */
+
+    let raw_field_data = document.getElementsByClassName(`${input_class} ${data_type}`);
 
     switch (data_type) {
         case 'int':     // Integer Checker
             console.log("checking integer values...");
-            let raw_int_data = document.getElementsByClassName(input_class + " int");
 
             var i = 0;
+
             do {
 
-                if (parseInt(raw_int_data[i].value) <= 0) {
+                if (parseInt(raw_field_data[i].value) <= 0) {
                     console.log("Number values must be greater than 0.");
                     var intAcceptable = false;
-                } else if (raw_int_data[i].value.match(/\d+/) != null && raw_int_data[i].value % 1 === 0) {
+                } else if (raw_field_data[i].value.match(/\d+/) != null && raw_field_data[i].value % 1 === 0) {
                     // The input value is a positive non-zero number that it is a whole number, therefore it is acceptable
                     var intAcceptable = true;
                 } else {
@@ -235,45 +259,55 @@ function checkDataTypes(data_type, input_class) {
 
                 i++;
 
-            } while (intAcceptable === true && i < raw_int_data.length);
+            } while (intAcceptable === true && i < raw_field_data.length);
 
             return intAcceptable;
 
         case 'string':  // String Checker
             console.log("checking string values...");
-            let raw_string_data = document.getElementsByClassName(input_class + " string");
 
-            if ((raw_string_data[2].value || raw_string_data[3].value) === "") {
-                console.log("A valid name must be entered");
-                var nameAcceptable = false;
-            } else if (checkParity(raw_string_data[2].value, raw_string_data[3].value) === true) {
-                console.log("A valid name must be entered (cannot be identical)");
-                var nameAcceptable = false;
-            } else if (typeof (raw_string_data[2].value && typeof raw_string_data[3].value) === 'string') {
-                var nameAcceptable = true;
-            } else {
-                var nameAcceptable = false;
+            var nameAcceptable = true;
+            
+            var i = 0;
+            const func_A_name = raw_field_data[0].value;
+            const func_B_name = raw_field_data[1].value;
+            
+            if (raw_field_data.length > 0) while (nameAcceptable && i < raw_field_data.length) {
+                if (raw_field_data[i].value === "") {
+                    console.log("A valid name must be entered");
+                    nameAcceptable = false;
+                } else if (checkParity(func_A_name, func_B_name) === true) {
+                    console.log("A valid name must be entered (cannot be identical)");
+                    nameAcceptable = false;
+                } else if (typeof raw_field_data[i].value === 'string') {
+                    nameAcceptable = true;
+                } else {
+                    nameAcceptable = false;
+                }
+
+                i++;
+
             }
-
+            
             return nameAcceptable;
 
         case 'float':   // Float Checker
             console.log("checking float values...");
-            let raw_float_data = document.getElementsByClassName(input_class + " float");
 
             var floatAcceptable = true;
             
             var i = 0;
-            if (raw_float_data.length > 0) while (floatAcceptable === true && i < raw_float_data.length) {
-                console.log(raw_float_data[i].value);
 
-                if (input_class === "dyn_input_field" && raw_float_data[i].value === '') {
+            if (raw_field_data.length > 0) while (floatAcceptable && i < raw_field_data.length) {
+                console.log(raw_field_data[i].value);
+
+                if (input_class === "dyn_input_field" && raw_field_data[i].value === '') {
                     // This is an exception case for the monomer data entry, where empty fields are acceptable
                     floatAcceptable = true;
-                } else if (raw_float_data[i].value <= 0) {
+                } else if (raw_field_data[i].value <= 0) {
                     console.log("ERROR - Invalid data at checkDataTypes function (Float)\n\t*Values less than or equal to 0 are not accepted.");
                     floatAcceptable = false;
-                } else if (raw_float_data[i].value.match(/\d+/) != null) {
+                } else if (raw_field_data[i].value.match(/\d+/) != null) {
                     // The input value is a positive non-zero number, therefore it is acceptable
                     floatAcceptable = true;
                 } else {
@@ -295,6 +329,20 @@ function checkDataTypes(data_type, input_class) {
 }
 
 function add_subtractField (field_id, add_or_subtract) {
+   /*  
+    *  This function increments or decrements an input field specified by its id attribute by clicking on the plus or minus buttons.
+    *  It gets whatever the current value entered into a field is and will perform various actions on it based off the content entered.
+    * 
+    *  Blank fields or values less than or equal to 0 are not accepted, so any field that calls this function with those values
+    *  entered will be changed to 1. The same is true also for fields which contains string values.
+    *  Furthermore, decrementing a field value of 1 is not permitted, and the value will stay at 1 as such.
+    * 
+    *  If a decimal number is entered such as 2.3, then incrementing will floor the value to 2, then increment it to 3. 
+    *  Conversely, decrementing 2.3 would floor it to 2, then decrement it to 1.
+    *  A special case for decrementing is present for values between 1 and 2, where a value like 1.4 is simply set to 1.
+    * 
+    */
+
     let field = document.getElementById(field_id);
     let current_value = field.value;
     
@@ -305,21 +353,25 @@ function add_subtractField (field_id, add_or_subtract) {
         switch (add_or_subtract) {
             case 'add':
                 if (current_value % 1 === 0) {
+                    // The current value is a whole number, increment it
                     field.value++;
                 } else {
+                    // The current value is a decimal number, floor and then increment it
                     field.value = Math.floor(field.value);
                     field.value++;
                 }
                 
                 break;
             case 'subtract':
-
                 if (current_value > 1 && current_value % 1 === 0) {
+                    // The current value is a sufficiently large whole number, decrement it
                     field.value--;
                 } else if (current_value > 2 && current_value % 1 !== 0) {
+                    // The current value is a sufficiently large decimal number, floor and then decrement it
                     field.value = Math.floor(field.value);
                     field.value--;
                 } else if (current_value > 1 && current_value < 2 && current_value % 1 !== 0) {
+                    // The current value is a decimal number between 1 and 2, set it to 1
                     field.value = 1;
                 } else {
                     console.log("Your input will not be decremented because it is not allowed to be zero.")
@@ -328,11 +380,24 @@ function add_subtractField (field_id, add_or_subtract) {
                 break;
         }
     } else {
+        // If there is an unexpected value in the field, set it to 1
         field.value = 1;
     }
 }
 
 function toggleCheckBox(check_box_type) {
+   /*  
+    *  The parameter for this function specifies the check box being toggled based off of its id attribute.
+    *  Its id is used to branch the function depending on the checkbox being toggled to allow for multiple
+    *  checkboxes which can change their respective section states.
+    * 
+    *  By nature, these checkboxes are used for optional fields, and so when unselected, those fields and
+    *  their associated elements (buttons, labels, etc) are hidden. Conversely, when selected, those fields
+    *  become visible. Both of these states (hidden and visible) are controlled by changing their container
+    *  class.
+    * 
+    */
+
     switch(check_box_type) {
         case 'molar_eq':
             // Selecting Check Box and Molar EQ Sections
@@ -360,6 +425,16 @@ function toggleCheckBox(check_box_type) {
 }
 
 function toggleMolarEQ(xs_func_group) {
+    /*
+     *  Controls the state of the molar equivalents functional group buttons with the parameter specifying
+     *  which group is being toggled on or off.
+     * 
+     *  By default, these buttons are unselected, however toggling their state activates whichever group is 
+     *  selected. If a user selects an already selected group, then the buttons go back to their default state
+     *  with neither being selected.
+     * 
+     */
+
     console.log(xs_func_group);
 
     // Define parameters for A
@@ -410,16 +485,15 @@ function toggleMolarEQ(xs_func_group) {
     
 }
 
-function createInputField(xs_func_group) {
-    let field = document.createElement("input");
-    field.setAttribute("type", "text");
-    field.setAttribute("id", "molar_eq_input_field_" + xs_func_group);
-    field.setAttribute("class", "input_field float");
-
-    return field;
-}
-
 function savePreviousValues(element_class) {
+   /*
+    *  All of the values in the selected input fields for both functional group forms
+    *  will be saved in two global arrays: previous_A_inputs and previous_B_inputs.
+    * 
+    *  The 'element_class' parameter selects the specific form fields whose field values will be saved.
+    * 
+    */
+
     if (document.querySelectorAll(`.${element_class}`).length > 0) {
         // Clear previous inputs
         previous_A_inputs = [];
@@ -442,9 +516,22 @@ function savePreviousValues(element_class) {
 }
 
 function removeElement (element_class, element_type, isForm) {
-    // Check if there are existing forms generated
+   /*  
+    *  For elements related to functional groups (monomer data entry forms, final results), they must be removed if new values
+    *  are submitted. 
+    * 
+    *  The 'element_class' parameter specifies which container's elements need to be removed.
+    *  The 'element_type' parameter gives the element's subcontainer id.
+    *      -the subcontainer holds all of the fields/results for each functional group, as such there are two.
+    *  The 'isForm' parameter is a boolean value given when the function is called. It is necessary to distinguish between
+    *      the final results and monomer data entry, because the latter must generate a submit button which is removed when 
+    *      a new form is generated.
+    * 
+    */
+
+    // Check if there are existing elements generated
     if (document.querySelector(`.${element_class}`).childElementCount > 0) {
-        // Select any dynamic forms that were previously generated
+        // Select any dynamic elements that were previously generated
         let element1 = document.getElementById(funcStats[0].name + element_type);
         let element2 = document.getElementById(funcStats[1].name + element_type);
         
@@ -471,9 +558,14 @@ function checkParity(var1, var2) {
 }
 
 function percentTypeChecker() {
-    if (document.getElementsByClassName("input_field")[0].checked == true) {
+    // Look at the radio button option for weight percent and determine whether or not it is checked
+    wt_percent_checked = document.getElementById("wpercent").checked;
+
+    if (wt_percent_checked) {
+        // Weight percent was selected, so the percent type is 'weight'
         return "weight";
     } else {
+        // Mole percent was selected, so the percent type is 'mole''
         return "mole";
     }
 }
