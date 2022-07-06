@@ -132,6 +132,19 @@ input:focus {
     outline: 1px solid #111;
 }
 
+/* ---Error Message Styling--- */
+.error_container {
+    background-color: rgb(230, 140, 137);
+    border: 1px solid crimson;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+.error_msg {
+    color: #fff;
+    font-weight: bold;
+}
+
 /* ---Initial Data Entry Styling--- */
 /* #initial_data_entry {
     padding-bottom: 10px;

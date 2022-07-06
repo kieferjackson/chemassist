@@ -1,6 +1,7 @@
 
 monomerStatCount = [];
 
+// Initialize variables that will be used to index the reference/complimentary groups. Each of them can only be either 0 or 1
 func_ref = 0;
 func_comp = 0;
 
@@ -8,9 +9,11 @@ function startDataSorting() {
 
     for (var i = 0 ; i < 2 ; i++) {
 
-        /*  Stat Counter - If a value is not 0, the stat count increments by one to indicate the number of known values for mass and percent. 
-            Molar mass is assumed to be known for all monomers, so it is not considered.
-        */
+        /*  Stat Counter - The number of knowns are counted for each functional groups in addition to determining certain calculation conditions.
+         *      mass, percent, and zprMethod properties are incremented depending on if their specific conditions are met
+         *      tts_ref is the index for the reference comonomer for any functional group which fulfils the requirements of the tetris route
+         *      tts_refFound is a simple flag for deciding calculation routes to indicate that the tetris route has a reference comonomer.
+         */
         monomerStatCount[i] = {
             mass:         0,
             percent:      0,
@@ -30,7 +33,7 @@ function startDataSorting() {
                 monomerStatCount[i].percent += 1;
             }
 
-            // Zipper Route - Requires that the number of comonomers is greater than or equal to 2 and that every comonomer either has only mass or percent known (one unknown is allowed)
+            // Zipper Route - Requires that the number of comonomers is greater than or equal to 2 and that every comonomer either has only mass or percent known
             if (funcStats[i].num >= 2) {
                 switch (funcStats[i].percent_type) {
                     // Increment Zipper Method if Mass is known but Weight Percent is unknown, and vice-versa
@@ -73,6 +76,7 @@ function startDataSorting() {
     funcStats[FUNC_B].isReference = false;
 
     for (var i = 0 ; i < 2 ; i++) {
+        // Check that the functional group has at least 1 mass or more and that the total number of knowns for percent and mass are greater than or equal to the number of comonomers
         funcStats[i].isReference = monomerStatCount[i].mass >= 1 && ((monomerStatCount[i].mass + monomerStatCount[i].percent) >= funcStats[i].num);
         if (funcStats[i].isReference === true) {
             func_ref = i;
@@ -87,25 +91,35 @@ function startDataSorting() {
 
     // If both functional groups are valid as reference groups for any reason(s), the one with more knowns and/or masses will be chosen as the reference group
     if (funcStats[FUNC_A].isReference === true && funcStats[FUNC_B].isReference === true) {
-
+        // A greater offset signifies a functional group with more information given, which indicates a more suitable reference group
         funcA_known_offset = (monomerStatCount[FUNC_A].mass + monomerStatCount[FUNC_A].percent) - funcStats[FUNC_A].num;
         funcB_known_offset = (monomerStatCount[FUNC_B].mass + monomerStatCount[FUNC_B].percent) - funcStats[FUNC_B].num;
 
+        // A greater offset signifies more mass values given, which indicates a more suitable reference group
         funcA_mass_offset = monomerStatCount[FUNC_A].mass - funcStats[FUNC_A].num;
         funcB_mass_offset = monomerStatCount[FUNC_B].mass - funcStats[FUNC_B].num;
 
         if (funcA_mass_offset > funcB_mass_offset || funcA_known_offset > funcB_known_offset) {
+            // Functional group A has either more information given or more masses given, so it is the more suitable reference group
             funcStats[FUNC_A].isReference = true;
             funcStats[FUNC_B].isReference = false;
 
             func_ref = FUNC_A;
             func_comp = FUNC_B;
-        } else {
+        } else if (funcB_mass_offset > funcA_mass_offset || funcB_known_offset > funcA_known_offset) {
+            // Functional group B has either more information given or more masses given, so it is the more suitable reference group
             funcStats[FUNC_B].isReference = true;
             funcStats[FUNC_A].isReference = false;
 
             func_ref = FUNC_B;
             func_comp = FUNC_A;
+        } else {
+            // The offsets for functional groups A & B are equivalent, so the reference group defaults to A
+            funcStats[FUNC_A].isReference = true;
+            funcStats[FUNC_B].isReference = false;
+
+            func_ref = FUNC_A;
+            func_comp = FUNC_B;
         }
     
     }
@@ -154,11 +168,22 @@ function routeFinder(i, funcType) {
     // (2)
     switch(funcType) {
         case 'REFERENCE':
+            /*
+             *  All Mass Route - This is the simplest calculation route because it can perform each calculation to find weight percents, mole
+             *  percents, and moles through fairly simple methods. Any already entered percent values (which would go beyond the minimum required
+             *  user input) are ignored and recalculated. 
+             */
             if (all_mass === true) {
                 console.log("Your calculation route for reference group is: All Mass");
                 return 'ALLMASSROUTE';
             }
 
+            /*
+             *  Zipper Route - The conditions of this calculation route require that the number of comonomers for a functional group are greater
+             *  than or equal to 2 because the calculations require that comonomers either have mass or percent values given. It is a unique case
+             *  because the percents are added up, and the difference between 100 and those summed up percents gives the "partial mass percent".
+             *  The partial mass percent then allows for their particular percent values to be found by using the proportions between masses.
+             */
             else if (zpr_possible === true) {
                 switch (funcStats[func_ref].percent_type) {
                     case 'weight':
@@ -171,6 +196,10 @@ function routeFinder(i, funcType) {
                 
             }
 
+            /*
+             *  Tetris Route - A reference comonomer is required for the tetris route to be possible. As well, there must be an unknown comonomer
+             *  
+             */
             else if (tetris_possible === true) {
                 switch (funcStats[func_ref].percent_type) {
                     case 'weight':

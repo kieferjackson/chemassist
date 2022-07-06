@@ -23,6 +23,8 @@ function getInputValues() {
      *  We determine if an excess group is selected based off of the classname of the container. Only one group may be se-
      *  lected at a time.
      */ 
+    clearErrors();
+
     let xs_A_selected = document.getElementById("funcA_eq").className === 'selected';
     let xs_B_selected = document.getElementById("funcB_eq").className === 'selected';
 
@@ -31,6 +33,7 @@ function getInputValues() {
 
     if (molar_eq_is_checked && !molar_eq_selected) {
         console.log("You must choose a excess functional group to proceed.");
+        generateErrorMsg("initial_data_entry", "You must choose a excess functional group to proceed.");
         return false;
     }
 
@@ -110,6 +113,7 @@ function getInputValues() {
     } else {
         // One or more fields contained invalid inputs, therefore reject submission request
         console.log("inputsAcceptable: " + inputsAcceptable);
+        generateErrorMsg("initial_data_entry", "One or more of your inputs are invalid");
         
     }
 
@@ -531,18 +535,32 @@ function removeElement (element_class, element_type, isForm) {
 
     // Check if there are existing elements generated
     if (document.querySelector(`.${element_class}`).childElementCount > 0) {
+
         // Select any dynamic elements that were previously generated
         let element1 = document.getElementById(funcStats[0].name + element_type);
         let element2 = document.getElementById(funcStats[1].name + element_type);
         
-        // Remove previous forms to generate a new one
+        // Remove previous elements to generate new ones
         element1.remove();
         element2.remove();
-        
+
         // Select dynamically generated submit button container and its children
         if (isForm) {
             submit = document.getElementById("monomer_submit_container");
             submit.remove();
+        }
+        
+    }
+}
+
+function clearErrors () {
+    let num_errors = document.querySelectorAll(".error_container").length;
+    // Check if there are existing elements generated
+    if (num_errors > 0) {
+        let errors_to_remove = document.getElementsByClassName("error_container");
+
+        for (var i = 0 ; i < num_errors ; i++) {
+            errors_to_remove[i].remove();
         }
     }
 }
