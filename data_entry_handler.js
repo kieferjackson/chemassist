@@ -32,8 +32,8 @@ function getInputValues() {
     const molar_eq_selected = xs_A_selected || xs_B_selected;
 
     if (molar_eq_is_checked && !molar_eq_selected) {
-        console.log("You must choose a excess functional group to proceed.");
-        generateErrorMsg("initial_data_entry", "You must choose a excess functional group to proceed.");
+        console.log("You must choose an excess functional group to proceed.");
+        generateErrorMsg("initial_data_entry", "You must choose an excess functional group to proceed.");
         return false;
     }
 
@@ -120,6 +120,8 @@ function getInputValues() {
 }
 
 function getDynamicFormData() {
+    clearErrors();
+
     // Get Monomer Data Entry Form Input Fields
     var dynFormData = document.getElementsByClassName("dyn_input_field");
 
@@ -163,7 +165,8 @@ function getDynamicFormData() {
 
                     if (unknownCount[i] > 1) {
                         // Unknown count cannot exceed 1 for either functional group
-                        console.log("Your unknowns for functional group: " + funcStats[i].name + " has exceeded 1. Please enter more information for your input to be accepted.");
+                        console.log(`Your unknowns for functional group: ${funcStats[i].name} has exceeded 1. Please enter more information for your input to be accepted.`);
+                        generateErrorMsg("monomer_data_entry", `Your unknowns for functional group: ${funcStats[i].name} has exceeded 1. Please enter more information for your input to be accepted.`)
                         inputsAcceptable = false;
                     }
                 }
@@ -171,7 +174,7 @@ function getDynamicFormData() {
                 // Set entered mass for current comonomer
                 if (mass_input.value != '') {
                     monomerStats[q].mass = parseFloat(mass_input.value);
-                    console.log("Mass for " + funcStats[i].name + funcStats[i].num + ": " + monomerStats[q].mass);
+                    console.log(`Mass for ${funcStats[i].name}${funcStats[i].num}: ${monomerStats[q].mass}`);
                 }
 
                 // Set chosen percent for current comonomer
@@ -179,12 +182,12 @@ function getDynamicFormData() {
                     switch (funcStats[i].percent_type) {
                         case 'weight':
                             monomerStats[q].wpercent = parseFloat(percent_input.value);
-                            console.log("Wt Percent for " + funcStats[i].name + funcStats[i].num + ": " + monomerStats[q].wpercent);
+                            console.log(`Wt Percent for ${funcStats[i].name}${funcStats[i].num}: ${monomerStats[q].wpercent}`);
                             break;
 
                         case 'mole':
                             monomerStats[q].mpercent = parseFloat(percent_input.value);
-                            console.log("Ml Percent for " + funcStats[i].name + funcStats[i].num + ": " + monomerStats[q].mpercent);
+                            console.log(`Ml Percent for ${funcStats[i].name}${funcStats[i].num}: ${monomerStats[q].mpercent}`);
                             break;
                     }
                 }
@@ -192,10 +195,11 @@ function getDynamicFormData() {
                 // Set entered molar mass for current comonomer, reject user input if molar mass field is blank
                 if (molar_mass_input.value != '') {
                     monomerStats[q].molar_mass = parseFloat(molar_mass_input.value);
-                    console.log("Molar Mass for " + funcStats[i].name + funcStats[i].num + ": " + monomerStats[q].molar_mass);
+                    console.log(`Molar mass for ${funcStats[i].name}${funcStats[i].num}: ${monomerStats[q].molar_mass}`);
                 } else {
                     // Molar mass must be known for all comonomers for calculations to be possible
                     console.log(`No molar mass entered for ${funcStats[i].name} ${(q - funcStats[i].start) + 1}`);
+                    generateErrorMsg("monomer_data_entry", `No molar mass entered for ${funcStats[i].name} ${(q - funcStats[i].start) + 1}`);
                     inputsAcceptable = false;
                 }
                 
@@ -215,6 +219,7 @@ function getDynamicFormData() {
             startDataSorting();
         } else {
             console.log("There is not enough monomer information given for calculations to be possible.");
+            generateErrorMsg("monomer_data_entry", "There is not enough monomer information given for calculations to be possible.");
         }
 
     } else {
@@ -240,6 +245,13 @@ function checkDataTypes(data_type, input_class) {
      * 
      */
 
+    var form_id;
+    if (input_class === "input_field") {
+        form_id = "initial_data_entry";
+    } else if (input_class === "dyn_input_field") {
+        form_id = "monomer_data_entry";
+    }
+
     let raw_field_data = document.getElementsByClassName(`${input_class} ${data_type}`);
 
     switch (data_type) {
@@ -252,6 +264,7 @@ function checkDataTypes(data_type, input_class) {
 
                 if (parseInt(raw_field_data[i].value) <= 0) {
                     console.log("Number values must be greater than 0.");
+                    generateErrorMsg(form_id, "Number values must be greater than 0.");
                     var intAcceptable = false;
                 } else if (raw_field_data[i].value.match(/\d+/) != null && raw_field_data[i].value % 1 === 0) {
                     // The input value is a positive non-zero number that it is a whole number, therefore it is acceptable
@@ -259,6 +272,7 @@ function checkDataTypes(data_type, input_class) {
                 } else {
                     var intAcceptable = false;
                     console.log("ERROR - Invalid data at checkDataTypes function (Integer)\nOne of your input fields may be missing a value.");
+                    generateErrorMsg(form_id, "The value entered was not an integer and/or one of your input fields may be missing a value.");
                 }
 
                 i++;
@@ -279,14 +293,18 @@ function checkDataTypes(data_type, input_class) {
             if (raw_field_data.length > 0) while (nameAcceptable && i < raw_field_data.length) {
                 if (raw_field_data[i].value === "") {
                     console.log("A valid name must be entered");
+                    generateErrorMsg(form_id, "A valid name must be entered");
                     nameAcceptable = false;
                 } else if (checkParity(func_A_name, func_B_name) === true) {
                     console.log("A valid name must be entered (cannot be identical)");
+                    generateErrorMsg(form_id, "A valid name must be entered (cannot be identical)");
                     nameAcceptable = false;
                 } else if (typeof raw_field_data[i].value === 'string') {
                     nameAcceptable = true;
                 } else {
                     nameAcceptable = false;
+                    console.log("ERROR - Invalid data at checkDataTypes function (String)\nOne of your input fields may be missing a value.");
+                    generateErrorMsg(form_id, "The value entered was not a string and/or one of your input fields may be missing a value.");
                 }
 
                 i++;
@@ -310,6 +328,7 @@ function checkDataTypes(data_type, input_class) {
                     floatAcceptable = true;
                 } else if (raw_field_data[i].value <= 0) {
                     console.log("ERROR - Invalid data at checkDataTypes function (Float)\n\t*Values less than or equal to 0 are not accepted.");
+                    generateErrorMsg(form_id, "Values less than or equal to 0 are not accepted.");
                     floatAcceptable = false;
                 } else if (raw_field_data[i].value.match(/\d+/) != null) {
                     // The input value is a positive non-zero number, therefore it is acceptable
@@ -317,6 +336,7 @@ function checkDataTypes(data_type, input_class) {
                 } else {
                     floatAcceptable = false;
                     console.log("ERROR - Invalid data at checkDataTypes function (Float)\n\t*One of your input fields may be missing a value.");
+                    generateErrorMsg(form_id, "The value entered was not an float and/or one of your input fields may be missing a value.");
                 }
                 
                 i++;
@@ -327,6 +347,7 @@ function checkDataTypes(data_type, input_class) {
 
         default:
             console.log("ERROR - Unknown datatype.");
+            generateErrorMsg(form_id, "The selected input fields are of an unknown datatype.");
     }
 
     return false;
@@ -550,18 +571,6 @@ function removeElement (element_class, element_type, isForm) {
             submit.remove();
         }
         
-    }
-}
-
-function clearErrors () {
-    let num_errors = document.querySelectorAll(".error_container").length;
-    // Check if there are existing elements generated
-    if (num_errors > 0) {
-        let errors_to_remove = document.getElementsByClassName("error_container");
-
-        for (var i = 0 ; i < num_errors ; i++) {
-            errors_to_remove[i].remove();
-        }
     }
 }
 

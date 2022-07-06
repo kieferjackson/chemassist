@@ -138,6 +138,11 @@ input:focus {
     border: 1px solid crimson;
     border-radius: 5px;
     padding: 10px;
+
+    max-width: fit-content;
+    width: 60%;
+
+    margin: 8px auto;
 }
 
 .error_msg {

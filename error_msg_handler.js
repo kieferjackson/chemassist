@@ -13,3 +13,16 @@ function generateErrorMsg (form_id, error_text) {
 
     form.appendChild(error_container);
 }
+
+function clearErrors () {
+    let num_errors = document.querySelectorAll(".error_container").length;
+    // Check if there are existing elements generated
+    if (num_errors > 0) {
+        let errors_to_remove = document.getElementsByClassName("error_container");
+        // debugger;
+        for (var i = num_errors - 1 ; i > 0 ; i--) {
+            // debugger;
+            errors_to_remove[i].remove();
+        }
+    }
+}
