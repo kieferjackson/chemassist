@@ -75,13 +75,17 @@ function startDataSorting() {
     funcStats[FUNC_A].isReference = false;
     funcStats[FUNC_B].isReference = false;
 
+    // Loop through each functional group, examining their stat counts to set whether or not they are an appropiate reference group
     for (var i = 0 ; i < 2 ; i++) {
         // Check that the functional group has at least 1 mass or more and that the total number of knowns for percent and mass are greater than or equal to the number of comonomers
         funcStats[i].isReference = monomerStatCount[i].mass >= 1 && ((monomerStatCount[i].mass + monomerStatCount[i].percent) >= funcStats[i].num);
+
         if (funcStats[i].isReference === true) {
+            // Set the reference group to the current iteration
             func_ref = i;
         }
 
+        // Set the complimentary group based on the current reference group set
         if (func_ref === FUNC_A) {
             func_comp = FUNC_B;
         } else if (func_ref === FUNC_B) {
@@ -91,7 +95,7 @@ function startDataSorting() {
 
     // If both functional groups are valid as reference groups for any reason(s), the one with more knowns and/or masses will be chosen as the reference group
     if (funcStats[FUNC_A].isReference === true && funcStats[FUNC_B].isReference === true) {
-        // A greater offset signifies a functional group with more information given, which indicates a more suitable reference group
+        // A greater offset signifies a functional group with more information given, which indicates a more suitable reference group (assuming the user gives more info for the reference)
         funcA_known_offset = (monomerStatCount[FUNC_A].mass + monomerStatCount[FUNC_A].percent) - funcStats[FUNC_A].num;
         funcB_known_offset = (monomerStatCount[FUNC_B].mass + monomerStatCount[FUNC_B].percent) - funcStats[FUNC_B].num;
 
@@ -147,7 +151,7 @@ function startDataSorting() {
 function routeFinder(i, funcType) {
 
     /*  Route Finder:
-        (1) - Determine what is known values for monomers by boolean expressions
+        (1) - Determine what are known values for monomers by boolean expressions based on stat counts
         (2) - Select an appropiate calculation route for reference and complimentary groups
     */
 
@@ -212,6 +216,12 @@ function routeFinder(i, funcType) {
 
             }
             
+            /*
+             *  Percent & Mass Route - The conditions of this route are designed so that calculations are performed using one's comonomer with both a mass
+             *  and percent given as a 'reference comonomer', where the ratio between mass and percent can be used for other comonomers with only percent
+             *  given. It is the most general calculation route for the reference group because its requirements are less strict than others and it can have 
+             *  a wide range of possible inputs.
+             */
             else if (percent_and_mass === true) {
                 switch (funcStats[func_ref].percent_type) {
                     case 'weight':
@@ -223,6 +233,7 @@ function routeFinder(i, funcType) {
                 }
             }
             
+            // No calculation route was able to be found for the reference group with the information given
             else {
                 console.log("No calculation route could be found for your reference group.\n\tIt may be missing key information (mass) and/or not have enough information:\n\tNUMBER OF KNOWNS SHOULD BE GREATER THAN OR EQUAL TO NUMBER OF MONOMERS");
             }
@@ -230,16 +241,42 @@ function routeFinder(i, funcType) {
             break;
 
         case 'COMPLIMENTARY':
+            /*
+             *  All Percent Route - Complimentary calculations do not require mass to be given for calculations to be possible. In fact, it is preferred
+             *  that only percents are given because their calculations are based around the the mole sum calculated from the reference groups mole sum multiplied
+             *  by the molar equivalents of the complimentary group.  
+             * 
+             *  This route is also not separated into 'All Mole Percent' and 'All Weight Percent' because
+             *  only minor branching is required within the route to accomodate both percents.
+             */
             if ((all_percent || almost_all_percent) === true) {
                 console.log("Your calculation route for complimentary group is: All Percent");
                 return 'ALLPERCENTROUTE';
             }
 
+            /*
+             *  Given Mass Route - Mass being given for a complimentary group is unconventional, but it is still possible provided that the mole values of the
+             *  given masses do not exceed the calculated mole sum of the complimentary group. Essentially, the mass values are converted to moles, then their
+             *  moles are divided by the mole sum to find mole percents for all but one of the comonomers. The final comonomer's mole percent is found by finding
+             *  the difference between 100 and the partial mole percent sum.  With this unknown comonomer's mole percent found, its moles are found by multiplying
+             *  the percent by the total sum, then converted to mass. From there, weights percents are found by summing all the mass values and dividing each one by it.
+             * 
+             *  In this case, no percents are given and only n - 1 masses are given.  If all the masses or any percents were given, then a separate calculation route 
+             *  is required to consider the possible user error.
+             */
             else if (almost_all_mass === true && percent_present === false) {
                 console.log("Your calculation route for complimentary group is: Given Mass");
                 return 'GIVENMASSROUTE';
             }
 
+            /*  
+             *  Zipper Route - The conditions of this route are similar to the reference groups Zipper Route (refer to that above), but where they differ
+             *  is that the complimentary group requires that one of the comonomers is unknown. An unknown is required so that there is 'wiggle room' for 
+             *  complimentary calculations since they are based on the reference group, it is also limited by it as well.  
+             * 
+             *  Different routes are required for weight and mole percents because their calculations diverge so greatly, that they cannot be part of the
+             *  same route with minor branching as is the case for some other routes.
+             */
             else if (monomerStatCount[i].zprMethod === (funcStats[i].num - 1) && funcStats[i].percent_type === 'mole') {
                 console.log("Your calculation route for complimentary group is: Mol Percent Zipper");
                 return 'MLP_ZIPPERROUTE';
@@ -250,6 +287,7 @@ function routeFinder(i, funcType) {
                 return 'WTP_ZIPPERROUTE';
             }
 
+            // No calculation route was able to be found for the complimentary group with the information given
             else {
                 console.log("No calculation route could be found for your complimentary group.\n\tIt may not have enough information:\n\tNUMBER OF KNOWNS SHOULD BE GREATER THAN OR EQUAL TO (NUMBER OF MONOMERS - 1)");
             }
