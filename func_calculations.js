@@ -470,21 +470,45 @@ function doComplimentaryCalculations(route) {
         {
             /*  
              *  For this calculation route, the mass sum must be calculated first so that all other values can be calculated as needed.
-             *  However, calculating the mass sum is complicated by the need to convert weight percent values to mole percents without all of them being known
-             *  like in the All Percent Route above. As such, a different methodology is required where the known masses are used to establish the starting
-             *  mole percents, whereas the weight percents must account for the unknown comonomer's weight percent.
+             *  However, calculating the mass sum is complicated by the existence of two unknowns: the mass sum and the mass of the unknown comonomer. 
+             *  As such, to calculate the mass sum, there are two equations which consider the knowns and unknowns for the mass and weight percents.
+             *  For these two equations, the first of them works on the basis that once the known masses' moles are subtracted from the total moles, we
+             *  end up with the remaining moles which are occupied by the remaining weight percents and the unknown comonomer. The second of the two 
+             *  works on the basis that once the weight percents are subtracted from 100 to find the remaining weight percent, this remaining weight percent
+             *  is occupied by the remaining masses and unknown comonomer.
              * 
-             *  The main issue that has to be solved in this route is eliminating as many unknown variables as possible so that there is only one remaining.
+             *  The main issue that has to be solved in this route is eliminating the two unknown variables present so that there is only one remaining.
              *  In this case, the one unknown variable to determine is the total mass sum.  This is accomplished by:
              *      (1) finding the total moles that the weight percents and unknown account for (e.g. if the total moles were 0.8 mol, and the moles accounted 
              *          by the masses were 0.15 mol, then this value would be 0.65 mol). 
              *      (2) then, for each weight percent, its percent is treated as a real number (between 0 and 1) divided by its respective molar mass to bring it
-             *          into terms of moles, and these values are summed to give the weight percents' contribution to the mole sum.
-             *      (3) Finding the moles contributed by the weight percent(s) and unknown is done by adding the weight percent's mole sum found in the previous step,
-             *          and then adding the unknown's contribution, calculated using the partial percent sum and its molar mass to put it in terms of moles.
-             *      (4) To find mass sum, the partial mole sum found with the given masses is offset by the offset given by the unknown's molar mass. This value is 
-             *          then divied by the mass contributed by weight percent(s) and the unknown
-             *  
+             *          into terms of moles / grams, and these values are summed to give the weight percents' contribution to the mole sum.
+             *      (3) the weight percent occupied by the masses and unknown are calculated by summing the given weight percents, then later finding the difference
+             *          between that value and 100 (e.g. if the summed weight percents were 30%, then this value would be 70 wt%).
+             *      (4) with the weight percent occupied by mass and the unknown, it is set equal to each mass divided by total mass (x) and the unknown mass divided 
+             *          by x as well. This equation can be rearranged so that it set equal to the value of the unknown's mass.
+             *      (5) with two equations with two unknowns, one of the the unknown variables can be eliminated and the total mass can be solved for.
+             * 
+             *  -------- KNOWN VALUES --------
+             *  wtp = Weight Percent Value Given for n# comonomer
+             *  mas = Mass Value Value Given for n# comonomer
+             *  mom = Molar Mass Value Given for n# comonomer
+             *  ------- UNKNOWN VALUES -------
+             *  ??? = Unknown Comonomer
+             *  x = total_mass
+             * 
+             *  [-] - Indicates that a value is not given or able to calculated immediately
+             * 
+             *      I:      part_mol_sum = sum((wtp_n1 / mom_n1) * [x] + (wtp_n2 / mom_n2) * [x] + ...) + [???_mas] / ???_mom
+             *      II:     ((100.0 - part_percent_sum) / 100.0) =  sum((mas_n1 / [x]) + (mas_n2 / [x]) + ...) + [???_mas] / [x]
+             * 
+             *  Combine equations I & II...
+             *      III:    part_mol_sum = sum((wtp_n1 / mom_n1) * [x] + (wtp_n2 / mom_n2) * [x] + ...) + ((100.0 - part_percent_sum) / 100.0) [x] / ???_mom + sum(mas_n1 + mas_n2 + ...)
+             *                  Now the only unknown is x (total mass), and it can be solved for.
+             * 
+             *  Rearranged to be set equal to total mass...
+             *      IV:     x = (part_mol_sum + unknown_mol_offset) / (percent_contribution_to_mol_sum + ((100.0 - part_percent_sum) / 100.0) / ???_mom)
+             * 
              */
             var mol_sum = [];
             
@@ -501,11 +525,14 @@ function doComplimentaryCalculations(route) {
             {
                 if (monomerStats[q].mass != 0.0)
                 {
+                    // Mass is given, so calculate moles and mole percent
                     monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
                     monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum[func_comp]) * 100.0;
                     
+                    // The unknown mole offset is the value gained by rearranging equation II to move x to the other side, leaving the sum of the known masses
                     unknown_mol_offset += (monomerStats[q].mass / monomerStats[funcStats[func_comp].unknown].molar_mass);
                     
+                    // (1) - Subtracting the given moles from the total to give the moles associated with the weights percents and unknown comonomer
                     part_mol_sum -= monomerStats[q].moles;
 
                 }
@@ -513,23 +540,29 @@ function doComplimentaryCalculations(route) {
                 else if (monomerStats[q].wpercent != 0.0)
                 {
                     let wumbo_factor = (monomerStats[q].wpercent / 100.0) / monomerStats[q].molar_mass;
+                    // (2) - Represents the moles that the weight percents contribute to the total, the partial mole sum from (2) is divided by these values' sum
                     percent_contribution_to_mol_sum += wumbo_factor;
                     
+                    // (3) - The difference between this value and 100 is the weight percent occupied by the known masses and unknown comonomers
                     part_percent_sum += monomerStats[q].wpercent;
                 }
             }
             
+            // (4) & (5) - The following two calculations represent a two-step version of equation IV
             let all_non_mass_mol_contribution = percent_contribution_to_mol_sum + (((100.0 - part_percent_sum) / 100.0) / monomerStats[funcStats[func_comp].unknown].molar_mass);
             var mass_sum = (part_mol_sum + unknown_mol_offset) / all_non_mass_mol_contribution;
             
+            // Iterate through each comonomer with values given and find its remaining values
             for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
             {
+                // For known masses, calculate their weight percents using the mass sum
                 if (monomerStats[q].mass != 0.0)
                 {
                     monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
                     part_percent_sum += monomerStats[q].wpercent;
                 }
                 
+                // For known weight percents, calculate their mass using the mass sum, then their moles and mole percent
                 else if (monomerStats[q].wpercent != 0.0)
                 {
                     monomerStats[q].mass = (monomerStats[q].wpercent / 100.0) * mass_sum;
