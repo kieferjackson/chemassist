@@ -22,8 +22,10 @@ function displayFinalResults() {
         var wpercent_sum = sumMonomerStat(i, "wpercent");
         var mpercent_sum = sumMonomerStat(i, "mpercent");
 
-        let wpercentsOK = wpercent_sum > 99.9999 && wpercent_sum < 100.0001;
-        let mpercentsOK = mpercent_sum > 99.9999 && mpercent_sum < 100.0001;
+        const TOLERANCE = 0.0001;
+
+        let wpercentsOK = compareFloatValues(wpercent_sum, 100, TOLERANCE);
+        let mpercentsOK = compareFloatValues(mpercent_sum, 100, TOLERANCE);
         
         var h2;
 
@@ -35,7 +37,7 @@ function displayFinalResults() {
             console.log("Something is wrong with the given or calculated weight percent values.");
             h2.style.color = 'red';
         } else if (!mpercentsOK) {
-            h2 = generateHeading("h2", func_name, "group_heading", "Results | Bad Moles Percent(s)");
+            h2 = generateHeading("h2", func_name, "group_heading", "Results | Bad Mole Percent(s)");
             console.log("Something is wrong with the given or calculated mole percent values.");
             h2.style.color = 'red';
         } else {

@@ -164,10 +164,31 @@ function routeFinder(i, funcType) {
     let almost_all_mass = monomerStatCount[i].mass === funcStats[i].num - 1;
     let almost_all_percent = monomerStatCount[i].percent === funcStats[i].num - 1;
 
-    let percent_and_mass = all_percent && mass_present;   // Checks if all weight percents are known and there is at least one mass
+    // Checks that there are sufficient weight percents known and at least one mass
+    let percent_and_mass = (all_percent && mass_present) || (almost_all_percent && mass_present);
 
     let zpr_possible = monomerStatCount[i].zprMethod === funcStats[i].num && mass_present === true;
     let tetris_possible = monomerStatCount[i].tts_refFound === true && funcStats[i].unknown != null;
+
+    let minimum_info, excess_info;
+
+    switch (funcType) {
+        case 'REFERENCE':
+            let ref_knowns = monomerStatCount[i].mass + monomerStatCount[i].percent;
+            let ref_n = funcStats[i].num;
+
+            minimum_info = ref_knowns === ref_n;
+            excess_info = ref_knowns > ref_n;
+            break;
+
+        case 'COMPLIMENTARY':
+            let comp_knowns = monomerStatCount[i].mass + monomerStatCount[i].percent;
+            let comp_n = funcStats[i].num;
+
+            minimum_info = comp_knowns === comp_n - 1;
+            excess_info = comp_knowns > comp_n - 1;
+            break;
+    }
 
     // (2)
     switch(funcType) {
@@ -277,14 +298,39 @@ function routeFinder(i, funcType) {
              *  Different routes are required for weight and mole percents because their calculations diverge so greatly, that they cannot be part of the
              *  same route with minor branching as is the case for some other routes.
              */
-            else if (monomerStatCount[i].zprMethod === (funcStats[i].num - 1) && funcStats[i].percent_type === 'mole') {
-                console.log("Your calculation route for complimentary group is: Mol Percent Zipper");
-                return 'MLP_ZIPPERROUTE';
+            else if (monomerStatCount[i].zprMethod === (funcStats[i].num - 1)) {
+                switch (funcStats[i].percent_type) {
+                    case 'mole':
+                        console.log("Your calculation route for complimentary group is: Mol Percent Zipper");
+                        return 'MLP_ZIPPERROUTE';
+                    case 'weight':
+                        console.log("Your calculation route for complimentary group is: Wt Percent Zipper");
+                        return 'WTP_ZIPPERROUTE';
+                }
             }
 
-            else if (monomerStatCount[i].zprMethod === (funcStats[i].num - 1) && funcStats[i].percent_type === 'weight') {
-                console.log("Your calculation route for complimentary group is: Wt Percent Zipper");
-                return 'WTP_ZIPPERROUTE';
+            /*
+             *  For both reference and complimentary groups, it is actually preferable that a user enters the minimum input necessary, but
+             *  in the event that user enters more than necessary, this calculation route is intended to account for that. Excess information
+             *  is oftentimes prone to error (e.g. percent sums don't add up to 100, or ratios between mass and percent don't match between
+             *  different comonomers). As a result, that possibility needs to be considered, and either reject the user's input or complete
+             *  the calculation if there are no errors.
+             */
+            else if (excess_info) {
+                if (all_mass) {
+                    console.log("Your calculation route for complimentary group is: Excess Mass");
+                    return 'XS_MASSROUTE';
+                } else if (all_percent && mass_present) {
+                    switch (funcStats[i].percent_type) {
+                        case 'mole':
+                            console.log("Your calculation route for complimentary group is: Excess Ml% + Mass");
+                            return 'XS_MLPROUTE';
+                        case 'weight':
+                            console.log("Your calculation route for complimentary group is: Excess Wt% + Mass");
+                            return 'XS_WTPROUTE';
+                    }
+                }
+                
             }
 
             // No calculation route was able to be found for the complimentary group with the information given

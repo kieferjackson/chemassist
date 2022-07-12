@@ -579,7 +579,145 @@ function doComplimentaryCalculations(route) {
             
             break;
         }
+
+        case 'XS_MASSROUTE':
+        {
+            // Initalize mole sum array to hold the mole sums for both reference group and complimentary group
+            var mol_sum = [];
+
+            // Find the mole sum for the reference group
+            mol_sum[func_ref] = sumMonomerStat(func_ref, "moles");
+            // The mole sum for the complimentary group should be the following value because it is based on the reference functional group
+            mol_sum[func_comp] = (mol_sum[func_ref] / funcStats[func_ref].molar_eq) * funcStats[func_comp].molar_eq;
+
+            // Calculate the moles of masses given by the user
+            for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++) {
+                monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
+            }
+
+            let user_mol_sum = sumMonomerStat(func_comp, "moles");
+            const TOLERANCE = 0.0001;
+
+            // Validate that the user's mole sum is equivalent to the calculated mole sum within reasonable error
+            user_mol_sum_valid = compareFloatValues(user_mol_sum, mol_sum[func_comp], TOLERANCE);
+            
+            if (!user_mol_sum_valid) {
+                // The user's masses did not match the expected mole sum for the complimentary group
+                console.log("Calculated mole sum does not match user given values...");
+                generateErrorMsg("monomer_data_entry", `The masses given did not match the calculated mole sum for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
+                return;
+            }
+            
+            if (funcStats[func_comp].num === 1) {
+                // If the complimentary group only has 1 comonomer, then its percent values for both weight and mole can only be 100.
+                monomerStats[funcStats[func_comp].unknown].wpercent = 100.0;
+                monomerStats[funcStats[func_comp].unknown].mpercent = 100.0;
+            } else {
+                // The complimentary group has more than 1 comonomer, therefore the ratio between different comonomers and their percents may differ and lead to error
+                
+                // Array to store the indexes of comonomers with mass and a percent value given
+                let mass_percent_comonomers = [];
+
+                // Get the indexes of all comonomers with percent given (mass is assumed given for all comonomers)
+                for (var q = funcStats[func_comp].start, w = 0 ; q < funcStats[func_comp].end ; q++) {
+                    if (monomerStats[q].wpercent != 0 || monomerStats[q].mpercent) {
+                        mass_percent_comonomers[w] = q;
+                        w++;
+                    }
+                }
+
+                if (mass_percent_comonomers.length > 1) {
+                    /* 
+                     *  CHECK THAT GIVEN MOLE PERCENTS MATCH EXPECTED MOLE PERCENT 
+                     */
+                    
+                    // If mole percent is chosen, a given mole percent may not match the expected mole percent based on the calculated moles of each given mass
+                    if (funcStats[func_comp].percent_type === 'mole') {
+                        // Check that the mole percent from mass and the given mole percent match
+                        for (var i = 0 ; i < mass_percent_comonomers.length ; i++) {
+                            let index = mass_percent_comonomers[i];
+                            let expected_mol_percent = monomerStats[index].moles / mol_sum[func_comp];
+                            let given_mol_percent = monomerStats[index].mpercent;
+
+                            let mol_percents_match = compareFloatValues(expected_mol_percent, given_mol_percent, TOLERANCE);
+                            
+                            if (!mol_percents_match) {
+                                console.log("The given mole percents do not match the expected mole percent");
+                                generateErrorMsg("monomer_data_entry", `The given mole percents do not match the expected mole percent for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
+                                return;
+                            }
+                        }
+                    }
+
+                    /*
+                     *  CHECK RATIOS BETWEEN MASS/MOLES AND THEIR PERCENT VALUES
+                     */
+
+                    // Set the reference comonomer to the first one in the index. Any ratio value which differ from this reference are invalid
+                    let reference_index = mass_percent_comonomers[0];
+                    let reference_ratio;
+                    
+                    switch(funcStats[func_comp].percent_type) {
+                        case 'weight':
+                            reference_ratio = monomerStats[reference_index].mass / monomerStats[reference_index].wpercent;
+                            break;
+                        case 'mole':
+                            reference_ratio = monomerStats[reference_index].moles / monomerStats[reference_index].mpercent;
+                            break;
+                    }
+
+                    // Check ratios of mass to percent for comonomers with both given
+                    for (var i = 0 ; i < mass_percent_comonomers.length ; i++) {
+                        let index = mass_percent_comonomers[i];
+
+                        switch(funcStats[func_comp].percent_type) {
+                            case 'weight':
+                                let g_per_percent = monomerStats[index].mass / monomerStats[index].wpercent;
+                                let wt_ratios_match = compareFloatValues(g_per_percent, reference_ratio, TOLERANCE);
+
+                                if (!wt_ratios_match) {
+                                    console.log("The ratio between mass and weight percents did not all match for complimentary group");
+                                    generateErrorMsg("monomer_data_entry", `The ratios between masses and percents did not all match for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
+                                    return;
+                                }
+                                break;
+                            case 'mole':
+                                let mol_per_percent = monomerStats[index].moles / monomerStats[index].mpercent;
+                                let ml_ratios_match = compareFloatValues(mol_per_percent, reference_ratio, TOLERANCE);
+
+                                if (!ml_ratios_match) {
+                                    console.log("The ratio between moles and mole percents did not all match for complimentary group");
+                                    generateErrorMsg("monomer_data_entry", `The ratios between calculated moles and percents did not all match for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
+                                    return;
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+
+            /*
+             *  VALUES ARE OK - PROCEED WITH CALCULATIONS
+             */
+
+            let mass_sum = sumMonomerStat(func_comp, "mass");
+            
+            // Calculate the wt% and ml% for all comonomers for groups with more than 1 comonomer regardless if they are already given
+            if (funcStats[func_comp].num > 1) {
+                for (var q = funcStats[func_comp].start, w = 0 ; q < funcStats[func_comp].end ; q++) {
+                    monomerStats[q].wpercent = monomerStats[q].mass / mass_sum;
+                    monomerStats[q].mpercent = monomerStats[q].moles / mol_sum[func_comp];
+                }    
+            }
+            
+            break;
+        }
     }
+}
+
+function compareFloatValues (value_to_compare, reference_value, TOLERANCE) {
+    // Compare values and return an boolean value depending on whether or not the value to compare falls within the range of tolerance
+    return ((value_to_compare > (reference_value - TOLERANCE)) && (value_to_compare < (reference_value + TOLERANCE)));
 }
 
 function sumMonomerStat(func_group, object_stat) {
