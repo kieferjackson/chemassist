@@ -10,13 +10,14 @@ function startDataSorting() {
     for (var i = 0 ; i < 2 ; i++) {
 
         /*  Stat Counter - The number of knowns are counted for each functional groups in addition to determining certain calculation conditions.
-         *      mass, percent, and zprMethod properties are incremented depending on if their specific conditions are met
+         *      mass, percent, determined, and zprMethod properties are incremented depending on if their specific conditions are met
          *      tts_ref is the index for the reference comonomer for any functional group which fulfils the requirements of the tetris route
          *      tts_refFound is a simple flag for deciding calculation routes to indicate that the tetris route has a reference comonomer.
          */
         monomerStatCount[i] = {
             mass:         0,
             percent:      0,
+            determined:   0,
             zprMethod:    0,
             tts_ref:      0,
             tts_refFound: false
@@ -31,6 +32,11 @@ function startDataSorting() {
             // Increment Percent Count if it is a positive number
             if (monomerStats[q].wpercent != 0 || monomerStats[q].mpercent != 0) {
                 monomerStatCount[i].percent += 1;
+            }
+
+            // Increment Determined Count if both Mass and Percent are a positive number
+            if (monomerStats[q].mass != 0 && (monomerStats[q].wpercent != 0 || monomerStats[q].mpercent != 0)) {
+                monomerStatCount[i].determined += 1;
             }
 
             // Zipper Route - Requires that the number of comonomers is greater than or equal to 2 and that every comonomer either has only mass or percent known
@@ -158,6 +164,7 @@ function routeFinder(i, funcType) {
     // (1)
     let mass_present = monomerStatCount[i].mass >= 1;
     let percent_present = monomerStatCount[i].percent >= 1;
+    let determined_present = monomerStatCount[i].determined >= 1;
 
     let all_mass = monomerStatCount[i].mass === funcStats[i].num;
     let all_percent = monomerStatCount[i].percent === funcStats[i].num;
@@ -189,7 +196,7 @@ function routeFinder(i, funcType) {
             excess_info = comp_knowns > comp_n - 1;
             break;
     }
-
+    debugger;
     // (2)
     switch(funcType) {
         case 'REFERENCE':
@@ -298,7 +305,7 @@ function routeFinder(i, funcType) {
              *  Different routes are required for weight and mole percents because their calculations diverge so greatly, that they cannot be part of the
              *  same route with minor branching as is the case for some other routes.
              */
-            else if (monomerStatCount[i].zprMethod === (funcStats[i].num - 1)) {
+            else if (monomerStatCount[i].zprMethod === (funcStats[i].num - 1) && !determined_present) {
                 switch (funcStats[i].percent_type) {
                     case 'mole':
                         console.log("Your calculation route for complimentary group is: Mol Percent Zipper");

@@ -22,7 +22,7 @@ function displayFinalResults() {
         var wpercent_sum = sumMonomerStat(i, "wpercent");
         var mpercent_sum = sumMonomerStat(i, "mpercent");
 
-        const TOLERANCE = 0.0001;
+        const TOLERANCE = 0.001;
 
         let wpercentsOK = compareFloatValues(wpercent_sum, 100, TOLERANCE);
         let mpercentsOK = compareFloatValues(mpercent_sum, 100, TOLERANCE);

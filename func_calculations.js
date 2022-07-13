@@ -607,6 +607,23 @@ function doComplimentaryCalculations(route) {
                 generateErrorMsg("monomer_data_entry", `The masses given did not match the calculated mole sum for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
                 return;
             }
+
+            let mass_sum = sumMonomerStat(func_comp, "mass");
+            
+            // Calculate the wt% and ml% for all comonomers for groups with more than 1 comonomer
+            if (funcStats[func_comp].num > 1) {
+                for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++) {
+                    // Calculate comonomer's wt% based on mass and mass sum
+                    if (monomerStats[q].wpercent === 0) {
+                        monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100;
+                    }
+
+                    // Calculate comonomer's ml% based on moles and mole sum
+                    if (monomerStats[q].mpercent === 0) {
+                        monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum[func_comp]) * 100;
+                    }
+                }    
+            }
             
             if (funcStats[func_comp].num === 1) {
                 // If the complimentary group only has 1 comonomer, then its percent values for both weight and mole can only be 100.
@@ -620,7 +637,7 @@ function doComplimentaryCalculations(route) {
 
                 // Get the indexes of all comonomers with percent given (mass is assumed given for all comonomers)
                 for (var q = funcStats[func_comp].start, w = 0 ; q < funcStats[func_comp].end ; q++) {
-                    if (monomerStats[q].wpercent != 0 || monomerStats[q].mpercent) {
+                    if (monomerStats[q].wpercent != 0 || monomerStats[q].mpercent != 0) {
                         mass_percent_comonomers[w] = q;
                         w++;
                     }
@@ -694,20 +711,6 @@ function doComplimentaryCalculations(route) {
                         }
                     }
                 }
-            }
-
-            /*
-             *  VALUES ARE OK - PROCEED WITH CALCULATIONS
-             */
-
-            let mass_sum = sumMonomerStat(func_comp, "mass");
-            
-            // Calculate the wt% and ml% for all comonomers for groups with more than 1 comonomer regardless if they are already given
-            if (funcStats[func_comp].num > 1) {
-                for (var q = funcStats[func_comp].start, w = 0 ; q < funcStats[func_comp].end ; q++) {
-                    monomerStats[q].wpercent = monomerStats[q].mass / mass_sum;
-                    monomerStats[q].mpercent = monomerStats[q].moles / mol_sum[func_comp];
-                }    
             }
             
             break;
