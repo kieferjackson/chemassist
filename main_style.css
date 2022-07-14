@@ -132,6 +132,15 @@ input:focus {
     outline: 1px solid #111;
 }
 
+input:disabled {
+    cursor: not-allowed;
+    outline: 1px solid var(--carbon-gray);
+}
+
+input:disabled:hover {
+    box-shadow: unset;
+}
+
 /* ---Error Message Styling--- */
 .error_container {
     background-color: rgb(230, 140, 137);

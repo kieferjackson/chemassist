@@ -10,17 +10,13 @@ function startDataSorting() {
     for (var i = 0 ; i < 2 ; i++) {
 
         /*  Stat Counter - The number of knowns are counted for each functional groups in addition to determining certain calculation conditions.
-         *      mass, percent, determined, and zprMethod properties are incremented depending on if their specific conditions are met
-         *      tts_ref is the index for the reference comonomer for any functional group which fulfils the requirements of the tetris route
-         *      tts_refFound is a simple flag for deciding calculation routes to indicate that the tetris route has a reference comonomer.
+         *      mass, percent, determined, and partial properties are incremented depending on if their specific conditions are met
          */
         monomerStatCount[i] = {
             mass:         0,
             percent:      0,
             determined:   0,
-            zprMethod:    0,
-            tts_ref:      0,
-            tts_refFound: false
+            partial:      0
         }
 
         for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
@@ -39,29 +35,24 @@ function startDataSorting() {
                 monomerStatCount[i].determined += 1;
             }
 
-            // Zipper Route - Requires that the number of comonomers is greater than or equal to 2 and that every comonomer either has only mass or percent known
+            // Increment Partial Count if Mass is a positive number and Percent is not given, and vice-versa
+            // (Counting partials is only necessary for groups with 2 or more comonomers)
             if (funcStats[i].num >= 2) {
                 switch (funcStats[i].percent_type) {
-                    // Increment Zipper Method if Mass is known but Weight Percent is unknown, and vice-versa
+                    // Increment Partial if Mass is known but Weight Percent is unknown, and vice-versa
                     case 'weight':
                         if ((monomerStats[q].mass != 0 && monomerStats[q].wpercent === 0) || (monomerStats[q].mass === 0 && monomerStats[q].wpercent != 0)) {
-                            monomerStatCount[i].zprMethod += 1;
+                            monomerStatCount[i].partial += 1;
                         }
                         break;
     
-                    // Increment Zipper Method if Mass is known but Mole Percent is unknown, and vice-versa
+                    // Increment Partial if Mass is known but Mole Percent is unknown, and vice-versa
                     case 'mole':
                         if ((monomerStats[q].mass != 0 && monomerStats[q].mpercent === 0) || (monomerStats[q].mass === 0 && monomerStats[q].mpercent != 0)) {
-                            monomerStatCount[i].zprMethod += 1;
+                            monomerStatCount[i].partial += 1;
                         }
                         break;
                 }
-            }
-
-            // Tetris Route - Requires a reference comonomer with both mass and percent known
-            if (monomerStatCount[i].tts_refFound === false && monomerStats[q].mass != 0 && (monomerStats[q].wpercent != 0 || monomerStats[q].mpercent != 0)) {
-                monomerStatCount[i].tts_ref = q;
-                monomerStatCount[i].tts_refFound = true;
             }
 
         };
@@ -137,21 +128,35 @@ function startDataSorting() {
     // Find calculation route for reference group
     ref_route = routeFinder(func_ref, "REFERENCE");
     // Perform reference calculations
-    doReferenceCalculations(ref_route);
+    let refCalcSuccessful = doReferenceCalculations(ref_route);
     console.log("Finished Calculations for Reference Group Yielded:");
     console.log(monomerStats);
 
-    // Find calculation route for complimentary group
-    comp_route = routeFinder(func_comp, "COMPLIMENTARY");
-    // Perform complimentary calculations
-    doComplimentaryCalculations(comp_route);
-    console.log("Finished Calculations for Complimentary Group Yielded:");
-    console.log(monomerStats);
+    // Check that there were no issues with reference calculations, proceed to complimentary calcultions if so
+    if (refCalcSuccessful) {
+        console.log("Reference Calculations were successful!");
 
-    // Remove the previous results generated if they exist
-    removeElement("final_results", "_results", false);
+        // Find calculation route for complimentary group
+        comp_route = routeFinder(func_comp, "COMPLIMENTARY");
+        // Perform complimentary calculations
+        let compCalcSuccessful = doComplimentaryCalculations(comp_route);
+        console.log("Finished Calculations for Complimentary Group Yielded:");
+        console.log(monomerStats);
 
-    displayFinalResults();
+        if (compCalcSuccessful) {
+            console.log("Complimentary Calculations were successful! Display Final Results!");
+
+            // Remove the previous results generated if they exist
+            removeElement("final_results", "_results", false);
+
+            displayFinalResults();
+        } else {
+            console.log("Complimentary Calculations failed...");
+        }
+    } else {
+        console.log("Reference Calculations failed...");
+    }
+    
 }
 
 function routeFinder(i, funcType) {
@@ -174,38 +179,52 @@ function routeFinder(i, funcType) {
     // Checks that there are sufficient weight percents known and at least one mass
     let percent_and_mass = (all_percent && mass_present) || (almost_all_percent && mass_present);
 
-    let zpr_possible = monomerStatCount[i].zprMethod === funcStats[i].num && mass_present === true;
-    let tetris_possible = monomerStatCount[i].tts_refFound === true && funcStats[i].unknown != null;
+    // The Tetris Route requires that there is a determined comonomer, 1 unknown comnomer, and that all remaining comonomers are partially known
+    let tetris_possible = determined_present && funcStats[i].unknown != null && (monomerStatCount[i].partial === funcStats[i].num - 2);
 
-    let minimum_info, excess_info;
+    // Scenarios which have special conditions depending on whether the functional group is reference or complimentary
+    let excess_info, zpr_possible;
 
     switch (funcType) {
         case 'REFERENCE':
             let ref_knowns = monomerStatCount[i].mass + monomerStatCount[i].percent;
+            // Number of comonomers given for reference group
             let ref_n = funcStats[i].num;
 
-            minimum_info = ref_knowns === ref_n;
+            // Only n information needs to be given for calculations to be possible, anything more is unnecessary and must be accounted for user error
             excess_info = ref_knowns > ref_n;
+
+            // The Reference Zipper Route requires that all comonomers be partially known with at least one mass given
+            zpr_possible = monomerStatCount[i].partial === ref_n && mass_present;
+
             break;
 
         case 'COMPLIMENTARY':
             let comp_knowns = monomerStatCount[i].mass + monomerStatCount[i].percent;
+            // Number of comonomers given for complimentary group
             let comp_n = funcStats[i].num;
 
-            minimum_info = comp_knowns === comp_n - 1;
+            // Only n - 1 information needs to be given for calculations to be possible, anything more is unnecessary and must be accounted for user error
             excess_info = comp_knowns > comp_n - 1;
+
+            // The Complimentary Zipper Route requires that nearly all comonomers be partially known with at least one mass given, and that there is an unknown comonomer present
+            zpr_possible = monomerStatCount[i].partial === comp_n - 1 && mass_present && funcStats[i].unknown != null;;
+            
             break;
     }
-    debugger;
+    
     // (2)
     switch(funcType) {
+        /* ************************************************************************************************************************
+         * NOTE: More detailed explanations of how each calculation route works can be found within the calculation route itself. *
+         ************************************************************************************************************************ */
         case 'REFERENCE':
             /*
              *  All Mass Route - This is the simplest calculation route because it can perform each calculation to find weight percents, mole
              *  percents, and moles through fairly simple methods. Any already entered percent values (which would go beyond the minimum required
              *  user input) are ignored and recalculated. 
              */
-            if (all_mass === true) {
+            if (all_mass) {
                 console.log("Your calculation route for reference group is: All Mass");
                 return 'ALLMASSROUTE';
             }
@@ -216,7 +235,7 @@ function routeFinder(i, funcType) {
              *  because the percents are added up, and the difference between 100 and those summed up percents gives the "partial mass percent".
              *  The partial mass percent then allows for their particular percent values to be found by using the proportions between masses.
              */
-            else if (zpr_possible === true) {
+            else if (zpr_possible) {
                 switch (funcStats[func_ref].percent_type) {
                     case 'weight':
                         console.log("Your calculation route for reference group is: wt% Zipper");
@@ -229,16 +248,20 @@ function routeFinder(i, funcType) {
             }
 
             /*
-             *  Tetris Route - A reference comonomer is required for the tetris route to be possible. As well, there must be an unknown comonomer
+             *  Tetris Route - A reference comonomer is required for the tetris route to be possible. As well, there must be an unknown comonomer and
+             *  every remaining comonomer must be partially known. The reference comonomer is used in order to obtain the ratio between mass/mole and
+             *  weight/mole percents respectively, so that all remaining partially known comonomer can have their undetermined value calculated using
+             *  the calculated ratio. In the end, the only remaining comonomer is the unknown, which can be found since all other values have already
+             *  been determined.
              *  
              */
-            else if (tetris_possible === true) {
+            else if (tetris_possible) {
                 switch (funcStats[func_ref].percent_type) {
                     case 'weight':
-                        console.log("Your calculation route for reference group is: wt% Zipper");
+                        console.log("Your calculation route for reference group is: wt% Tetris");
                         return 'WTP_TETRISROUTE';
                     case 'mole':
-                        console.log("Your calculation route for reference group is: ml% Zipper");
+                        console.log("Your calculation route for reference group is: ml% Tetris");
                         return 'MLP_TETRISROUTE';
                 }
 
@@ -277,7 +300,7 @@ function routeFinder(i, funcType) {
              *  This route is also not separated into 'All Mole Percent' and 'All Weight Percent' because
              *  only minor branching is required within the route to accomodate both percents.
              */
-            if ((all_percent || almost_all_percent) === true) {
+            if (all_percent || almost_all_percent) {
                 console.log("Your calculation route for complimentary group is: All Percent");
                 return 'ALLPERCENTROUTE';
             }
@@ -292,7 +315,7 @@ function routeFinder(i, funcType) {
              *  In this case, no percents are given and only n - 1 masses are given.  If all the masses or any percents were given, then a separate calculation route 
              *  is required to consider the possible user error.
              */
-            else if (almost_all_mass === true && percent_present === false) {
+            else if (almost_all_mass && !percent_present) {
                 console.log("Your calculation route for complimentary group is: Given Mass");
                 return 'GIVENMASSROUTE';
             }
@@ -305,7 +328,7 @@ function routeFinder(i, funcType) {
              *  Different routes are required for weight and mole percents because their calculations diverge so greatly, that they cannot be part of the
              *  same route with minor branching as is the case for some other routes.
              */
-            else if (monomerStatCount[i].zprMethod === (funcStats[i].num - 1) && !determined_present) {
+            else if (monomerStatCount[i].partial === (funcStats[i].num - 1) && !determined_present) {
                 switch (funcStats[i].percent_type) {
                     case 'mole':
                         console.log("Your calculation route for complimentary group is: Mol Percent Zipper");

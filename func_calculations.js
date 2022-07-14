@@ -22,8 +22,9 @@ function doReferenceCalculations(route) {
                     // Calculating Ml% from moles and total moles
                     monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum) * 100.0;
                 }
-                    
-                break;
+                   
+                // Calculations were successful for the All Mass Route
+                return true;
             }
 
             case 'WTP_ZIPPERROUTE':
@@ -62,7 +63,8 @@ function doReferenceCalculations(route) {
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
                     monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum) * 100.0;
                 
-                break;
+                // Calculations were successful for the Weight Percent Zipper Route
+                return true;
             }
 
             case 'MLP_ZIPPERROUTE':
@@ -111,16 +113,20 @@ function doReferenceCalculations(route) {
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
                     monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
                 
-                break;
+                // Calculations were successful for the Mole Percent Zipper Route
+                return true;
             }
 
             case 'WTP_TETRISROUTE':
             {
-                // Tetris reference comonomer is already known, so calculate its moles
-                monomerStats[monomerStatCount[func_ref].tts_ref].moles = monomerStats[monomerStatCount[func_ref].tts_ref].mass / monomerStats[monomerStatCount[func_ref].tts_ref].molar_mass;
+                // Find comonomer with both mass and percent given to act as reference
+                let tts_ref = findRefMonomer(func_ref);
+
+                // Tetris reference comonomer is already determined, so calculate its moles
+                monomerStats[tts_ref].moles = monomerStats[tts_ref].mass / monomerStats[tts_ref].molar_mass;
                 
                 // Find the ratio between mass and percent from the tetris refence comonomer
-                var g_per_percent = monomerStats[monomerStatCount[func_ref].tts_ref].mass / monomerStats[monomerStatCount[func_ref].tts_ref].wpercent;
+                var g_per_percent = monomerStats[tts_ref].mass / monomerStats[tts_ref].wpercent;
                 
                 // Iterate through each comonomer with either mass or percent known, and calculate their unknown using the ratio between mass and percent
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
@@ -153,16 +159,20 @@ function doReferenceCalculations(route) {
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
                     monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum) * 100.0;
                 
-                break;
+                // Calculations were successful for the Weight Percent Tetris Route
+                return true;
             }
 
             case 'MLP_TETRISROUTE':
             {
-                // Tetris reference comonomer is already known, so calculate its moles
-                monomerStats[monomerStatCount[func_ref].tts_ref].moles = monomerStats[monomerStatCount[func_ref].tts_ref].mass / monomerStats[monomerStatCount[func_ref].tts_ref].molar_mass;
+                // Find comonomer with both mass and percent given to act as reference
+                let tts_ref = findRefMonomer(func_ref);
+
+                // Tetris reference comonomer is already determined, so calculate its moles
+                monomerStats[tts_ref].moles = monomerStats[tts_ref].mass / monomerStats[tts_ref].molar_mass;
 
                 // Find the ratio between moles and percent from the tetris refence comonomer
-                var mol_per_percent = monomerStats[monomerStatCount[func_ref].tts_ref].moles / monomerStats[monomerStatCount[func_ref].tts_ref].mpercent;
+                var mol_per_percent = monomerStats[tts_ref].moles / monomerStats[tts_ref].mpercent;
                 
                 // Iterate through each comonomer with either mass or percent known, and calculate their unknown using the ratio between moles and percent
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
@@ -193,7 +203,8 @@ function doReferenceCalculations(route) {
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
                     monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
                 
-                break;
+                // Calculations were successful for the Mole Percent Tetris Route
+                return true;
             }
 
             case 'WTP_ALLPERCENT':
@@ -219,7 +230,8 @@ function doReferenceCalculations(route) {
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
                     monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum) * 100.0;
                 
-                break;
+                // Calculations were successful for the All Weight Percent Route
+                return true;
             }
 
             case 'MLP_ALLPERCENT':
@@ -252,7 +264,8 @@ function doReferenceCalculations(route) {
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
                     monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
                 
-                break;
+                // Calculations were successful for the All Mole Percent Route
+                return true;
             }
 
         }
@@ -364,7 +377,8 @@ function doComplimentaryCalculations(route) {
                     monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
             }
             
-            break;
+            // Calculations were successful for the All Percent Route
+            return true;
         }
 
         case 'GIVENMASSROUTE':
@@ -418,7 +432,8 @@ function doComplimentaryCalculations(route) {
             for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
                 monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
             
-            break;
+            // Calculations were successful for the Given Mass Route
+            return true;
         }
 
         case 'MLP_ZIPPERROUTE':
@@ -463,7 +478,8 @@ function doComplimentaryCalculations(route) {
             for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
                 monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
             
-            break;
+            // Calculations were successful for the Mole Percent Zipper Route
+            return true;
         }
 
         case 'WTP_ZIPPERROUTE':
@@ -577,7 +593,8 @@ function doComplimentaryCalculations(route) {
             monomerStats[funcStats[func_comp].unknown].moles = monomerStats[funcStats[func_comp].unknown].mass / monomerStats[funcStats[func_comp].unknown].molar_mass;
             monomerStats[funcStats[func_comp].unknown].mpercent = (monomerStats[funcStats[func_comp].unknown].moles / mol_sum[func_comp]) * 100.0;
             
-            break;
+            // Calculations were successful for the Weight Percent Zipper Route
+            return true;
         }
 
         case 'XS_MASSROUTE':
@@ -605,7 +622,7 @@ function doComplimentaryCalculations(route) {
                 // The user's masses did not match the expected mole sum for the complimentary group
                 console.log("Calculated mole sum does not match user given values...");
                 generateErrorMsg("monomer_data_entry", `The masses given did not match the calculated mole sum for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
-                return;
+                return false;
             }
 
             let mass_sum = sumMonomerStat(func_comp, "mass");
@@ -661,7 +678,7 @@ function doComplimentaryCalculations(route) {
                             if (!mol_percents_match) {
                                 console.log("The given mole percents do not match the expected mole percent");
                                 generateErrorMsg("monomer_data_entry", `The given mole percents do not match the expected mole percent for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
-                                return;
+                                return false;
                             }
                         }
                     }
@@ -695,7 +712,7 @@ function doComplimentaryCalculations(route) {
                                 if (!wt_ratios_match) {
                                     console.log("The ratio between mass and weight percents did not all match for complimentary group");
                                     generateErrorMsg("monomer_data_entry", `The ratios between masses and percents did not all match for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
-                                    return;
+                                    return false;
                                 }
                                 break;
                             case 'mole':
@@ -705,7 +722,7 @@ function doComplimentaryCalculations(route) {
                                 if (!ml_ratios_match) {
                                     console.log("The ratio between moles and mole percents did not all match for complimentary group");
                                     generateErrorMsg("monomer_data_entry", `The ratios between calculated moles and percents did not all match for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
-                                    return;
+                                    return false;
                                 }
                                 break;
                         }
@@ -713,7 +730,8 @@ function doComplimentaryCalculations(route) {
                 }
             }
             
-            break;
+            // Calculations were successful for the Excess Mass Route
+            return true;
         }
     }
 }
@@ -763,9 +781,9 @@ function sumMonomerStat(func_group, object_stat) {
 }
 
 function findRefMonomer(func_group) {
-
+    // Find a comonomer with both mass and percent given for a particular functional group
     for (var q = funcStats[func_group].start ; q < funcStats[func_group].end ; q++) {
-        if (monomerStats[q].mass != 0) {
+        if (monomerStats[q].mass != 0 && (monomerStats[q].wpercent != 0 || monomerStats[q].mpercent != 0)) {
             return q;
         }
     }

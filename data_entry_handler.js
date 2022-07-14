@@ -139,6 +139,9 @@ function getDynamicFormData() {
 
         // Monomer inputs valid, loop through the two functional groups to set their monomer values
         for (var i = 0 ; i < 2 ; i++) {
+            // Values to track the total percent given by the user (cannot exceed 100, and must be equivalent to 100 if all percents given)
+            let percents_given = 0;
+            let percents_given_sum = 0;
 
             // Loop through each comonomer in each functional group to set their inputted value
             for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
@@ -192,6 +195,25 @@ function getDynamicFormData() {
                     }
                 }
 
+                // Check that percent given is within acceptable bounds based on information given
+                switch (funcStats[i].percent_type) {
+                    case 'weight':
+                        // Record percent given for weight percent
+                        if (monomerStats[q].wpercent != 0) {
+                            percents_given++;
+                            percents_given_sum += monomerStats[q].wpercent;
+                        }
+                        break;
+
+                    case 'mole':
+                        // Record percent given for mole percent
+                        if (monomerStats[q].mpercent != 0) {
+                            percents_given++;
+                            percents_given_sum += monomerStats[q].mpercent;
+                        }
+                        break;
+                }
+
                 // Set entered molar mass for current comonomer, reject user input if molar mass field is blank
                 if (molar_mass_input.value != '') {
                     monomerStats[q].molar_mass = parseFloat(molar_mass_input.value);
@@ -204,12 +226,38 @@ function getDynamicFormData() {
                 }
                 
             }
+
+            // Check that percent values given are valid
+
+            // If not all percent values have been given/checked, the percent sum should be less than 100
+            if (percents_given < funcStats[i].num) {
+                let percentsAcceptable = percents_given_sum < 100;
+
+                if (!percentsAcceptable) {
+                    // Molar mass must be known for all comonomers for calculations to be possible
+                    console.log(`The sum of percent values given (${percents_given_sum}%) for ${funcStats[i].name} group are greater than or equal to 100%. Please enter valid percents and try again.`);
+                    generateErrorMsg("monomer_data_entry", `The sum of percent values given (${percents_given_sum}%) for ${funcStats[i].name} group are greater than or equal to 100%. Please enter valid percents and try again.`);
+                    inputsAcceptable = false;
+                }
+            } 
+            // If all percent values have been given/checked, the percent sum should be equal to 100
+            else if (percents_given === funcStats[i].num) {
+                let percentsAcceptable = percents_given_sum === 100;
+
+                if (!percentsAcceptable) {
+                    // Molar mass must be known for all comonomers for calculations to be possible
+                    console.log(`The sum of percent values given (${percents_given_sum}%) for ${funcStats[i].name} group is not equal to 100%. Please enter valid percents and try again.`);
+                    generateErrorMsg("monomer_data_entry", `The sum of percent values given (${percents_given_sum}%) for ${funcStats[i].name} group is not equal to 100%. Please enter valid percents and try again.`);
+                    inputsAcceptable = false;
+                }
+            }
+
         }
         
         if (inputsAcceptable) {
             /* 
              *  Initial data analysis indicates that there are no obvious issues with the given values. 
-             *  Further analysis is required to determine whether or not calculations are possible.
+             *  Further analysis is required to determine appropriate calculation routes.
              *  
              *  Data Sorting counts up the number of known values for mass and percent for each functional
              *  group. In addition, it will determine whether or not the 'Zipper' or 'Tetris' routes have
@@ -218,8 +266,8 @@ function getDynamicFormData() {
              */
             startDataSorting();
         } else {
-            console.log("There is not enough monomer information given for calculations to be possible.");
-            generateErrorMsg("monomer_data_entry", "There is not enough monomer information given for calculations to be possible.");
+            console.log("The monomer information given is insufficient for calculations to be possible.");
+            generateErrorMsg("monomer_data_entry", "The monomer information given is insufficient for calculations to be possible.");
         }
 
     } else {

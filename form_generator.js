@@ -38,6 +38,12 @@ function generateForm () {
             
             let percent = generateInputField("percent", func_name, q);
 
+            // Disable percent field if there is only one comonomer (percent can only be 100)
+            if (funcStats[i].num === 1) {
+                percent.placeholder = '100';
+                percent.disabled = true;
+            }
+
             // Generates Molar Mass field
             let molar_mass_label = generateLabel("Molar Mass (g/mol)", "molar_mass", func_name, q)
             let molar_mass = generateInputField("molar_mass", func_name, q);
