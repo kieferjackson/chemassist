@@ -13,10 +13,10 @@ function startDataSorting() {
          *      mass, percent, determined, and partial properties are incremented depending on if their specific conditions are met
          */
         monomerStatCount[i] = {
-            mass:         0,
-            percent:      0,
-            determined:   0,
-            partial:      0
+            mass:         0,    // Total number of masses given
+            percent:      0,    // Total number of percents given
+            determined:   0,    // Total number of comonomers with both mass and percent given
+            partial:      0     // Total number of comonomers with only either mass or percent given
         }
 
         for (var q = funcStats[i].start ; q < funcStats[i].end ; q++) {
@@ -176,9 +176,6 @@ function routeFinder(i, funcType) {
     let almost_all_mass = monomerStatCount[i].mass === funcStats[i].num - 1;
     let almost_all_percent = monomerStatCount[i].percent === funcStats[i].num - 1;
 
-    // Checks that there are sufficient weight percents known and at least one mass
-    let percent_and_mass = (all_percent && mass_present) || (almost_all_percent && mass_present);
-
     // The Tetris Route requires that there is a determined comonomer, 1 unknown comnomer, and that all remaining comonomers are partially known
     let tetris_possible = determined_present && funcStats[i].unknown != null && (monomerStatCount[i].partial === funcStats[i].num - 2);
 
@@ -268,19 +265,21 @@ function routeFinder(i, funcType) {
             }
             
             /*
-             *  Percent & Mass Route - The conditions of this route are designed so that calculations are performed using one's comonomer with both a mass
+             *  Excess Info Route - The conditions of this route are designed so that calculations are performed using one's comonomer with both a mass
              *  and percent given as a 'reference comonomer', where the ratio between mass and percent can be used for other comonomers with only percent
              *  given. It is the most general calculation route for the reference group because its requirements are less strict than others and it can have 
-             *  a wide range of possible inputs.
+             *  a wide range of possible inputs. However, it also has a greater chance of error, specifically with the ratios between mass and given percents.
+             *  As such, this calculation route attempts to account for possible user error and should cancel calculations if ever there is a conflict between
+             *  given and calculated values.
              */
-            else if (percent_and_mass === true) {
+            else if (excess_info) {
                 switch (funcStats[func_ref].percent_type) {
                     case 'weight':
-                        console.log("Your calculation route for reference group is: All wt%");
-                        return 'WTP_ALLPERCENT';
+                        console.log("Your calculation route for reference group is: Excess wt%");
+                        return 'XS_WTPROUTE';
                     case 'mole':
-                        console.log("Your calculation route for reference group is: All ml%");
-                        return 'MLP_ALLPERCENT';
+                        console.log("Your calculation route for reference group is: Excess ml%");
+                        return 'XS_MLPROUTE';
                 }
             }
             

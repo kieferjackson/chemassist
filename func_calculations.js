@@ -128,7 +128,7 @@ function doReferenceCalculations(route) {
                 // Find the ratio between mass and percent from the tetris refence comonomer
                 var g_per_percent = monomerStats[tts_ref].mass / monomerStats[tts_ref].wpercent;
                 
-                // Iterate through each comonomer with either mass or percent known, and calculate their unknown using the ratio between mass and percent
+                // Iterate through each comonomer with either mass or percent known, and calculate their undetermined values using the ratio between mass and percent
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
                 {
                     // Weight percent is known, so calculate the value for mass, then moles
@@ -148,9 +148,11 @@ function doReferenceCalculations(route) {
                 
                 // Find mass, wt%, and moles for unknown monomer
                 let part_percent_sum = sumMonomerStat(func_ref, "wpercent");
-                monomerStats[funcStats[func_ref].unknown].wpercent = 100.0 - part_percent_sum;
-                monomerStats[funcStats[func_ref].unknown].mass = monomerStats[funcStats[func_ref].unknown].wpercent * g_per_percent;
-                monomerStats[funcStats[func_ref].unknown].moles = monomerStats[funcStats[func_ref].unknown].mass / monomerStats[funcStats[func_ref].unknown].molar_mass;
+                // Get the index value for the unknown comonomer of the reference group
+                let unknown = funcStats[func_ref].unknown;
+                monomerStats[unknown].wpercent = 100.0 - part_percent_sum;
+                monomerStats[unknown].mass = monomerStats[unknown].wpercent * g_per_percent;
+                monomerStats[unknown].moles = monomerStats[unknown].mass / monomerStats[unknown].molar_mass;
                 
                 // Now that the unknown comonomer's moles have been calculated, all moles should be known, so calculate total moles
                 var mol_sum = sumMonomerStat(func_ref, "moles");
@@ -192,9 +194,11 @@ function doReferenceCalculations(route) {
                 
                 // Find mass, ml%, and moles for unknown monomer
                 let part_percent_sum = sumMonomerStat(func_ref, "mpercent");
-                monomerStats[funcStats[func_ref].unknown].mpercent = 100.0 - part_percent_sum;
-                monomerStats[funcStats[func_ref].unknown].moles = monomerStats[funcStats[func_ref].unknown].mpercent * mol_per_percent;
-                monomerStats[funcStats[func_ref].unknown].mass = monomerStats[funcStats[func_ref].unknown].moles * monomerStats[funcStats[func_ref].unknown].molar_mass;
+                // Get the index value for the unknown comonomer of the reference group
+                let unknown = funcStats[func_ref].unknown;
+                monomerStats[unknown].mpercent = 100.0 - part_percent_sum;
+                monomerStats[unknown].moles = monomerStats[unknown].mpercent * mol_per_percent;
+                monomerStats[unknown].mass = monomerStats[unknown].moles * monomerStats[unknown].molar_mass;
 
                 // Now that the unknown comonomer's mass has been calculated, all masses should be known, so calculate total mass
                 var mass_sum = sumMonomerStat(func_ref, "mass");
@@ -207,7 +211,7 @@ function doReferenceCalculations(route) {
                 return true;
             }
 
-            case 'WTP_ALLPERCENT':
+            case 'XS_WTPROUTE':
             {
                 // Find the index for the comonomer with a mass value given
                 let ref_monomer = findRefMonomer(func_ref);
@@ -216,12 +220,39 @@ function doReferenceCalculations(route) {
                 // Iterate through each comonomer and calculate their mass and moles
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
                 {
+                    // If both mass and percent given, then check their ratio to the reference
+                    if (monomerStats[q].mass != 0.0 && monomerStats[q].wpercent != 0.0) {
+                        let current_ratio = monomerStats[q].mass / monomerStats[q].wpercent;
+                        let wt_ratios_match = compareFloatValues(current_ratio, g_per_percent, 0.0001);
+
+                        if (!wt_ratios_match) {
+                            // The ratio between mass and percent for one of the comonomers did not match the reference within the tolerance
+                            console.log("Mass/Percent ratios don't match the reference...");
+                            generateErrorMsg("monomer_data_entry", `The ratios between mass and percents did not match the reference ratio for the reference (${funcStats[func_ref].name}) group. Please enter valid masses or remove invalid ones.`);
+                            return false;
+                        }
+                    }
+
                     // Mass is unknown, so calculate using ratio between mass and percent
-                    if (monomerStats[q].mass == 0.0)
+                    if (monomerStats[q].mass == 0.0 && monomerStats[q].wpercent != 0.0)
                         monomerStats[q].mass = monomerStats[q].wpercent * g_per_percent;
+
+                    // Weight percent is unknown, so calculate using ratio between mass and percent
+                    if (monomerStats[q].wpercent == 0.0 && monomerStats[q].mass != 0.0 )
+                        monomerStats[q].wpercent = monomerStats[q].mass / g_per_percent;
                     
                     // Mass should be known, so calculate moles using molar mass
                     monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
+                }
+
+                // Find wt%, mass, and moles for unknown monomer if there is one
+                if (funcStats[func_ref].unknown != null) {
+                    // Find the partial weight percent sum
+                    let part_percent_sum = sumMonomerStat(func_ref, "wpercent");
+                    let unknown = funcStats[func_ref].unknown;
+                    monomerStats[unknown].wpercent = 100.0 - part_percent_sum;
+                    monomerStats[unknown].mass = monomerStats[unknown].wpercent * g_per_percent;
+                    monomerStats[unknown].moles = monomerStats[unknown].mass / monomerStats[unknown].molar_mass;
                 }
                 
                 mol_sum = sumMonomerStat(func_ref, "moles");
@@ -234,7 +265,7 @@ function doReferenceCalculations(route) {
                 return true;
             }
 
-            case 'MLP_ALLPERCENT':
+            case 'XS_MLPROUTE':
             {
                 // Find the index for the comonomer with a mass value given
                 let ref_monomer = findRefMonomer(func_ref);
@@ -246,16 +277,44 @@ function doReferenceCalculations(route) {
                 // Iterate through each comonomer and calculate their mass and moles
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
                 {
-                    // Mass is unknown, so calculate mass and then moles using ratio between mass and percent
-                    if (monomerStats[q].mass == 0.0) {
-                        monomerStats[q].moles = monomerStats[q].mpercent * mol_per_percent;
-                        monomerStats[q].mass = monomerStats[q].moles * monomerStats[q].molar_mass;
+                    // If both mass and percent given, then check their ratio to the reference
+                    if (monomerStats[q].mass != 0.0 && monomerStats[q].mpercent != 0.0) {
+                        // Calculate the comonomer's moles
+                        monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
+
+                        let current_ratio = monomerStats[q].moles / monomerStats[q].mpercent;
+                        let ml_ratios_match = compareFloatValues(current_ratio, mol_per_percent, 0.0001);
+
+                        if (!ml_ratios_match) {
+                            // The ratio between moles and percent the current comonomer did not match the reference within tolerance
+                            console.log("Moles/Percent ratios don't match the reference...");
+                            generateErrorMsg("monomer_data_entry", `The ratios between moles and percents did not match the reference ratio for the reference (${funcStats[func_ref].name}) group. Please enter valid masses or remove invalid ones.`);
+                            return false;
+                        }
                     }
 
-                    // Moles are unknown but mass is known, so calculate moles using molar mass
-                    if (monomerStats[q].moles == 0.0) {
-                        monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
-                    }   
+                    // Mole percent is given but mass is undetermined, so calculate moles and mass using ratio between calculated moles and percent
+                    if (monomerStats[q].mass == 0.0 && monomerStats[q].mpercent != 0.0 ) {
+                        monomerStats[q].moles = monomerStats[q].mpercent * mol_per_percent;
+                        monomerStats[q].mass = monomerStats[q].moles * monomerStats[q].molar_mass;
+                    } 
+
+                    // Mass is given but mole percent is undetermined, so calculate using ratio between calculated moles and percent
+                    if (monomerStats[q].mpercent == 0.0 && monomerStats[q].mass != 0.0 ) {
+                        monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass
+                        monomerStats[q].mpercent = monomerStats[q].moles * mol_per_percent;
+                    }
+                    
+                }
+
+                // Find ml%, moles, and mass for unknown monomer if there is one
+                if (funcStats[func_ref].unknown != null) {
+                    // Find the partial mole percent sum
+                    let part_percent_sum = sumMonomerStat(func_ref, "mpercent");
+                    let unknown = funcStats[func_ref].unknown;
+                    monomerStats[unknown].mpercent = 100.0 - part_percent_sum;
+                    monomerStats[unknown].moles = monomerStats[unknown].mpercent * mol_per_percent;
+                    monomerStats[unknown].mass = monomerStats[unknown].moles * monomerStats[unknown].molar_mass;
                 }
                 
                 mass_sum = sumMonomerStat(func_ref, "mass");

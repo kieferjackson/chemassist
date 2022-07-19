@@ -57,7 +57,15 @@ function generateForm () {
                     case 'A':
                         if (previous_A_inputs[field_set] != undefined) {
                             mass.value = previous_A_inputs[field_set];
-                            percent.value = previous_A_inputs[field_set + 1];
+                            // Check if there is more than one comonomer for the current func group
+                            if (funcStats[i].num > 1) {
+                                percent.value = previous_A_inputs[field_set + 1];
+                            }
+                            // There is only 1 comonomer, previous percent should not be set
+                            else {
+                                percent.value = '';
+                            }
+                            
                             molar_mass.value = previous_A_inputs[field_set + 2];
                         } else {
                             mass.value = percent.value = molar_mass.value = '';
