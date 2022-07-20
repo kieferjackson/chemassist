@@ -345,20 +345,18 @@ function routeFinder(i, funcType) {
              *  different comonomers). As a result, that possibility needs to be considered, and either reject the user's input or complete
              *  the calculation if there are no errors.
              */
-            else if (excess_info) {
-                if (all_mass) {
-                    console.log("Your calculation route for complimentary group is: Excess Mass");
-                    return 'XS_MASSROUTE';
-                } else if (all_percent && mass_present) {
-                    switch (funcStats[i].percent_type) {
-                        case 'mole':
-                            console.log("Your calculation route for complimentary group is: Excess Ml% + Mass");
-                            return 'XS_MLPROUTE';
-                        case 'weight':
-                            console.log("Your calculation route for complimentary group is: Excess Wt% + Mass");
-                            return 'XS_WTPROUTE';
-                    }
-                }
+            else if (excess_info && mass_present) {
+                console.log("Your calculation route for complimentary group is: Excess Info");
+                return 'XS_INFOROUTE';
+
+                // switch (funcStats[i].percent_type) {
+                //     case 'mole':
+                //         console.log("Your calculation route for complimentary group is: Excess Ml% + Mass");
+                //         return 'XS_MLPROUTE';
+                //     case 'weight':
+                //         console.log("Your calculation route for complimentary group is: Excess Wt% + Mass");
+                //         return 'XS_WTPROUTE';
+                // }
                 
             }
 
