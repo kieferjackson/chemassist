@@ -722,22 +722,22 @@ function doComplimentaryCalculations(route) {
             // There is more than one comonomer, so check the ratios between mass and percent for those which give both values
             // (the ratio between different comonomers and their percents may differ and lead to error depending on user input)
             else {
-                /* ************************** */
                 // Array to store the indexes of comonomers with mass and a percent value given
                 let mass_percent_comonomers = [];
 
-                // Get the indexes of all comonomers with percent given (mass is assumed given for all comonomers)
+                // Get the indexes of all comonomers with percent and mass given
                 for (var q = funcStats[func_comp].start, w = 0 ; q < funcStats[func_comp].end ; q++) {
-                    if (monomerStats[q].wpercent != 0 || monomerStats[q].mpercent != 0) {
+                    if (monomerStats[q].mass != 0 && (monomerStats[q].wpercent != 0 || monomerStats[q].mpercent != 0)) {
                         mass_percent_comonomers[w] = q;
                         w++;
                     }
                 }
 
-                if (mass_percent_comonomers.length > 1) {
-                    /* 
-                     *  CHECK THAT GIVEN MOLE PERCENTS MATCH EXPECTED MOLE PERCENT 
-                     */
+                // For complimentary group with more than one comonomer and at least one comonomer with both mass and percent given
+                if (mass_percent_comonomers.length >= 1) {
+                    /****************************************************************
+                     *  CHECK THAT GIVEN MOLE PERCENTS MATCH EXPECTED MOLE PERCENT  * 
+                     ****************************************************************/
                     
                     // If mole percent is chosen, a given mole percent may not match the expected mole percent based on the calculated moles of each given mass
                     if (funcStats[func_comp].percent_type === 'mole') {
@@ -757,9 +757,9 @@ function doComplimentaryCalculations(route) {
                         }
                     }
 
-                    /*
-                     *  CHECK RATIOS BETWEEN MASS/MOLES AND THEIR PERCENT VALUES
-                     */
+                    /**************************************************************
+                     *  CHECK RATIOS BETWEEN MASS/MOLES AND THEIR PERCENT VALUES  *
+                     **************************************************************/
 
                     // Set the reference comonomer to the first one in the index. Any ratio value which differ from this reference are invalid
                     let reference_index = mass_percent_comonomers[0];
@@ -797,6 +797,17 @@ function doComplimentaryCalculations(route) {
                                     }
                                 }
 
+                            // Check for an unknown, and calculate its missing values if it exists
+                            if (funcStats[func_comp].unknown != null) {
+                                let unknown = funcStats[func_comp].unknown;
+
+                                let part_wtp_sum = sumMonomerStat(func_comp, "wpercent");
+
+                                monomerStats[unknown].wpercent = 100 - part_wtp_sum;
+                                monomerStats[unknown].mass = monomerStats[unknown].wpercent * reference_ratio;
+                                monomerStats[unknown].moles = monomerStats[unknown].mass / monomerStats[unknown].molar_mass;
+                            }
+
                             // All moles should have been calculated, so find mole percents using calculated mole sum
                             for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++) {
                                 monomerStats[q].mpercent = monomerStats[q].moles / mol_sum[func_comp];
@@ -833,6 +844,17 @@ function doComplimentaryCalculations(route) {
                                     }
                                 }
 
+                            // Check for an unknown, and calculate its missing values if it exists
+                            if (funcStats[func_comp].unknown != null) {
+                                let unknown = funcStats[func_comp].unknown;
+
+                                let part_mlp_sum = sumMonomerStat(func_comp, "mpercent");
+
+                                monomerStats[unknown].mpercent = 100 - part_mlp_sum;
+                                monomerStats[unknown].moles = monomerStats[unknown].mpercent * reference_ratio;
+                                monomerStats[unknown].mass = monomerStats[unknown].moles * monomerStats[unknown].molar_mass;
+                            }
+
                             let mass_sum = sumMonomerStat(func_comp, "mass");
 
                             // All masses should have been calculated, so find weight percents using calculated mass sum
@@ -842,6 +864,74 @@ function doComplimentaryCalculations(route) {
                                 
                             break;
                     }
+                }
+                // For complimentary group with more than one comonomer and all masses given, but no percents
+                else if (ALL_MASSES_ARE_GIVEN) {
+                    let mass_sum = sumMonomerStat(func_comp, "mass");
+
+                    // All masses are given and have been validated, so calculate mole percent and weight percent (moles were already calculated previously)
+                    for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++) {
+                        monomerStats[q].wpercent = monomerStats[q].mass / mass_sum;
+                        monomerStats[q].mpercent = monomerStats[q].moles / mol_sum[func_comp];
+                    }
+                }
+                // For complimentary group with a configuration similar to reference Zipper Route
+                else {
+                    // There are no reference comonomers with both mass and percent given, nor are all masses given, so calculate using ratio between the sum of masses and the remaining percent left
+
+                    switch(funcStats[func_comp].percent_type) {
+                        case 'weight':
+                            let part_wtp_sum = sumMonomerStat(func_comp, "wpercent");
+                            let part_mass_sum = sumMonomerStat(func_comp, "mass");
+
+                            let g_per_percent = part_mass_sum / (100 - part_wtp_sum);
+
+                            for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++) {
+                                // Mass is known, so calculate the value for weight percent
+                                if (monomerStats[q].wpercent == 0.0 && monomerStats[q].mass != 0.0)
+                                    monomerStats[q].wpercent = (monomerStats[q].mass / g_per_percent);
+                                
+                                // Weight percent is known, so calculate the value for mass
+                                else if (monomerStats[q].wpercent != 0.0 && monomerStats[q].mass == 0.0) {
+                                    monomerStats[q].mass = (monomerStats[q].wpercent * g_per_percent);
+                                    monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
+                                }
+                            }
+                            
+                            break;
+
+                        case 'mole':
+                            let part_mlp_sum = sumMonomerStat(func_comp, "mpercent");
+                            let part_mole_sum = sumMonomerStat(func_comp, "moles");
+
+                            let mol_per_percent = part_mole_sum / (100 - part_mlp_sum);
+
+                            for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++) {
+                                // Mass is known (moles were already calculated previously), so calculate the value for mole percent
+                                if (monomerStats[q].mpercent == 0.0 && monomerStats[q].mass != 0.0)
+                                    monomerStats[q].mpercent = (monomerStats[q].moles / mol_per_percent);
+                                
+                                // Mole Percent is known, so calculate the value for mass and moles
+                                else if (monomerStats[q].wpercent != 0.0 && monomerStats[q].mass == 0.0) {
+                                    monomerStats[q].moles = (monomerStats[q].mpercent * mol_per_percent);
+                                    monomerStats[q].mass = monomerStats[q].moles * monomerStats[q].molar_mass;
+                                }
+                            }
+
+                            break;
+                    }
+
+                    // Check that the mole sum matches the expected mole sum within reasonable error
+                    user_mol_sum = sumMonomerStat(func_comp, "moles");
+                    user_mol_sum_valid = compareFloatValues(user_mol_sum, mol_sum[func_comp], TOLERANCE);
+
+                    if (!user_mol_sum_valid) {
+                        // The user's masses did not match the expected mole sum for the complimentary group
+                        console.log("Calculated mole sum does not match user given values...");
+                        generateErrorMsg("monomer_data_entry", `The masses given did not match the calculated mole sum for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
+                        return false;
+                    }
+
                 }
             }
             

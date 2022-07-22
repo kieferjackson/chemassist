@@ -348,16 +348,6 @@ function routeFinder(i, funcType) {
             else if (excess_info && mass_present) {
                 console.log("Your calculation route for complimentary group is: Excess Info");
                 return 'XS_INFOROUTE';
-
-                // switch (funcStats[i].percent_type) {
-                //     case 'mole':
-                //         console.log("Your calculation route for complimentary group is: Excess Ml% + Mass");
-                //         return 'XS_MLPROUTE';
-                //     case 'weight':
-                //         console.log("Your calculation route for complimentary group is: Excess Wt% + Mass");
-                //         return 'XS_WTPROUTE';
-                // }
-                
             }
 
             // No calculation route was able to be found for the complimentary group with the information given
