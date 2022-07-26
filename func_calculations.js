@@ -85,14 +85,14 @@ function doReferenceCalculations(route) {
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
                 {
                     // Moles are known, so calculate the value for mole percent
-                    if (monomerStats[q].mpercent == 0.0 && monomerStats[q].moles != 0.0) {
+                    if (monomerStats[q].mpercent == 0.0 && monomerStats[q].moles != 0.0) 
                         monomerStats[q].mpercent = (monomerStats[q].moles / mol_per_percent);
-                    } 
+                    
 
                     // Mole percent is known, so calculate the value for moles
-                    else if (monomerStats[q].mpercent != 0.0 && monomerStats[q].moles == 0.0) {
+                    else if (monomerStats[q].mpercent != 0.0 && monomerStats[q].moles == 0.0) 
                         monomerStats[q].moles = (monomerStats[q].mpercent * mol_per_percent);
-                    }
+                    
                     // Moles should be known, so calculate mass using molar mass
                     monomerStats[q].mass = monomerStats[q].moles * monomerStats[q].molar_mass;
                 }
@@ -399,7 +399,7 @@ function doComplimentaryCalculations(route) {
             mol_sum[func_ref] = sumMonomerStat(func_ref, "moles");
             mol_sum[func_comp] = (mol_sum[func_ref] / funcStats[func_ref].molar_eq) * funcStats[func_comp].molar_eq;
             
-            var part_percent_sum = 0.0;
+            var part_percent_sum = part_mol_sum = calc_mol_sum = 0.0;
             
             // Iterate through each comonomer with either mass or mole percent known
             for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
@@ -409,6 +409,9 @@ function doComplimentaryCalculations(route) {
                 {
                     monomerStats[q].moles = mol_sum[func_comp] * (monomerStats[q].mpercent / 100.0);
                     monomerStats[q].mass = monomerStats[q].moles * monomerStats[q].molar_mass;
+
+                    // Add calculated moles to the calculated mole sum representing the user's given values
+                    calc_mol_sum += monomerStats[q].moles;
                 }
                 
                 // Mass is known, so calculate moles and then mole percent
@@ -416,10 +419,35 @@ function doComplimentaryCalculations(route) {
                 {
                     monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
                     monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum[func_comp]) * 100.0;
+
+                    // Add this comonomer's mass to the partial mole sum and calculated mole sum representing the user's given values
+                    part_mol_sum += monomerStats[q].moles;
+                    calc_mol_sum += monomerStats[q].moles;
                 }
                 
-                // Add calculated moles to partial percent sum
+                // Add calculated/given mole percent to partial percent sum
                 part_percent_sum += monomerStats[q].mpercent;
+            }
+
+            // Check that the calculated mole sum does not exceed or equal the expected mole sum 
+            // Check that the partial mole sum is less than the expected mole sum
+            user_mol_sum_valid = (part_mol_sum < mol_sum[func_comp]) && (calc_mol_sum >= mol_sum[func_comp]);
+                
+            if (!user_mol_sum_valid) {
+                // The user's masses exceeded the expected mole sum for the complimentary group
+                console.log("Calculated mole sum exceeded the expected mole sum for the complimentary group...");
+                generateErrorMsg("monomer_data_entry", `Calculated mole sum exceeded the expected mole sum for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
+                return false;
+            }
+
+            // Check that the partial percent sum is less than 100
+            part_percent_sum_valid = part_percent_sum < 100;
+                
+            if (!part_percent_sum_valid) {
+                // The calculated sum of all mole percents exceeded 100 for the complimentary group
+                console.log("Calculated sum of all mole percents exceeded 100 for the complimentary group...");
+                generateErrorMsg("monomer_data_entry", `Calculated sum of all mole percents (${part_percent_sum}%) exceeded 100 for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses/percents or remove invalid ones.`);
+                return false;
             }
 
             // Get the index value for the unknown comonomer of the complimentary group
@@ -509,6 +537,14 @@ function doComplimentaryCalculations(route) {
                     // (1) - Subtracting the given moles from the total to give the moles associated with the weights percents and unknown comonomer
                     part_mol_sum -= monomerStats[q].moles;
 
+                    if (part_mol_sum <= 0.0)
+                    {
+                        // The calculated moles from given masses are invalid for the complimentary group
+                        console.log("Calculated moles from given masses are invalid for the complimentary group...");
+                        generateErrorMsg("monomer_data_entry", `Calculated moles from given masses are invalid for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
+                        return false;
+                    }
+
                 }
                 
                 else if (monomerStats[q].wpercent != 0.0)
@@ -526,6 +562,10 @@ function doComplimentaryCalculations(route) {
             let all_non_mass_mol_contribution = percent_contribution_to_mol_sum + (((100.0 - part_percent_sum) / 100.0) / monomerStats[funcStats[func_comp].unknown].molar_mass);
             let mass_sum = (part_mol_sum + unknown_mol_offset) / all_non_mass_mol_contribution;
             
+            // Initialize calculated mole sum with partial mole sum; any moles calculated with given percent will be added to this
+            let calc_mol_sum = part_mol_sum;
+            let calc_mass_sum = 0.0;
+            
             // Iterate through each comonomer with values given and find its remaining values
             for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
             {
@@ -533,6 +573,8 @@ function doComplimentaryCalculations(route) {
                 if (monomerStats[q].mass != 0.0)
                 {
                     monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
+
+                    // Add calculated weight percent to partial percent sum
                     part_percent_sum += monomerStats[q].wpercent;
                 }
                 
@@ -542,7 +584,44 @@ function doComplimentaryCalculations(route) {
                     monomerStats[q].mass = (monomerStats[q].wpercent / 100.0) * mass_sum;
                     monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
                     monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum[func_comp]) * 100.0;
+
+                    // Add calculated moles to the calculated mole sum representing the user's given values
+                    calc_mol_sum += monomerStats[q].moles;
                 }
+
+                // Add this comonomer's calculated/given mass to the calculated mass sum
+                calc_mass_sum += monomerStats[q].mass;
+            }
+
+            // Check that the calculated mass sum is equivalent to the expected mass sum
+            user_mass_sum_valid = calc_mass_sum <= mass_sum;
+
+            if (!user_mass_sum_valid) {
+                // The calculated mass sum exceeded the expected mass sum for the complimentary group
+                console.log("Calculated mass sum exceeded the expected mass sum for the complimentary group...");
+                generateErrorMsg("monomer_data_entry", `Calculated mass sum (${calc_mass_sum} g) exceeded the expected mass sum (${mass_sum} g) for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
+                return false;
+            }
+
+            // Check that the calculated mole sum does not exceed or equal the expected mole sum 
+            // Check that the partial mole sum is less than the expected mole sum
+            user_mol_sum_valid = calc_mol_sum >= mol_sum[func_comp];
+                
+            if (!user_mol_sum_valid) {
+                // The user's masses exceeded the expected mole sum for the complimentary group
+                console.log("Calculated mole sum exceeded the expected mole sum for the complimentary group...");
+                generateErrorMsg("monomer_data_entry", `Calculated mole sum (${calc_mol_sum} mol) exceeded the expected mole sum (${mol_sum[func_comp]} mol) for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses or remove invalid ones.`);
+                return false;
+            }
+
+            // Check that the partial percent sum is less than 100
+            part_percent_sum_valid = part_percent_sum < 100;
+                
+            if (!part_percent_sum_valid) {
+                // The calculated sum of all mole percents exceeded 100 for the complimentary group
+                console.log("Calculated sum of all mole percents exceeded 100 for the complimentary group...");
+                generateErrorMsg("monomer_data_entry", `Calculated sum of all mole percents (${part_percent_sum}%) exceeded 100 for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses/percents or remove invalid ones.`);
+                return false;
             }
 
             // Get the index value for the unknown comonomer of the complimentary group
@@ -693,6 +772,14 @@ function doComplimentaryCalculations(route) {
                                 let unknown = funcStats[func_comp].unknown;
 
                                 let part_wtp_sum = sumMonomerStat(func_comp, "wpercent");
+
+                                if (part_wtp_sum >= 100) 
+                                {
+                                    // The calculated sum of all weight percents exceeded 100 for the complimentary group
+                                    console.log("Calculated sum of all weight percents exceeded 100 for the complimentary group...");
+                                    generateErrorMsg("monomer_data_entry", `Calculated sum of all weight percents (${part_wtp_sum}%) exceeded 100 for the complimentary (${funcStats[func_comp].name}) group. Please enter valid masses/percents or remove invalid ones.`);
+                                    return false;
+                                }
 
                                 monomerStats[unknown].wpercent = 100 - part_wtp_sum;
                                 monomerStats[unknown].mass = monomerStats[unknown].wpercent * reference_ratio;
