@@ -243,26 +243,6 @@ function routeFinder(i, funcType) {
                 }
                 
             }
-
-            /*
-             *  Tetris Route - A reference comonomer is required for the tetris route to be possible. As well, there must be an unknown comonomer and
-             *  every remaining comonomer must be partially known. The reference comonomer is used in order to obtain the ratio between mass/mole and
-             *  weight/mole percents respectively, so that all remaining partially known comonomer can have their undetermined value calculated using
-             *  the calculated ratio. In the end, the only remaining comonomer is the unknown, which can be found since all other values have already
-             *  been determined.
-             *  
-             */
-            else if (tetris_possible) {
-                switch (funcStats[func_ref].percent_type) {
-                    case 'weight':
-                        console.log("Your calculation route for reference group is: wt% Tetris");
-                        return 'WTP_TETRISROUTE';
-                    case 'mole':
-                        console.log("Your calculation route for reference group is: ml% Tetris");
-                        return 'MLP_TETRISROUTE';
-                }
-
-            }
             
             /*
              *  Excess Info Route - The conditions of this route are designed so that calculations are performed using one's comonomer with both a mass
@@ -271,14 +251,36 @@ function routeFinder(i, funcType) {
              *  a wide range of possible inputs. However, it also has a greater chance of error, specifically with the ratios between mass and given percents.
              *  As such, this calculation route attempts to account for possible user error and should cancel calculations if ever there is a conflict between
              *  given and calculated values.
+             * 
+             *  Tetris Route - A reference comonomer is required for the tetris route to be possible. As well, there must be an unknown comonomer and
+             *  every remaining comonomer must be partially known. The reference comonomer is used in order to obtain the ratio between mass/mole and
+             *  weight/mole percents respectively, so that all remaining partially known comonomer can have their undetermined value calculated using
+             *  the calculated ratio. In the end, the only remaining comonomer is the unknown, which can be found since all other values have already
+             *  been determined.
+             * 
+             *  NOTE:   The 'tetris route' was originally its own route, but because the calculations between the two routes differed so little, they
+             *          were consolidated into a single route. However, there is still distinction made between the two because the 'tetris route' is
+             *          a minimal information route like the all mass or zipper routes.
              */
-            else if (excess_info) {
+            else if (excess_info || tetris_possible) {
                 switch (funcStats[func_ref].percent_type) {
                     case 'weight':
-                        console.log("Your calculation route for reference group is: Excess wt%");
+                        if (tetris_possible) {
+                            console.log("Your calculation route for reference group is: wt% Tetris via xs info");
+                        } 
+                        else {
+                            console.log("Your calculation route for reference group is: Excess wt%");
+                        }
+                        
                         return 'XS_WTPROUTE';
                     case 'mole':
-                        console.log("Your calculation route for reference group is: Excess ml%");
+                        if (tetris_possible) {
+                            console.log("Your calculation route for reference group is: ml% Tetris via xs info");
+                        } 
+                        else {
+                            console.log("Your calculation route for reference group is: Excess ml%");
+                        }
+
                         return 'XS_MLPROUTE';
                 }
             }

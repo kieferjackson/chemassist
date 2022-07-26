@@ -107,100 +107,6 @@ function doReferenceCalculations(route) {
                 return true;
             }
 
-            case 'WTP_TETRISROUTE':
-            {
-                // Find comonomer with both mass and percent given to act as reference
-                let tts_ref = findRefMonomer(func_ref);
-
-                // Tetris reference comonomer is already determined, so calculate its moles
-                monomerStats[tts_ref].moles = monomerStats[tts_ref].mass / monomerStats[tts_ref].molar_mass;
-                
-                // Find the ratio between mass and percent from the tetris refence comonomer
-                let g_per_percent = monomerStats[tts_ref].mass / monomerStats[tts_ref].wpercent;
-                
-                // Iterate through each comonomer with either mass or percent known, and calculate their undetermined values using the ratio between mass and percent
-                for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
-                {
-                    // Weight percent is known, so calculate the value for mass, then moles
-                    if (monomerStats[q].mass == 0.0 && monomerStats[q].wpercent != 0.0)
-                    {
-                        monomerStats[q].mass = monomerStats[q].wpercent * g_per_percent;
-                        monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
-                    }
-                    
-                    // Mass is known, so calculate the value for weight percent, then moles
-                    else if (monomerStats[q].mass != 0.0 && monomerStats[q].wpercent == 0.0)
-                    {
-                        monomerStats[q].wpercent = monomerStats[q].mass / g_per_percent;
-                        monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
-                    }
-                }
-                
-                // Find mass, wt%, and moles for unknown monomer
-                let part_percent_sum = sumMonomerStat(func_ref, "wpercent");
-                // Get the index value for the unknown comonomer of the reference group
-                let unknown = funcStats[func_ref].unknown;
-                monomerStats[unknown].wpercent = 100.0 - part_percent_sum;
-                monomerStats[unknown].mass = monomerStats[unknown].wpercent * g_per_percent;
-                monomerStats[unknown].moles = monomerStats[unknown].mass / monomerStats[unknown].molar_mass;
-                
-                // Now that the unknown comonomer's moles have been calculated, all moles should be known, so calculate total moles
-                var mol_sum = sumMonomerStat(func_ref, "moles");
-                
-                // Calculate mole percent for each comonomer using their individual moles and the mole sum
-                for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
-                    monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum) * 100.0;
-                
-                // Calculations were successful for the Weight Percent Tetris Route
-                return true;
-            }
-
-            case 'MLP_TETRISROUTE':
-            {
-                // Find comonomer with both mass and percent given to act as reference
-                let tts_ref = findRefMonomer(func_ref);
-
-                // Tetris reference comonomer is already determined, so calculate its moles
-                monomerStats[tts_ref].moles = monomerStats[tts_ref].mass / monomerStats[tts_ref].molar_mass;
-
-                // Find the ratio between moles and percent from the tetris refence comonomer
-                let mol_per_percent = monomerStats[tts_ref].moles / monomerStats[tts_ref].mpercent;
-                
-                // Iterate through each comonomer with either mass or percent known, and calculate their unknown using the ratio between moles and percent
-                for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
-                {
-                    if (monomerStats[q].mass == 0.0 && monomerStats[q].mpercent != 0.0)
-                    {
-                        monomerStats[q].moles = monomerStats[q].mpercent * mol_per_percent;
-                        monomerStats[q].mass = monomerStats[q].moles * monomerStats[q].molar_mass;
-                    }
-                    
-                    else if (monomerStats[q].mass != 0.0 && monomerStats[q].mpercent == 0.0)
-                    {
-                        monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
-                        monomerStats[q].mpercent = monomerStats[q].moles / mol_per_percent;
-                    }
-                }
-                
-                // Find mass, ml%, and moles for unknown monomer
-                let part_percent_sum = sumMonomerStat(func_ref, "mpercent");
-                // Get the index value for the unknown comonomer of the reference group
-                let unknown = funcStats[func_ref].unknown;
-                monomerStats[unknown].mpercent = 100.0 - part_percent_sum;
-                monomerStats[unknown].moles = monomerStats[unknown].mpercent * mol_per_percent;
-                monomerStats[unknown].mass = monomerStats[unknown].moles * monomerStats[unknown].molar_mass;
-
-                // Now that the unknown comonomer's mass has been calculated, all masses should be known, so calculate total mass
-                var mass_sum = sumMonomerStat(func_ref, "mass");
-                
-                // Calculate weight percent for each comonomer using their individual mass and the mass sum
-                for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
-                    monomerStats[q].wpercent = (monomerStats[q].mass / mass_sum) * 100.0;
-                
-                // Calculations were successful for the Mole Percent Tetris Route
-                return true;
-            }
-
             case 'XS_WTPROUTE':
             {
                 // Find the index for the comonomer with mass and percent given
@@ -228,7 +134,7 @@ function doReferenceCalculations(route) {
                         monomerStats[q].mass = monomerStats[q].wpercent * g_per_percent;
 
                     // Weight percent is unknown, so calculate using ratio between mass and percent
-                    if (monomerStats[q].wpercent == 0.0 && monomerStats[q].mass != 0.0 )
+                    else if (monomerStats[q].wpercent == 0.0 && monomerStats[q].mass != 0.0 )
                         monomerStats[q].wpercent = monomerStats[q].mass / g_per_percent;
                     
                     // Mass should be known, so calculate moles using molar mass
@@ -290,7 +196,7 @@ function doReferenceCalculations(route) {
                     } 
 
                     // Mass is given but mole percent is undetermined, so calculate using ratio between calculated moles and percent
-                    if (monomerStats[q].mpercent == 0.0 && monomerStats[q].mass != 0.0 ) {
+                    else if (monomerStats[q].mpercent == 0.0 && monomerStats[q].mass != 0.0 ) {
                         monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass
                         monomerStats[q].mpercent = monomerStats[q].moles / mol_per_percent;
                     }
@@ -938,7 +844,7 @@ function sumMonomerStat(func_group, object_stat) {
     for (var q = funcStats[func_group].start ; q < funcStats[func_group].end ; q++) {
         objectSum += monomerStats[q][object_stat];
     }
-    
+
     return objectSum;
 }
 
