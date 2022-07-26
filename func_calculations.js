@@ -4,8 +4,6 @@ function doReferenceCalculations(route) {
         {
             case 'ALLMASSROUTE':
             {
-                console.log("Your reference calculation is Mass Route");
-                
                 let mass_sum = sumMonomerStat(func_ref, "mass");
                 
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++) {
@@ -37,14 +35,13 @@ function doReferenceCalculations(route) {
                 let total_mass_percent = 100.0 - percent_sum;
 
                 // This gives the ratio between mass and percent (e.g. 4 g for 40% means that 20% would be 2 g or that 55% would be 5.5 g)
-                let g_per_percent = (mass_sum / total_mass_percent);
-                let percent_per_g = 1.0 / g_per_percent;
+                let g_per_percent = mass_sum / total_mass_percent;
                 
                 // Loop through given values for comonomers and use predefined ratios of mass and percent to find their respective unknowns
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++) {
                     // Mass is known, so calculate the value for weight percent
                     if (monomerStats[q].wpercent == 0.0 && monomerStats[q].mass != 0.0)
-                        monomerStats[q].wpercent = (monomerStats[q].mass * percent_per_g);
+                        monomerStats[q].wpercent = (monomerStats[q].mass / g_per_percent);
                     
                     // Weight percent is known, so calculate the value for mass
                     else if (monomerStats[q].wpercent != 0.0 && monomerStats[q].mass == 0.0)
@@ -83,14 +80,13 @@ function doReferenceCalculations(route) {
                 let total_mol_percent = 100.0 - percent_sum;
 
                 // This gives the ratio between moles and percent (e.g. 0.04 mol for 40% means that 20% would be 0.02 mol or that 55% would be 0.055 mol)
-                let mol_per_percent = (mol_sum / total_mol_percent);
-                let percent_per_mol = 1.0 / mol_per_percent;
+                let mol_per_percent = mol_sum / total_mol_percent;
                 
                 for (var q = funcStats[func_ref].start ; q < funcStats[func_ref].end ; q++)
                 {
                     // Moles are known, so calculate the value for mole percent
                     if (monomerStats[q].mpercent == 0.0 && monomerStats[q].moles != 0.0) {
-                        monomerStats[q].mpercent = (monomerStats[q].moles * percent_per_mol);
+                        monomerStats[q].mpercent = (monomerStats[q].moles / mol_per_percent);
                     } 
 
                     // Mole percent is known, so calculate the value for moles
@@ -207,7 +203,7 @@ function doReferenceCalculations(route) {
 
             case 'XS_WTPROUTE':
             {
-                // Find the index for the comonomer with a mass value given
+                // Find the index for the comonomer with mass and percent given
                 let ref_monomer = findRefMonomer(func_ref);
                 let g_per_percent = monomerStats[ref_monomer].mass / monomerStats[ref_monomer].wpercent
                 
@@ -261,7 +257,7 @@ function doReferenceCalculations(route) {
 
             case 'XS_MLPROUTE':
             {
-                // Find the index for the comonomer with a mass value given
+                // Find the index for the comonomer with mass and percent given
                 let ref_monomer = findRefMonomer(func_ref);
 
                 // Calculate moles for reference comonomer, and use that value for the ratio between moles and percent
@@ -339,12 +335,7 @@ function doComplimentaryCalculations(route) {
                     case 'weight':
                         var part_percent_sum = sumMonomerStat(func_comp, "wpercent");
 
-                        let wtp_unknown = funcStats[func_comp].start; 
-                        // Find the comonomer with no weight percent value given
-                        while (monomerStats[wtp_unknown].wpercent != 0) {
-                            // Iterate to next comonomer until the undetermined weight percent comonomer is found
-                            wtp_unknown++;
-                        }
+                        let wtp_unknown = funcStats[func_comp].unknown; 
 
                         // Calculate the unknown comonomer's weight percent by finding the difference between the sum of every other's comonomer's weight percent and 100
                         monomerStats[wtp_unknown].wpercent = 100.0 - part_percent_sum;
@@ -352,12 +343,7 @@ function doComplimentaryCalculations(route) {
                     case 'mole':
                         var part_percent_sum = sumMonomerStat(func_comp, "mpercent");
 
-                        let mlp_unknown = funcStats[func_comp].start; 
-                        // Find the comonomer with no mole percent value given
-                        while (monomerStats[mlp_unknown].mpercent != 0) {
-                            // Iterate to next comonomer until the undetermined mole percent comonomer is found
-                            mlp_unknown++;
-                        }
+                        let mlp_unknown = funcStats[func_comp].unknown; 
 
                         // Calculate the unknown comonomer's mole percent by finding the difference between the sum of every other's comonomer's mole percent and 100
                         monomerStats[mlp_unknown].mpercent = 100.0 - part_percent_sum;
@@ -420,18 +406,8 @@ function doComplimentaryCalculations(route) {
             for (var q = funcStats[func_comp].start ; q < funcStats[func_comp].end ; q++)
             {
                 // Mole percent is known and mass is unknown, so calculate moles then mass
-                if (monomerStats[q].mpercent != 0.0 && monomerStats[q].mass == 0.0)
-                {
-                    monomerStats[q].moles = mol_sum[func_comp] * (monomerStats[q].mpercent / 100.0);
-                    monomerStats[q].mass = monomerStats[q].moles * monomerStats[q].molar_mass;
-                }
-                
-                // Mass is known and mole percent is unknown, so calculate moles then mole percent
-                else if (monomerStats[q].mass != 0.0 && monomerStats[q].mpercent == 0.0)
-                {
-                    monomerStats[q].moles = monomerStats[q].mass / monomerStats[q].molar_mass;
-                    monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum[func_comp]) * 100.0;
-                }
+                monomerStats[q].moles = mol_sum[func_comp] * (monomerStats[q].mpercent / 100.0);
+                monomerStats[q].mass = monomerStats[q].moles * monomerStats[q].molar_mass;
             }
             
             // For mole percent calculations, calculate the still unknown weight percent values for each comonomer
@@ -490,11 +466,14 @@ function doComplimentaryCalculations(route) {
                 mol_per_percent = monomerStats[q].moles / monomerStats[q].mpercent;
                 q++;
             } while (mol_per_percent == 0.0);
+
+            // Get the index value for the unknown comonomer of the complimentary group
+            let unknown = funcStats[func_comp].unknown;
             
             // Calculate ml%, moles, and mass for unknown comonomer
-            monomerStats[funcStats[func_comp].unknown].mpercent = 100.0 - part_percent_sum;
-            monomerStats[funcStats[func_comp].unknown].moles = (monomerStats[funcStats[func_comp].unknown].mpercent / 100.0) * mol_sum[func_comp];
-            monomerStats[funcStats[func_comp].unknown].mass = monomerStats[funcStats[func_comp].unknown].moles * monomerStats[funcStats[func_comp].unknown].molar_mass;
+            monomerStats[unknown].mpercent = 100.0 - part_percent_sum;
+            monomerStats[unknown].moles = (monomerStats[unknown].mpercent / 100.0) * mol_sum[func_comp];
+            monomerStats[unknown].mass = monomerStats[unknown].moles * monomerStats[unknown].molar_mass;
             
             let mass_sum = sumMonomerStat(func_comp, "mass");
             
@@ -536,11 +515,14 @@ function doComplimentaryCalculations(route) {
                 // Add calculated moles to partial percent sum
                 part_percent_sum += monomerStats[q].mpercent;
             }
+
+            // Get the index value for the unknown comonomer of the complimentary group
+            let unknown = funcStats[func_comp].unknown;
             
             // Calculate ml%, moles, and mass for unknown comonomer
-            monomerStats[funcStats[func_comp].unknown].mpercent = 100.0 - part_percent_sum;
-            monomerStats[funcStats[func_comp].unknown].moles = (monomerStats[funcStats[func_comp].unknown].mpercent / 100.0) * mol_sum[func_comp];
-            monomerStats[funcStats[func_comp].unknown].mass = monomerStats[funcStats[func_comp].unknown].moles * monomerStats[funcStats[func_comp].unknown].molar_mass;
+            monomerStats[unknown].mpercent = 100.0 - part_percent_sum;
+            monomerStats[unknown].moles = (monomerStats[unknown].mpercent / 100.0) * mol_sum[func_comp];
+            monomerStats[unknown].mass = monomerStats[unknown].moles * monomerStats[unknown].molar_mass;
             
             let mass_sum = sumMonomerStat(func_comp, "mass");
             
@@ -656,12 +638,15 @@ function doComplimentaryCalculations(route) {
                     monomerStats[q].mpercent = (monomerStats[q].moles / mol_sum[func_comp]) * 100.0;
                 }
             }
+
+            // Get the index value for the unknown comonomer of the complimentary group
+            let unknown = funcStats[func_comp].unknown;
             
             // Calculate wt%, mass, moles, and ml% for unknown comonomer
-            monomerStats[funcStats[func_comp].unknown].wpercent = 100.0 - part_percent_sum;
-            monomerStats[funcStats[func_comp].unknown].mass = (monomerStats[funcStats[func_comp].unknown].wpercent / 100.0) * mass_sum;
-            monomerStats[funcStats[func_comp].unknown].moles = monomerStats[funcStats[func_comp].unknown].mass / monomerStats[funcStats[func_comp].unknown].molar_mass;
-            monomerStats[funcStats[func_comp].unknown].mpercent = (monomerStats[funcStats[func_comp].unknown].moles / mol_sum[func_comp]) * 100.0;
+            monomerStats[unknown].wpercent = 100.0 - part_percent_sum;
+            monomerStats[unknown].mass = (monomerStats[unknown].wpercent / 100.0) * mass_sum;
+            monomerStats[unknown].moles = monomerStats[unknown].mass / monomerStats[unknown].molar_mass;
+            monomerStats[unknown].mpercent = (monomerStats[unknown].moles / mol_sum[func_comp]) * 100.0;
             
             // Calculations were successful for the Weight Percent Zipper Route
             return true;
@@ -716,8 +701,8 @@ function doComplimentaryCalculations(route) {
             // Percent values can only be 100 for any group with only one comonomer
             if (funcStats[func_comp].num === 1) {
                 // If the complimentary group only has 1 comonomer, then its percent values for both weight and mole can only be 100.
-                monomerStats[funcStats[func_comp].unknown].wpercent = 100.0;
-                monomerStats[funcStats[func_comp].unknown].mpercent = 100.0;
+                monomerStats[funcStats[func_comp].start].wpercent = 100.0;
+                monomerStats[funcStats[func_comp].start].mpercent = 100.0;
             }
             // There is more than one comonomer, so check the ratios between mass and percent for those which give both values
             // (the ratio between different comonomers and their percents may differ and lead to error depending on user input)
@@ -950,39 +935,11 @@ function sumMonomerStat(func_group, object_stat) {
 
     let objectSum = 0;
 
-    switch (object_stat) {
-        case 'mass':
-            for (var q = funcStats[func_group].start ; q < funcStats[func_group].end ; q++) {
-                objectSum += monomerStats[q].mass;
-            }
-            return objectSum;
-
-        case 'wpercent':
-            for (var q = funcStats[func_group].start ; q < funcStats[func_group].end ; q++) {
-                objectSum += monomerStats[q].wpercent;
-            }
-            return objectSum;
-
-        case 'mpercent':
-            for (var q = funcStats[func_group].start ; q < funcStats[func_group].end ; q++) {
-                objectSum += monomerStats[q].mpercent;
-            }
-            return objectSum;
-
-        case 'molar_mass':
-            for (var q = funcStats[func_group].start ; q < funcStats[func_group].end ; q++) {
-                objectSum += monomerStats[q].molar_mass;
-            }
-            return objectSum;
-
-        case 'moles':
-            for (var q = funcStats[func_group].start ; q < funcStats[func_group].end ; q++) {
-                objectSum += monomerStats[q].moles;
-            }
-            return objectSum;
+    for (var q = funcStats[func_group].start ; q < funcStats[func_group].end ; q++) {
+        objectSum += monomerStats[q][object_stat];
     }
     
-
+    return objectSum;
 }
 
 function findRefMonomer(func_group) {

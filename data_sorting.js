@@ -221,7 +221,7 @@ function routeFinder(i, funcType) {
              *  percents, and moles through fairly simple methods. Any already entered percent values (which would go beyond the minimum required
              *  user input) are ignored and recalculated. 
              */
-            if (all_mass) {
+            if (all_mass && !percent_present) {
                 console.log("Your calculation route for reference group is: All Mass");
                 return 'ALLMASSROUTE';
             }
@@ -299,7 +299,7 @@ function routeFinder(i, funcType) {
              *  This route is also not separated into 'All Mole Percent' and 'All Weight Percent' because
              *  only minor branching is required within the route to accomodate both percents.
              */
-            if (all_percent || almost_all_percent) {
+            if ((all_percent || almost_all_percent) && !mass_present) {
                 console.log("Your calculation route for complimentary group is: All Percent");
                 return 'ALLPERCENTROUTE';
             }
