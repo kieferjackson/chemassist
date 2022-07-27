@@ -2,23 +2,21 @@
 // Number of significant figures is set to four
 const SIG_FIG = 4;
 
-function displayFinalResults() {
+function displayFinalResults() 
+{
     const final_results = document.querySelector(".final_results");
-    var br = document.createElement("br");
 
-    var quality = ['mass', 'wpercent', 'mpercent', 'molar_mass', 'moles'];
-    let display = ['Mass', 'Weight Percent', 'Mole Percent', 'Molar Mass', 'Moles'];
-    let units = [' g', '%', '%', ' g/mol', ' mol'];
+    const quality   = ['mass', 'wpercent', 'mpercent', 'molar_mass', 'moles'];
+    const display   = ['Mass', 'Weight Percent', 'Mole Percent', 'Molar Mass', 'Moles'];
+    const units     = ['g', '%', '%', 'g/mol', 'mol'];
 
-    for (var i = 0 ; i < 2 ; i++) {
+    const ag_box = document.createElement("section");
+    ag_box.setAttribute("class", "ag_box");
+
+    for (var i = 0 ; i < 2 ; i++) 
+    {
         let func_name = toUpperCase(funcStats[i].name);
 
-        const funcDisplay = document.createElement("div");
-        funcDisplay.setAttribute("id", funcStats[i].name + "_results"); 
-
-        let ag_box = document.createElement("section");
-        ag_box.setAttribute("class", "ag_box");
-        
         var wpercent_sum = sumMonomerStat(i, "wpercent");
         var mpercent_sum = sumMonomerStat(i, "mpercent");
 
@@ -27,73 +25,92 @@ function displayFinalResults() {
         let wpercentsOK = compareFloatValues(wpercent_sum, 100, TOLERANCE);
         let mpercentsOK = compareFloatValues(mpercent_sum, 100, TOLERANCE);
         
-        var h2;
+        var func_heading;
 
         if (wpercentsOK && mpercentsOK) {
-            h2 = generateHeading("h2", func_name, "group_heading", "Results")
+            func_heading = generateHeading("h2", func_name, "group_heading", "Results")
             console.log("Percent values are OK!");
         } else if (!wpercentsOK) {
-            h2 = generateHeading("h2", func_name, "group_heading", "Results | Bad Weight Percent(s)");
+            func_heading = generateHeading("h2", func_name, "group_heading", "Results | Bad Weight Percent(s)");
             console.log("Something is wrong with the given or calculated weight percent values.");
-            h2.style.color = 'red';
+            func_heading.style.color = 'red';
         } else if (!mpercentsOK) {
-            h2 = generateHeading("h2", func_name, "group_heading", "Results | Bad Mole Percent(s)");
+            func_heading = generateHeading("h2", func_name, "group_heading", "Results | Bad Mole Percent(s)");
             console.log("Something is wrong with the given or calculated mole percent values.");
-            h2.style.color = 'red';
+            func_heading.style.color = 'red';
         } else {
-            h2 = generateHeading("h2", func_name, "group_heading", "Results | Bad Percent Values?");
+            func_heading = generateHeading("h2", func_name, "group_heading", "Results | Bad Percent Values?");
             console.log("Something is wrong with the given or calculated percent values.");
-            h2.style.color = 'red';
+            func_heading.style.color = 'red';
         }
 
-        funcDisplay.append(h2);
+        ag_box.append(func_heading);
 
+        const results_table = document.createElement("table");
+        results_table.id = "final_results"; 
+
+
+        // Create table heading for this functional group
+        let t_heading_row = document.createElement("tr");
+
+        createTableHeading("Monomer", func_name + '_th');
+
+        for (var w = 0 ; w < display.length ; w++)
+        {
+            createTableHeading(`${display[w]} (${units[w]})`, `${func_name}_${quality[w]}`);
+        }
+
+        function createTableHeading(h_text, desired_id) {
+            t_heading = document.createElement("th");
+            t_heading.class = 'table_heading';
+            t_heading.id = desired_id;
+            t_heading.innerText = h_text;
+
+            t_heading_row.appendChild(t_heading);
+        }
+
+        results_table.appendChild(t_heading_row);
+        
         for (var q = funcStats[i].start, monomer_num = 1 ; q < funcStats[i].end ; q++, monomer_num++) {
-            let h3 = generateHeading("h3", func_name, "ag_box_dyn_heading", `${monomer_num} Monomer:`);
-            ag_box.appendChild(h3);
+            // Create a table row to display the calculated values for this comonomer
+            let monomer_row = document.createElement("tr");
+            monomer_row.setAttribute("class", "monomer_row");
 
-            // Create a box to display the calculated values
-            display_box = document.createElement("section");
-            display_box.setAttribute("class", "display_box");
+            let monomer_name_cell = document.createElement("td");
+            monomer_name_cell.innerHTML = `${func_name} ${monomer_num}`;
+            monomer_row.appendChild(monomer_name_cell);
 
-            for (w = 0 ; w < 5 ; w++) {
-                // Create custom label for calculated value display
-                let result_label = document.createElement("div");
-                result_label.setAttribute("class", "results_label");
-                result_label.innerHTML = `${display[w]}: `;
-
+            for (w = 0 ; w < quality.length ; w++) {
                 // Set content to calculated/given values
-                let monomerDisplay = document.createElement("div");
+                let monomer_quality = document.createElement("td");
                 let value = monomerStats[q][quality[w]];
+
                 if (value % 1 === 0) {
                     // If the calculated/given value is a whole number, display it as is
-                    monomerDisplay.innerHTML = `${monomerStats[q][quality[w]]}${units[w]}`;
+                    monomer_quality.innerHTML = monomerStats[q][quality[w]];
                 } else if (value < 1 && value > 0) {
-                    monomerDisplay.innerHTML = `${toScientificNotation(monomerStats[q][quality[w]])}${units[w]}`;
+                    monomer_quality.innerHTML = toScientificNotation(monomerStats[q][quality[w]]);
                 } else {
                     // If the calculated/given value is a rational number, display it with four decimal places
-                    monomerDisplay.innerHTML = `${monomerStats[q][quality[w]].toFixed(4)}${units[w]}`;
+                    monomer_quality.innerHTML = monomerStats[q][quality[w]].toFixed(4);
                 }
-                
-                display_box.append(result_label);
-                display_box.append(monomerDisplay);
 
                 // Color monomer value red if something went wrong with their calculation
                 if (monomerStats[q][quality[w]] <= 0.0) {
-                    monomerDisplay.style.color = 'red';
+                    monomer_quality.style.color = 'red';
                 }
+
+                monomer_row.append(monomer_quality);
             }
 
-            ag_box.appendChild(display_box);
-            // funcDisplay.appendChild(br.cloneNode());
+            results_table.appendChild(monomer_row);
             
         }
 
-        funcDisplay.appendChild(ag_box);
-        final_results.append(funcDisplay);
+        ag_box.appendChild(results_table);
+        final_results.append(ag_box);
 
     }
-
 }
 
 function toUpperCase (string_value) {
@@ -139,3 +156,4 @@ function toScientificNotation (real_number) {
         }
     }
 }
+
