@@ -10,11 +10,11 @@ function displayFinalResults()
     const display   = ['Mass', 'Weight Percent', 'Mole Percent', 'Molar Mass', 'Moles'];
     const units     = ['g', '%', '%', 'g/mol', 'mol'];
 
-    // const ag_box = document.createElement("section");
-    // ag_box.setAttribute("class", "ag_box");
-
     for (var i = 0 ; i < 2 ; i++) 
     {
+        const func_results_container = document.createElement("section");
+        func_results_container.id = funcStats[i].name + '_results';
+
         const ag_box = document.createElement("section");
         ag_box.setAttribute("class", "ag_box");
 
@@ -47,7 +47,7 @@ function displayFinalResults()
             func_heading.style.color = 'red';
         }
 
-        final_results.append(func_heading);
+        func_results_container.append(func_heading);
 
         const results_table = document.createElement("table");
         results_table.id = "final_results"; 
@@ -111,7 +111,9 @@ function displayFinalResults()
         }
 
         ag_box.appendChild(results_table);
-        final_results.append(ag_box);
+        func_results_container.append(ag_box);
+
+        final_results.appendChild(func_results_container);
 
     }
 }
