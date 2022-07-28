@@ -10,11 +10,14 @@ function displayFinalResults()
     const display   = ['Mass', 'Weight Percent', 'Mole Percent', 'Molar Mass', 'Moles'];
     const units     = ['g', '%', '%', 'g/mol', 'mol'];
 
-    const ag_box = document.createElement("section");
-    ag_box.setAttribute("class", "ag_box");
+    // const ag_box = document.createElement("section");
+    // ag_box.setAttribute("class", "ag_box");
 
     for (var i = 0 ; i < 2 ; i++) 
     {
+        const ag_box = document.createElement("section");
+        ag_box.setAttribute("class", "ag_box");
+
         let func_name = toUpperCase(funcStats[i].name);
 
         var wpercent_sum = sumMonomerStat(i, "wpercent");
@@ -44,7 +47,7 @@ function displayFinalResults()
             func_heading.style.color = 'red';
         }
 
-        ag_box.append(func_heading);
+        final_results.append(func_heading);
 
         const results_table = document.createElement("table");
         results_table.id = "final_results"; 
