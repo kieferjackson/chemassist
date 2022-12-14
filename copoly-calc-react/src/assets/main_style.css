@@ -1,3 +1,5 @@
+/* Importing the Quicksand font thought the Google Font API */
+@import url('https://fonts.googleapis.com/css2?family=Prompt:ital,wght@0,600;1,900&family=Quicksand:wght@400;700&display=swap');
 
 :root {
     --cobalt-blue: #1968f1;
