@@ -91,6 +91,79 @@ export default function FuncGroupForm()
         }
     }
 
+    const toggleCheckBox = (event) => {
+        event.preventDefault();
+
+        const check_box = event.target;
+        const molar_eq_section = document.getElementById("molar_eq_container");
+
+        // Saving and Resetting Current State of Check Box
+        const current_state = check_box.classList[1];
+        check_box.classList.remove(current_state);
+
+        // Update checkbox based on current state
+        switch(current_state)
+        {
+            case 'unchecked':
+                check_box.classList.add("checked");
+                // The checkbox is checked, so the molar eq section should be visible
+                molar_eq_section.className = 'visible';
+                break;
+            case 'checked':
+                check_box.classList.add("unchecked");
+                // The checkbox is unchecked, so the molar eq section should be hidden
+                molar_eq_section.className = 'hidden';
+                break;
+            default:
+                check_box.classList.add("unchecked");
+                molar_eq_section.className = 'hidden';
+                break;
+        }
+    }
+
+    const toggleMolarEQ = (event) => {
+        event.preventDefault();
+
+        const molar_eq_container = event.target.parentElement;
+        const molar_eq_status = molar_eq_container.className;
+
+        // Deselect previous molar equivalents if one has already been selected
+        switch(molar_eq_container.id)
+        {
+            case 'funcA_eq':
+                const b_eq = document.getElementById("funcB_eq");
+                b_eq.className = 'unselected';
+                break;
+            case 'funcB_eq': 
+                const a_eq = document.getElementById("funcA_eq");
+                a_eq.className = 'unselected';
+                break;
+            default:
+                console.log('No associated id with this selected element.');
+                break;
+        }
+
+        // Update button to reflect new state by changing class name
+        switch(molar_eq_status)
+        {
+            case 'unselected':
+                molar_eq_container.className = 'selected';
+                break;
+
+            case 'selected':
+                molar_eq_container.className = 'unselected';
+                break;
+
+            default:
+                molar_eq_container.className = 'unselected';
+                break;
+        }
+    }
+
+    const handleFormSubmission = () => {
+
+    }
+
     return(
         <div className="form_container">
             <form id="initial_data_entry">
@@ -163,7 +236,7 @@ export default function FuncGroupForm()
                             <button 
                                 type="button" name="molar_eq_check" 
                                 id="molar_eq_check"
-                                onClick="toggleCheckBox('molar_eq')" 
+                                onClick={toggleCheckBox}
                                 className="check_box unchecked" tabIndex="-1"
                             ></button>
                         </label>
@@ -171,12 +244,18 @@ export default function FuncGroupForm()
                     <br />
                     <div id="molar_eq_container" className="hidden">
                         <div className="input_block">
-                            <div className="unselected" id="funcA_eq">
-                                <button type="button" name="xs_A" onClick="toggleMolarEQ('A')" className="square_button inactive_button">A</button>
-                            </div>
-                            <div className="unselected" id="funcB_eq">
-                                <button type="button" name="xs_B" onClick="toggleMolarEQ('B')" className="square_button inactive_button">B</button>
-                            </div>
+                            {func_groups.map(({ letter }) =>
+                                <div className="unselected" id={`func${letter}_eq`} key={`func${letter}_eq`} >
+                                    <button 
+                                        type="button" 
+                                        name={`xs_${letter}`} 
+                                        onClick={toggleMolarEQ} 
+                                        className="square_button inactive_button"
+                                    >
+                                        {letter}
+                                    </button>
+                                </div>
+                            )}
                             <label>
                                 Molar Equivalents
                                 <input type="text" name="func_xs" placeholder="e.g. '1.1'" id="func_xs" className="input_field float" />
@@ -186,7 +265,7 @@ export default function FuncGroupForm()
                 </section>
                 
                 <div className="submit_container">
-                    <button type="button" onClick="getInputValues()" id="initial_submit" className="submit_button">Next</button>
+                    <button type="button" onClick={() => handleFormSubmission()} id="initial_submit" className="submit_button">Next</button>
                 </div>
             </form>
         </div>
