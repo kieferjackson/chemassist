@@ -1,9 +1,12 @@
 import Main from './pages/Main';
+import FuncProvider from './contexts/FuncContext';
 import './App.css';
 
 function App() {
   return (
-    <Main />
+    <FuncProvider>
+      	<Main />
+    </FuncProvider>
   );
 }
 

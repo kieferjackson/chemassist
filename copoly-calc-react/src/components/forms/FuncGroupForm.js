@@ -1,7 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useReducer } from 'react';
+import { useFunc } from '../../contexts/FuncContext';
+
+// Import reducers and actions
+import { reducer } from '../../contexts/reducers';
+import { UPDATE_FUNC } from '../../contexts/actions';
+
+// Import FuncGroup Class for defining input data
+import FuncGroup from '../../utils/FuncGroup';
 
 export default function FuncGroupForm()
 {
+    const initialFuncData = useFunc();
+    const [state, dispatch] = useReducer(reducer, initialFuncData)
+
     const func_groups =
     [
         // Functional Group A
@@ -161,7 +172,36 @@ export default function FuncGroupForm()
     }
 
     const handleFormSubmission = () => {
+        // Determine percent type by selecting Weight Percent Radio Button and see if it is checked
+        const wt_percent_checked = document.getElementById("wpercent").checked;
 
+        // Since there are only two options, if weight percent is not checked, then mole percent is, and vice-versa
+        const PERCENT_TYPE = wt_percent_checked 
+            ? 'weight' 
+            : 'mole';
+
+        const funcGroups = func_groups.map(({ letter }) => {
+            // Get functional group form values, accessed with key value, identified by `letter`
+            const name = funcGroupsForm[`func${letter}_name`];
+            const num = funcGroupsForm[`func${letter}_num`];
+            const molar_eq = funcGroupsForm[`func${letter}_molar_eq`];
+            
+            // Create Functional Group object with the FuncGroup class
+            return new FuncGroup
+            (
+                PERCENT_TYPE,
+                name,
+                num,
+                molar_eq,
+                []          // Initialize monomer list to empty array
+            );
+        });
+
+        console.log('Parsed funcGroups: ', funcGroups);
+        console.log('Reducer State: ', state);
+        
+        // Update the Functional Group Context with the validated func group data
+        dispatch({ type: UPDATE_FUNC, value: funcGroups });
     }
 
     return(
