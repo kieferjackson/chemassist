@@ -7,6 +7,8 @@ import { UPDATE_FUNC } from '../../contexts/actions';
 
 // Import FuncGroup Class for defining input data
 import FuncGroup from '../../utils/FuncGroup';
+// Import validator functions
+import { checkDataTypes, checkParity } from '../../utils/validators';
 
 export default function FuncGroupForm()
 {
@@ -180,21 +182,44 @@ export default function FuncGroupForm()
             ? 'weight' 
             : 'mole';
 
+        // Check that functional group names are unique (duplicate names are not allowed)
+        const { funcA_name, funcB_name } = funcGroupsForm;
+        const funcNamesIdentical = checkParity(funcA_name, funcB_name);
+
+        if (funcNamesIdentical) {
+            // Names cannot be identical, exit out of function
+            console.log('names cannot be identical');
+            return;
+        }
+
         const funcGroups = func_groups.map(({ letter }) => {
             // Get functional group form values, accessed with key value, identified by `letter`
             const name = funcGroupsForm[`func${letter}_name`];
-            const num = funcGroupsForm[`func${letter}_num`];
-            const molar_eq = funcGroupsForm[`func${letter}_molar_eq`];
+            const num = parseInt(funcGroupsForm[`func${letter}_num`]);
+            const molar_eq = parseFloat(funcGroupsForm[`func${letter}_molar_eq`]);
+
+            // Check that input values are acceptable and the correct datatype
+            const nameAcceptable = checkDataTypes('string', name);
+            const numAcceptable = checkDataTypes('int', num);
+            const molar_eqAcceptable = checkDataTypes('float', molar_eq);
+            debugger;
+            if (nameAcceptable && numAcceptable && molar_eqAcceptable)
+            {
+                // Create Functional Group object with the FuncGroup class and validated values
+                return new FuncGroup
+                (
+                    PERCENT_TYPE,
+                    name,
+                    num,
+                    molar_eq,
+                    []          // Initialize monomer list to empty array
+                );
+            } else
+            {
+                console.log('There was an issue with the given form values...');
+                return;
+            }
             
-            // Create Functional Group object with the FuncGroup class
-            return new FuncGroup
-            (
-                PERCENT_TYPE,
-                name,
-                num,
-                molar_eq,
-                []          // Initialize monomer list to empty array
-            );
         });
 
         console.log('Parsed funcGroups: ', funcGroups);
