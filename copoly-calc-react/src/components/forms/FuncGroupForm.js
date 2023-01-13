@@ -7,8 +7,9 @@ import { UPDATE_FUNC } from '../../contexts/actions';
 
 // Import FuncGroup Class for defining input data
 import FuncGroup from '../../utils/FuncGroup';
-// Import validator functions
+// Import validator functions and error message generation
 import { checkDataTypes, checkParity } from '../../utils/validators';
+import { invalidErrorMessage } from '../../utils/helpers';
 
 export default function FuncGroupForm()
 {
@@ -35,9 +36,11 @@ export default function FuncGroupForm()
     const FUNC_FORM_FIELDS =
     {
         // Functional Group A Form Fields
-        funcA_name: '', funcA_num: '', funcA_molar_eq: '',
+        funcA_name: '', funcA_num: '',
         // Functional Group B Form Fields
-        funcB_name: '', funcB_num: '', funcB_molar_eq: ''
+        funcB_name: '', funcB_num: '', 
+        // Unique Form fields
+        func_xs: ''
     };
 
     const [funcGroupsForm, setFuncGroupsForm] = useState(FUNC_FORM_FIELDS);
@@ -188,7 +191,20 @@ export default function FuncGroupForm()
 
         if (funcNamesIdentical) {
             // Names cannot be identical, exit out of function
-            console.log('names cannot be identical');
+            console.error(invalidErrorMessage('unique', 'Functional group names'));
+            return;
+        }
+
+        // Check whether an excess functional group has been selected, and determine the molar eq
+        const xs_A_selected = document.getElementById("funcA_eq").className === 'selected';
+        const xs_B_selected = document.getElementById("funcB_eq").className === 'selected';
+
+        const molar_eq_is_checked = document.getElementById("molar_eq_check").classList[1] === 'checked';
+        const molar_eq_selected = xs_A_selected || xs_B_selected;
+
+        if (molar_eq_is_checked && !molar_eq_selected) {
+            // Excess functional group was selected, but no group selected, exit out of function
+            console.error(invalidErrorMessage('selected if excess molar eq is selected', 'Excess functional group'));
             return;
         }
 
@@ -196,13 +212,26 @@ export default function FuncGroupForm()
             // Get functional group form values, accessed with key value, identified by `letter`
             const name = funcGroupsForm[`func${letter}_name`];
             const num = parseInt(funcGroupsForm[`func${letter}_num`]);
-            const molar_eq = parseFloat(funcGroupsForm[`func${letter}_molar_eq`]);
+            // Depending on whether excess molar eq was selected, determine molar eq for this func group
+            const determineMolarEq = () => {
+                if (xs_A_selected && letter === 'A') 
+                    return parseFloat(funcGroupsForm.func_xs);
+                else if (xs_B_selected && letter === 'B') 
+                    return parseFloat(funcGroupsForm.func_xs);
+                else
+                    return 1.0;
+            }
+
+            const molar_eq = molar_eq_is_checked 
+            ? determineMolarEq()
+            // If excess functional group is not selected, default to `1.0`
+            : 1.0;
 
             // Check that input values are acceptable and the correct datatype
             const nameAcceptable = checkDataTypes('string', name);
             const numAcceptable = checkDataTypes('int', num);
             const molar_eqAcceptable = checkDataTypes('float', molar_eq);
-            debugger;
+            
             if (nameAcceptable && numAcceptable && molar_eqAcceptable)
             {
                 // Create Functional Group object with the FuncGroup class and validated values
@@ -323,7 +352,14 @@ export default function FuncGroupForm()
                             )}
                             <label>
                                 Molar Equivalents
-                                <input type="text" name="func_xs" placeholder="e.g. '1.1'" id="func_xs" className="input_field float" />
+                                <input 
+                                    type="text" 
+                                    name="func_xs" 
+                                    value={funcGroupsForm.func_xs} 
+                                    onChange={handleFormChange}
+                                    placeholder="e.g. '1.1'" 
+                                    id="func_xs" 
+                                    className="input_field float" />
                             </label>
                         </div>
                     </div>
