@@ -1,8 +1,5 @@
-import React, { useState, useReducer } from 'react';
-import { useFunc } from '../../contexts/FuncContext';
-
-// Import reducers and actions
-import { reducer } from '../../contexts/reducers';
+import React, { useState } from 'react';
+import { useFuncGroups, useFuncDispatch } from '../../contexts/FuncContext';
 import { UPDATE_FUNC } from '../../contexts/actions';
 
 // Import FuncGroup Class for defining input data
@@ -13,8 +10,8 @@ import { invalidErrorMessage } from '../../utils/helpers';
 
 export default function FuncGroupForm()
 {
-    const initialFuncData = useFunc();
-    const [state, dispatch] = useReducer(reducer, initialFuncData)
+    const funcGroupsContextData = useFuncGroups();
+    const updateFuncGroupsContext = useFuncDispatch();
 
     const func_groups =
     [
@@ -246,16 +243,16 @@ export default function FuncGroupForm()
             } else
             {
                 console.log('There was an issue with the given form values...');
-                return;
+                return {};
             }
             
         });
 
         console.log('Parsed funcGroups: ', funcGroups);
-        console.log('Reducer State: ', state);
+        console.log('Reducer State: ', funcGroupsContextData);
         
         // Update the Functional Group Context with the validated func group data
-        dispatch({ type: UPDATE_FUNC, value: funcGroups });
+        updateFuncGroupsContext({ type: UPDATE_FUNC, funcGroups });
     }
 
     return(

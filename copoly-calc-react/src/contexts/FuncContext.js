@@ -1,16 +1,38 @@
-import React, { useContext } from 'react';
+import React, { useContext, useReducer } from 'react';
+import { UPDATE_FUNC } from './actions';
 
-export const FuncContext = React.createContext();
-export const useFunc = () => useContext(FuncContext);
+const FuncContext = React.createContext(null);
+const FuncDispatchContext = React.createContext(null);
 
-const { Provider } = FuncContext;
+export const useFuncGroups = () => useContext(FuncContext);
+export const useFuncDispatch = () => useContext(FuncDispatchContext);
 
-export default function FuncProvider(props)
+function funcReducer(funcData, action)
+{
+    const { type } = action;
+
+    switch (type)
+    {
+        case UPDATE_FUNC:
+            const { funcGroups } = action;
+            return funcGroups;
+        default:
+            throw Error('Invalid action: ', type);
+    }
+}
+
+const initialFunc = [];
+
+export default function FuncProvider({ children })
 {
     // Initial state for functional groups and monomers
-    const funcGroups = [];
+    const [funcGroups, dispatch] = useReducer(funcReducer, initialFunc);
 
     return (
-        <Provider value={funcGroups} {...props} />
+        <FuncContext.Provider value={{ funcGroups }} >
+            <FuncDispatchContext.Provider value={dispatch} >
+                {children}
+            </FuncDispatchContext.Provider>
+        </FuncContext.Provider>
     );
 }
