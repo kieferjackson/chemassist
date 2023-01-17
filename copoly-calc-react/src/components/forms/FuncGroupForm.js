@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useFuncGroups, useFuncDispatch } from '../../contexts/FuncContext';
 import { UPDATE_FUNC } from '../../contexts/actions';
+// Import default starting values for Functional Group and Form fields
+import { DEFAULT_FUNC_GROUP_DATA, FUNC_FORM_FIELDS } from './defaults/func_group_data';
 
 // Import FuncGroup Class for defining input data
 import FuncGroup from '../../utils/FuncGroup';
@@ -13,33 +15,7 @@ export default function FuncGroupForm()
     const funcGroupsContextData = useFuncGroups();
     const updateFuncGroupsContext = useFuncDispatch();
 
-    const func_groups =
-    [
-        // Functional Group A
-        {
-            letter: 'A',
-            name_placeholder: 'diester',
-            num_placeholder: 1,
-        },
-        // Functional Group B
-        {
-            letter: 'B',
-            name_placeholder: 'diol',
-            num_placeholder: 2,
-        }
-    ];
-
-    // Starting values for Functional Group Form
-    const FUNC_FORM_FIELDS =
-    {
-        // Functional Group A Form Fields
-        funcA_name: '', funcA_num: '',
-        // Functional Group B Form Fields
-        funcB_name: '', funcB_num: '', 
-        // Unique Form fields
-        func_xs: ''
-    };
-
+    // Manages the entered Functional Group form values
     const [funcGroupsForm, setFuncGroupsForm] = useState(FUNC_FORM_FIELDS);
 
     const handleFormChange = (event) => {
@@ -205,7 +181,7 @@ export default function FuncGroupForm()
             return;
         }
 
-        const funcGroups = func_groups.map(({ letter }) => {
+        const funcGroups = DEFAULT_FUNC_GROUP_DATA.map(({ letter }) => {
             // Get functional group form values, accessed with key value, identified by `letter`
             const name = funcGroupsForm[`func${letter}_name`];
             const num = parseInt(funcGroupsForm[`func${letter}_num`]);
@@ -269,7 +245,7 @@ export default function FuncGroupForm()
                     </label>
                 </section>
                 <section className="ag_box">
-                    {func_groups.map(({ letter, name_placeholder, num_placeholder }) =>
+                    {DEFAULT_FUNC_GROUP_DATA.map(({ letter, name_placeholder, num_placeholder }) =>
                         <div key={`func_group_${letter}`}>
                             <h1>Functional Group {letter}</h1>
                             <div className="input_block">
@@ -335,7 +311,7 @@ export default function FuncGroupForm()
                     <br />
                     <div id="molar_eq_container" className="hidden">
                         <div className="input_block">
-                            {func_groups.map(({ letter }) =>
+                            {DEFAULT_FUNC_GROUP_DATA.map(({ letter }) =>
                                 <div className="unselected" id={`func${letter}_eq`} key={`func${letter}_eq`} >
                                     <button 
                                         type="button" 
