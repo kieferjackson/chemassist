@@ -1,1 +1,2 @@
 export const UPDATE_FUNC = 'UPDATE_FUNC';
+export const UPDATE_MONOMERS = 'UPDATE_MONOMERS';

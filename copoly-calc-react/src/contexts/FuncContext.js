@@ -1,5 +1,5 @@
 import React, { useContext, useReducer } from 'react';
-import { UPDATE_FUNC } from './actions';
+import { UPDATE_FUNC, UPDATE_MONOMERS } from './actions';
 
 const FuncContext = React.createContext(null);
 const FuncDispatchContext = React.createContext(null);
@@ -16,6 +16,8 @@ function funcReducer(funcData, action)
         case UPDATE_FUNC:
             const { funcGroups } = action;
             return funcGroups;
+        case UPDATE_MONOMERS:
+            break;
         default:
             throw Error('Invalid action: ', type);
     }
