@@ -17,7 +17,7 @@ export default function FuncGroupForm()
     const funcGroupsContextData = useFuncGroups();
     const updateFuncGroupsContext = useFuncDispatch();
 
-    const generateMonomerFields = ({ num, name }) =>
+    const generateMonomerFields = ({ num, name, percent_type }) =>
     {
         let monomerFields = [];
 
@@ -50,10 +50,10 @@ export default function FuncGroupForm()
         <div className="form_container">
             <div id="monomer_data_entry" class="dynamic_form">
                 {funcGroupsContextData.map((funcGroup) => {
-                    <form name={`${funcGroup.name}_entry`} id={`${funcGroup.name}_entry`}>
-                        <h2 className='dyn_heading'>{capitalizeFirstLetter(funcGroup.name)} Group</h2>
+                    <form name={`${funcGroup.getName()}_entry`} id={`${funcGroup.getName()}_entry`}>
+                        <h2 className='dyn_heading'>{capitalizeFirstLetter(funcGroup.getName())} Group</h2>
                         <section className="ag_box">
-                            <h3 className='ag_box_dyn_heading'>{capitalizeFirstLetter(funcGroup.name)} Group</h3>
+                            <h3 className='ag_box_dyn_heading'>{capitalizeFirstLetter(funcGroup.getName())} Group</h3>
                             {generateMonomerFields(funcGroup)}
                         </section>
                     </form>
