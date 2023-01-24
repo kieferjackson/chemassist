@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFuncGroups, useFuncDispatch } from '../../contexts/FuncContext';
 import { UPDATE_FUNC } from '../../contexts/actions';
+import { FUNC_FORM, MONOMER_FORM } from '../../contexts/page_names';
 // Import default starting values for Functional Group and Form fields
 import { DEFAULT_FUNC_GROUP_DATA, FUNC_FORM_FIELDS } from './defaults/func_group_data';
 
@@ -12,9 +13,9 @@ import { invalidErrorMessage } from '../../utils/helpers';
 
 export default function FuncGroupForm()
 {
-    const funcGroupsContextData = useFuncGroups();
-    const updateFuncGroupsContext = useFuncDispatch();
-
+    const { funcGroups, page } = useFuncGroups();
+    const { setFuncGroup, setPage } = useFuncDispatch();
+    
     // Manages the entered Functional Group form values
     const [funcGroupsForm, setFuncGroupsForm] = useState(FUNC_FORM_FIELDS);
 
@@ -181,7 +182,7 @@ export default function FuncGroupForm()
             return;
         }
 
-        const funcGroups = DEFAULT_FUNC_GROUP_DATA.map(({ letter }) => {
+        const parsedFuncGroups = DEFAULT_FUNC_GROUP_DATA.map(({ letter }) => {
             // Get functional group form values, accessed with key value, identified by `letter`
             const name = funcGroupsForm[`func${letter}_name`];
             const num = parseInt(funcGroupsForm[`func${letter}_num`]);
@@ -224,11 +225,12 @@ export default function FuncGroupForm()
             
         });
 
-        console.log('Parsed funcGroups: ', funcGroups);
-        console.log('Reducer State: ', funcGroupsContextData);
+        console.log('Parsed funcGroups: ', parsedFuncGroups);
+        console.log('Reducer State: ', funcGroups);
         
         // Update the Functional Group Context with the validated func group data
-        updateFuncGroupsContext({ type: UPDATE_FUNC, funcGroups });
+        setFuncGroup({ type: UPDATE_FUNC, parsedFuncGroups });
+        setPage({ page: MONOMER_FORM });
     }
 
     return(
