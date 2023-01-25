@@ -16,9 +16,16 @@ export default function FuncGroupForm()
 {
     const { funcGroups } = useFuncGroups();
     const { setFuncGroup, setPage } = useFuncDispatch();
-
+    
     // Manages the entered Functional Group form values
     const [monomersForm, setMonomersForm] = useState(GENERATE_MONOMER_FORM_FIELDS(funcGroups));
+    
+    const handleFormChange = (event) => {
+        const { name, value } = event.target;
+        
+        // Update form field to new value
+        setMonomersForm({ ...monomersForm, [name]: value });
+    }
     
     return (
         <div className="form_container">
@@ -35,13 +42,37 @@ export default function FuncGroupForm()
                                 <div key={`${name}-${index + 1}`}>
                                     {/* Mass Input Field */}
                                     <label htmlFor={`mass${funcName}-${index + 1}`}>Mass (g)</label>
-                                    <input type="text" name={`mass${funcName}-${index + 1}`} className="dyn_input_field"></input>
+                                    <input 
+                                        type="text" 
+                                        name={`mass${funcName}-${index + 1}`} 
+                                        value={monomersForm[`mass${funcName}-${index + 1}`]}
+                                        onChange={handleFormChange}
+                                        className="dyn_input_field"
+                                    />
+
                                     {/* Percent Input Field */}
-                                    <label htmlFor={`percent${funcName}-${index + 1}`}>{`${capitalizeFirstLetter(percent_type)} (%)`}</label>
-                                    <input type="text" name={`percent${funcName}-${index + 1}`} className="dyn_input_field"></input>
+                                    <label htmlFor={`percent${funcName}-${index + 1}`}>{`${capitalizeFirstLetter(percent_type)} Percent (%)`}</label>
+                                    <input 
+                                        type="text" 
+                                        name={`percent${funcName}-${index + 1}`} 
+                                        // Disable percent input and display 100 if there is only one monomer
+                                        disabled={num === 1}
+                                        placeholder={ num === 1 ? '100' : '' }
+                                        value={monomersForm[`percent${funcName}-${index + 1}`]}
+                                        onChange={handleFormChange}
+                                        className="dyn_input_field"
+                                    />
+
                                     {/* Molar Mass Input Field */}
                                     <label htmlFor={`molar_mass${funcName}-${index + 1}`}>Molar Mass (g/mol)</label>
-                                    <input type="text" name={`molar_mass${funcName}-${index + 1}`} className="dyn_input_field"></input>
+                                    <input 
+                                        type="text" 
+                                        name={`molar_mass${funcName}-${index + 1}`} 
+                                        value={monomersForm[`molar_mass${funcName}-${index + 1}`]}
+                                        onChange={handleFormChange}
+                                        className="dyn_input_field" 
+                                    />
+                                    
                                     <br />
                                 </div>
                             )}
