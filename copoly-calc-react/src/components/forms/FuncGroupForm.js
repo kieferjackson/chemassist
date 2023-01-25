@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useFuncGroups, useFuncDispatch } from '../../contexts/FuncContext';
 import { UPDATE_FUNC } from '../../contexts/actions';
-import { FUNC_FORM, MONOMER_FORM } from '../../contexts/page_names';
+import { MONOMER_FORM } from '../../contexts/page_names';
 // Import default starting values for Functional Group and Form fields
 import { DEFAULT_FUNC_GROUP_DATA, FUNC_FORM_FIELDS } from './defaults/func_group_data';
 
@@ -13,7 +13,7 @@ import { invalidErrorMessage } from '../../utils/helpers';
 
 export default function FuncGroupForm()
 {
-    const { funcGroups, page } = useFuncGroups();
+    const { funcGroups } = useFuncGroups();
     const { setFuncGroup, setPage } = useFuncDispatch();
     
     // Manages the entered Functional Group form values
@@ -150,7 +150,7 @@ export default function FuncGroupForm()
         }
     }
 
-    const handleFormSubmission = () => {
+    const handleFormSubmission = async () => {
         // Determine percent type by selecting Weight Percent Radio Button and see if it is checked
         const wt_percent_checked = document.getElementById("wpercent").checked;
 
@@ -229,10 +229,15 @@ export default function FuncGroupForm()
         console.log('Reducer State: ', funcGroups);
         
         // Update the Functional Group Context with the validated func group data
-        setFuncGroup({ type: UPDATE_FUNC, parsedFuncGroups });
-        setPage({ page: MONOMER_FORM });
+        setFuncGroup({ type: UPDATE_FUNC, funcGroups: parsedFuncGroups });
     }
 
+    React.useEffect(() => {
+        if (funcGroups !== undefined && funcGroups.length > 0) {
+            setPage({ page: MONOMER_FORM });
+        } 
+    }, [funcGroups, setPage])
+    
     return(
         <div className="form_container">
             <form id="initial_data_entry">

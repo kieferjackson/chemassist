@@ -17,12 +17,12 @@ export function convertToScientificNotation (real_number) {
     
     for (var i = 2 ; i < it_num.length ; i++) {
         // Count the number of decimal places before the first significant figures
-        while (it_num[i] == 0 && i < it_num.length) {
+        while (it_num[i] === 0 && i < it_num.length) {
             exp_count--;
             i++;
         }
 
-        if (it_num[i] != 0) {
+        if (it_num[i] !== 0) {
             // Initialize scientific notation value
             var sn_number = '';
             for (var q = i ; q < SIG_FIG + i ; q++) {

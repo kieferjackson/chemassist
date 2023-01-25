@@ -14,49 +14,37 @@ import { capitalizeFirstLetter, convertToScientificNotation } from '../../utils/
 
 export default function FuncGroupForm()
 {
-    const funcGroupsContextData = useFuncGroups();
-    const updateFuncGroupsContext = useFuncDispatch();
-
-    const generateMonomerFields = ({ num, name, percent_type }) =>
-    {
-        let monomerFields = [];
-
-        // Create inputs and labesl for mass, percent, and molar mass based on the number of monomers
-        for (let i = 0 ; i < num ; i++)
-        {
-            const funcName = capitalizeFirstLetter(name);
-            const generateLabel = (field_type, innerText) => <label for={`${field_type}${funcName}-${i + 1}`}>{innerText}</label>;
-            const generateInput = (field_type) => <input type="text" name={`${field_type}${funcName}-${i + 1}`} className="dyn_input_field"></input>;
-
-            const mass_label = generateLabel('mass', 'Mass (g)');
-            const mass_input = generateInput('mass');
-            const percent_label = generateLabel('percent', `${capitalizeFirstLetter(percent_type)} (%)`);
-            const percent_input = generateInput('percent');
-            const molar_mass_label = generateLabel('molar_mass', 'Molar Mass (g/mol)');
-            const molar_mass_input = generateInput('molar_mass');
-
-            const gap_break = <br />;
-
-            monomerFields.push(
-                mass_label, mass_input, 
-                percent_label, percent_input,
-                molar_mass_label, molar_mass_input,
-                gap_break
-            );
-        }
-    }
+    const { funcGroups } = useFuncGroups();
+    const { setFuncGroup, setPage } = useFuncDispatch();
 
     return (
         <div className="form_container">
-            <div id="monomer_data_entry" class="dynamic_form">
-                {funcGroupsContextData.map((funcGroup) => {
-                    <form name={`${funcGroup.getName()}_entry`} id={`${funcGroup.getName()}_entry`}>
-                        <h2 className='dyn_heading'>{capitalizeFirstLetter(funcGroup.getName())} Group</h2>
+            <div id="monomer_data_entry" className="dynamic_form">
+                {funcGroups.map(({ name, num, percent_type }) => {
+                    const funcName = capitalizeFirstLetter(name);
+
+                    return (
+                    <form key={`${name}_entry`} name={`${name}_entry`} id={`${name}_entry`}>
+                        <h2 className='dyn_heading'>{funcName} Group</h2>
                         <section className="ag_box">
-                            <h3 className='ag_box_dyn_heading'>{capitalizeFirstLetter(funcGroup.getName())} Group</h3>
-                            {generateMonomerFields(funcGroup)}
+                            <h3 className='ag_box_dyn_heading'>{funcName} Group</h3>
+                            {Array.from({ length: num }, (monomer, index) =>
+                                <div key={`${name}-${index + 1}`}>
+                                    {/* Mass Input Field */}
+                                    <label htmlFor={`mass${funcName}-${index + 1}`}>Mass (g)</label>
+                                    <input type="text" name={`mass${funcName}-${index + 1}`} className="dyn_input_field"></input>
+                                    {/* Percent Input Field */}
+                                    <label htmlFor={`percent${funcName}-${index + 1}`}>{`${capitalizeFirstLetter(percent_type)} (%)`}</label>
+                                    <input type="text" name={`percent${funcName}-${index + 1}`} className="dyn_input_field"></input>
+                                    {/* Molar Mass Input Field */}
+                                    <label htmlFor={`molar_mass${funcName}-${index + 1}`}>Molar Mass (g/mol)</label>
+                                    <input type="text" name={`molar_mass${funcName}-${index + 1}`} className="dyn_input_field"></input>
+                                    <br />
+                                </div>
+                            )}
                         </section>
                     </form>
+                    )
                 })}
             </div>
         </div>
