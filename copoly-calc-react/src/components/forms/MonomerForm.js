@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useFuncGroups, useFuncDispatch } from '../../contexts/FuncContext';
 import { UPDATE_MONOMERS } from '../../contexts/actions';
-// Import default starting values for Functional Group and Form fields
-import { MONOMER_FORM_FIELDS } from './defaults/monomer_data';
+// Import default generation function for Monomer Form fields
+import { GENERATE_MONOMER_FORM_FIELDS } from './defaults/monomer_data';
 
 // Import FuncGroup Class for defining input data
 import Monomer from '../../utils/Monomer';
@@ -17,6 +17,9 @@ export default function FuncGroupForm()
     const { funcGroups } = useFuncGroups();
     const { setFuncGroup, setPage } = useFuncDispatch();
 
+    // Manages the entered Functional Group form values
+    const [monomersForm, setMonomersForm] = useState(GENERATE_MONOMER_FORM_FIELDS(funcGroups));
+    
     return (
         <div className="form_container">
             <div id="monomer_data_entry" className="dynamic_form">
