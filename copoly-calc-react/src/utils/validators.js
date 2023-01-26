@@ -1,6 +1,15 @@
 import { typeErrorMessage, invalidErrorMessage } from "./helpers";
 
-function checkDataTypes(data_type, value) {
+/**
+ * 
+ * @param {String} data_type - Identifies which datatype to check of three options: 'int', 'string', and 'float'
+ * @param {Object} data - An object which must contain a `value` property (the value to be checked) 
+ * and an `isMonomer` property which is required when checking 'float' values
+ * @returns A boolean which indicates whether the data matches the expected datatype
+ */
+function checkDataTypes(data_type, data) {
+    const { value } = data;
+
     switch (data_type) {
         case 'int':     // Integer Checker
             console.log("checking integer value...");
@@ -44,12 +53,16 @@ function checkDataTypes(data_type, value) {
         case 'float':   // Float Checker
             console.log("checking float value...");
 
+            const { isMonomer } = data;
             var floatAcceptable;
 
-            if (value <= 0) {
+            if (value < 0) {
                 const float_ltz_error = invalidErrorMessage('greater than 0', 'Float');
                 console.error(float_ltz_error);
                 floatAcceptable = false;
+            } else if (value === 0 && isMonomer) {
+                // If the value being checked is for a monomer, a value of 0 is acceptable
+                floatAcceptable = true;
             } else if (value > 0) {
                 // The input value is a positive non-zero number, therefore it is acceptable
                 floatAcceptable = true;

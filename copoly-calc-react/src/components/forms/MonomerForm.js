@@ -26,6 +26,104 @@ export default function FuncGroupForm()
         // Update form field to new value
         setMonomersForm({ ...monomersForm, [name]: value });
     }
+
+    const handleFormSubmission = () => {
+        // Contains the monomers for both functional groups as two separate arrays
+        const parsedMonomers = funcGroups.map(({ name, num, percent_type }, funcGroupIndex) => {
+            // Lists the monomers for this particular functional group
+            let funcGroupMonomers = [];
+            const funcName = capitalizeFirstLetter(name);
+
+            // Track the number of unknowns per functional group !THERE CAN ONLY BE UP TO 1 UNKNOWN PER FUNCTIONAL GROUP
+            let unknownCount = [0, 0];
+            // Track that all given inputs are acceptable
+            let inputsAcceptable = true;
+
+            for (let i = 0 ; i < num ; i++)
+            {
+                const monomerName = `${funcName}-${i + 1}`
+
+                // Get given monomer form values, accessed with key value, identified by monomer name
+                const given_mass = monomersForm[`mass${monomerName}`];
+                const given_percent = monomersForm[`percent${monomerName}`];
+                const given_molar_mass = monomersForm[`molar_mass${monomerName}`];
+
+                // Set mass, percent, and molar mass values depending on input given
+                const mass = given_mass === '' ? 0 : parseFloat(given_mass);
+                const percent = given_percent === '' ? 0 : parseFloat(given_percent);
+                const molar_mass = given_molar_mass === '' ? 0 : parseFloat(given_molar_mass);
+
+                // Check that input values are acceptable and the correct datatype
+                const massAcceptable = checkDataTypes('float', { value: mass, isMonomer: true });
+                const percentAcceptable = checkDataTypes('float', { value: percent, isMonomer: true });
+                const molar_massAcceptable = checkDataTypes('float', { value: molar_mass, isMonomer: true });
+
+                // Set weight percent value depending on given conditions
+                const weight_percent = percentAcceptable && percent_type === 'weight'
+                    ? percent   // Set this monomer to the given percent value
+                    : 0;        // Set weight percent to 0 to indicate that it is undetermined
+
+                // Set mole percent value depending on given conditions
+                const mole_percent = percentAcceptable && percent_type === 'mole'
+                    ? percent   // Set this monomer to the given percent value
+                    : 0;        // Set weight percent to 0 to indicate that it is undetermined
+
+                // Check if mass and percents are unknown
+                if (mass === 0 && weight_percent === 0 && mole_percent === 0) 
+                {
+                    unknownCount[funcGroupIndex] += 1;
+
+                    if (unknownCount[funcGroupIndex] > 1)
+                    {
+                        // There can only be up to 1 unknown in a functional group
+                        console.error(invalidErrorMessage('less than or equal to 1', 'Unknowns'));
+                        inputsAcceptable = false;
+                    }
+                }
+
+                // Check if molar mass is unknown (for molar mass to be given, it must be greater than 0)
+                if (!molar_mass > 0)
+                {
+                    console.error(invalidErrorMessage('greater than 0', 'Molar Mass'));
+                    inputsAcceptable = false;
+                }
+
+                if (massAcceptable && percentAcceptable && molar_massAcceptable)
+                {
+                    const monomer = new Monomer(
+                        mass,
+                        weight_percent,
+                        mole_percent,
+                        molar_mass,
+                        // The last property (moles) defaults to 0 because it will be calculated at its calculation route
+                        0
+                    );
+                    
+                    funcGroupMonomers.push(monomer);
+                } else
+                {
+                    console.log('There was an issue with the given form values...');
+                    inputsAcceptable = false;
+                    return { message: `One or multiple of the values given for the ${monomerName} monomer name is missing or invalid.`};
+                }
+            }
+
+            // Add this functional group's monomers to the parseMonomers array
+            return funcGroupMonomers;
+        });
+        
+        console.log('Parsed funcGroups: ', parsedMonomers);
+        console.log('Reducer State: ', funcGroups);
+        
+        // Update the Functional Group Context with the validated monomer data
+        setFuncGroup({ type: UPDATE_MONOMERS, 'funcGroups': { monomers: parsedMonomers } });
+    }
+
+    // React.useEffect(() => {
+    //     if (funcGroups !== undefined && funcGroups.length > 0) {
+    //         setPage({ page: MONOMER_FORM });
+    //     } 
+    // }, [funcGroups, setPage]);
     
     return (
         <div className="form_container">
@@ -72,7 +170,7 @@ export default function FuncGroupForm()
                                         onChange={handleFormChange}
                                         className="dyn_input_field" 
                                     />
-                                    
+
                                     <br />
                                 </div>
                             )}
@@ -80,6 +178,9 @@ export default function FuncGroupForm()
                     </form>
                     )
                 })}
+                <div id='monomer_submit_container' className='submit_container'>
+                    <button type='button' onClick={() => handleFormSubmission()} className='submit_button'>Next</button>
+                </div>
             </div>
         </div>
     );

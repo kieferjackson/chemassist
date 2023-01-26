@@ -22,19 +22,33 @@ export default class FuncGroup {
     #set_func_property(property_name, expected_type, value)
     {
         // Check that given value is expected data type
-        if (typeof value !== expected_type) 
+        if (property_name === 'monomers')
+        {
+            const monomersIsArray = value instanceof Array;
+
+            if (!monomersIsArray)
+                throw typeErrorMessage(expected_type, typeof value, property_name);
+        }
+        else if (typeof value !== expected_type) 
             throw typeErrorMessage(expected_type, typeof value, property_name);
         
         switch (property_name)
         {
             case 'monomers':
+                const numMonomersGiven = value.length;
+
                 // Check that there is at least 1 monomer
-                if (this[property_name].length <= 0) 
+                if (numMonomersGiven <= 0) 
                     throw invalidErrorMessage('Functional groups must have at least 1 monomer', property_name);
+
+                // Check that the number of monomers given is equivalent to the num expected
+                if (numMonomersGiven !== this.num)
+                    throw invalidErrorMessage(`equivalent to the number of comonomers provided for ${this.name} functional group (${this.num})\nInvalid value given: ${value}`, property_name);
+
                 break;
             case 'unknown':
                 // Check that the value being set for unknown is an integer value
-                const unknown_isInteger = checkDataTypes('int', value);
+                const unknown_isInteger = checkDataTypes('int', { value });
                 if (!unknown_isInteger)
                     throw invalidErrorMessage('A functional group unknown must be an index value of type integer', value);
 

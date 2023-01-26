@@ -14,8 +14,19 @@ function funcReducer(funcData, { type, funcGroups })
     {
         case UPDATE_FUNC:
             return funcGroups;
+        
         case UPDATE_MONOMERS:
-            break;
+            const { monomers } = funcGroups;
+            
+            const [funcA, funcB ] = funcData;
+            const [ monomersA, monomersB ] = monomers;
+            
+            // Add the monomers to functional groups A and B
+            funcA.setMonomers(monomersA);
+            funcB.setMonomers(monomersB);
+            
+            return [funcA, funcB];
+
         default:
             throw Error('Invalid action: ', type);
     }

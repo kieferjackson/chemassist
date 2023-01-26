@@ -150,7 +150,7 @@ export default function FuncGroupForm()
         }
     }
 
-    const handleFormSubmission = async () => {
+    const handleFormSubmission = () => {
         // Determine percent type by selecting Weight Percent Radio Button and see if it is checked
         const wt_percent_checked = document.getElementById("wpercent").checked;
 
@@ -202,9 +202,9 @@ export default function FuncGroupForm()
             : 1.0;
 
             // Check that input values are acceptable and the correct datatype
-            const nameAcceptable = checkDataTypes('string', name);
-            const numAcceptable = checkDataTypes('int', num);
-            const molar_eqAcceptable = checkDataTypes('float', molar_eq);
+            const nameAcceptable = checkDataTypes('string', { value: name });
+            const numAcceptable = checkDataTypes('int', { value: num });
+            const molar_eqAcceptable = checkDataTypes('float', { value: molar_eq, isMonomer: false });
             
             if (nameAcceptable && numAcceptable && molar_eqAcceptable)
             {
@@ -236,7 +236,7 @@ export default function FuncGroupForm()
         if (funcGroups !== undefined && funcGroups.length > 0) {
             setPage({ page: MONOMER_FORM });
         } 
-    }, [funcGroups, setPage])
+    }, [funcGroups, setPage]);
     
     return(
         <div className="form_container">
