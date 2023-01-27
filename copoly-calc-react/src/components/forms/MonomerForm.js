@@ -99,12 +99,13 @@ export default function FuncGroupForm()
                         0
                     );
                     
-                    funcGroupMonomers.push(monomer);
+                    funcGroupMonomers.push({ data: monomer, isOK: inputsAcceptable });
                 } else
                 {
-                    console.log('There was an issue with the given form values...');
+                    const ERROR_MESSAGE = `One or multiple of the values given for the ${monomerName} monomer name is missing or invalid.`;
+                    console.error(ERROR_MESSAGE);
                     inputsAcceptable = false;
-                    return { message: `One or multiple of the values given for the ${monomerName} monomer name is missing or invalid.`};
+                    return { message: ERROR_MESSAGE, isOK: inputsAcceptable };
                 }
             }
 
@@ -114,9 +115,41 @@ export default function FuncGroupForm()
         
         console.log('Parsed funcGroups: ', parsedMonomers);
         console.log('Reducer State: ', funcGroups);
+
+        const validateMonomers = (monomers) => {
+            return monomers.reduce((validatedMonomers, monomer) => {
+                if (monomer.isOK)
+                    validatedMonomers.push(monomer.data);
+                
+                return validatedMonomers;
+            }, []);
+        }
+
+        // Check that all monomers are valid by filtering out any which are not acceptable
+        const [ monomersFuncA, monomersFuncB ] = parsedMonomers;
+        const validMonomersFuncA = validateMonomers(monomersFuncA);
+        const validMonomersFuncB = validateMonomers(monomersFuncB);
+        const validMonomers = [validMonomersFuncA, validMonomersFuncB];
         
-        // Update the Functional Group Context with the validated monomer data
-        setFuncGroup({ type: UPDATE_MONOMERS, 'funcGroups': { monomers: parsedMonomers } });
+        // Evaluate if the monomers for each functional group are valid
+        const [ funcA, funcB ] = funcGroups;
+        const funcA_monomersOK = validMonomersFuncA.length === funcA.getNum();
+        const funcB_monomersOK = validMonomersFuncB.length === funcB.getNum();
+        
+        if (funcA_monomersOK && funcB_monomersOK)
+        {
+            // Update the Functional Group Context with the validated monomer data
+            setFuncGroup({ type: UPDATE_MONOMERS, 'funcGroups': { monomers: validMonomers } });
+        }
+        // Only the monomers for functional group A were invalid
+        else if (funcA_monomersOK)
+            throw Error('One of the monomers for Functional Group A was given invalid input. Please try again.');
+        // Only the monomers for functional group B were invalid
+        else if (funcB_monomersOK)
+            throw Error('One of the monomers for Functional Group B was given invalid input. Please try again.');
+        else
+            throw Error('One of the monomers was given invalid input. Please try again.');
+
     }
 
     // React.useEffect(() => {

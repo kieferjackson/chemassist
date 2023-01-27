@@ -161,7 +161,7 @@ export default function FuncGroupForm()
 
         // Check that functional group names are unique (duplicate names are not allowed)
         const { funcA_name, funcB_name } = funcGroupsForm;
-        const funcNamesIdentical = checkParity(funcA_name, funcB_name);
+        const funcNamesIdentical = checkParity(funcA_name.toLowerCase(), funcB_name.toLowerCase());
 
         if (funcNamesIdentical) {
             // Names cannot be identical, exit out of function
@@ -182,6 +182,9 @@ export default function FuncGroupForm()
             return;
         }
 
+        // Track that all given inputs are acceptable
+        let inputsAcceptable = true;
+
         const parsedFuncGroups = DEFAULT_FUNC_GROUP_DATA.map(({ letter }) => {
             // Get functional group form values, accessed with key value, identified by `letter`
             const name = funcGroupsForm[`func${letter}_name`];
@@ -196,10 +199,8 @@ export default function FuncGroupForm()
                     return 1.0;
             }
 
-            const molar_eq = molar_eq_is_checked 
-            ? determineMolarEq()
-            // If excess functional group is not selected, default to `1.0`
-            : 1.0;
+            // Determine molar eq for this functional group; if not selected, default to `1.0`
+            const molar_eq = molar_eq_is_checked ? determineMolarEq() : 1.0;
 
             // Check that input values are acceptable and the correct datatype
             const nameAcceptable = checkDataTypes('string', { value: name });
@@ -209,27 +210,47 @@ export default function FuncGroupForm()
             if (nameAcceptable && numAcceptable && molar_eqAcceptable)
             {
                 // Create Functional Group object with the FuncGroup class and validated values
-                return new FuncGroup
-                (
-                    PERCENT_TYPE,
-                    name,
-                    num,
-                    molar_eq,
-                    []          // Initialize monomer list to empty array
-                );
+                return {
+                    data: new FuncGroup
+                    (
+                        PERCENT_TYPE,
+                        name,
+                        num,
+                        molar_eq,
+                        []          // Initialize monomer list to empty array
+                    ),
+                    isOK: inputsAcceptable
+                };
             } else
             {
-                console.log('There was an issue with the given form values...');
-                return {};
+                const ERROR_MESSAGE = `One or multiple of the values given for Functional Group ${letter} is missing or invalid.`;
+                console.error(ERROR_MESSAGE);
+                inputsAcceptable = false;
+                return { message: ERROR_MESSAGE, isOK: inputsAcceptable };
             }
             
         });
 
         console.log('Parsed funcGroups: ', parsedFuncGroups);
         console.log('Reducer State: ', funcGroups);
+
+        // Check that both functional groups are valid by only returning acceptable values
+        const validFuncGroups = parsedFuncGroups.reduce((validatedFuncGroups, funcGroup) => {
+            if (funcGroup.isOK)
+                validatedFuncGroups.push(funcGroup.data);
+
+            return validatedFuncGroups;
+        }, []);
         
-        // Update the Functional Group Context with the validated func group data
-        setFuncGroup({ type: UPDATE_FUNC, funcGroups: parsedFuncGroups });
+        // Check that both functional groups are valid
+        if (validFuncGroups.length === 2)
+        {
+            // Update the Functional Group Context with the validated func group data
+            setFuncGroup({ type: UPDATE_FUNC, funcGroups: validFuncGroups });
+        }
+        else
+            throw Error('One of the functional groups was given invalid input. Please try again.');
+        
     }
 
     React.useEffect(() => {
