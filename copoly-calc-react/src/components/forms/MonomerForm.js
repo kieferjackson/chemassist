@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useFuncGroups, useFuncDispatch } from '../../contexts/FuncContext';
 import { UPDATE_MONOMERS } from '../../contexts/actions';
+import { FUNC_FORM, FINAL_RESULTS } from '../../contexts/page_names';
 // Import default generation function for Monomer Form fields
 import { GENERATE_MONOMER_FORM_FIELDS } from './defaults/monomer_data';
 
@@ -157,6 +158,8 @@ export default function FuncGroupForm()
     //         setPage({ page: MONOMER_FORM });
     //     } 
     // }, [funcGroups, setPage]);
+
+    const changePage = () => setPage({ page: FUNC_FORM });
     
     return (
         <div className="form_container">
@@ -212,6 +215,7 @@ export default function FuncGroupForm()
                     )
                 })}
                 <div id='monomer_submit_container' className='submit_container'>
+                    <button type='button' onClick={() => changePage()} className='back_button'>Back</button>
                     <button type='button' onClick={() => handleFormSubmission()} className='submit_button'>Next</button>
                 </div>
             </div>

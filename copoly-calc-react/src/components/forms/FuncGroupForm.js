@@ -254,10 +254,18 @@ export default function FuncGroupForm()
     }
 
     React.useEffect(() => {
-        if (funcGroups !== undefined && funcGroups.length > 0) {
+        const funcContextUpdated = funcGroups !== undefined && funcGroups.length > 0;
+        // Count the number of form fields, then count the func group fields with input given
+        const numFuncFields = Object.keys(funcGroupsForm).length;
+        const numFuncFieldsFilled = Object.values(funcGroupsForm).filter(field => field !== '').length;
+        
+        // Molar EQ section is optional, so one fewer fields is required than the total number
+        const funcFormFilled = numFuncFieldsFilled >= numFuncFields - 1;
+        
+        if (funcContextUpdated && funcFormFilled) {
             setPage({ page: MONOMER_FORM });
         } 
-    }, [funcGroups, setPage]);
+    }, [funcGroupsForm, funcGroups, setPage]);
     
     return(
         <div className="form_container">

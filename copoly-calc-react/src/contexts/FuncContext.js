@@ -47,6 +47,8 @@ function pageReducer(current_page, { page })
                 throw Error('Invalid page: ', page);
         } 
     }
+    
+    return current_page;
 }
 
 const initialFunc = [];
