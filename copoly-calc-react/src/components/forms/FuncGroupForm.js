@@ -18,6 +18,8 @@ export default function FuncGroupForm()
     
     // Manages the entered Functional Group form values
     const [funcGroupsForm, setFuncGroupsForm] = useState(FUNC_FORM_FIELDS);
+    // Tracks whether or not to display Molar EQ section
+    const [isExcessEQ, setIsExcessEQ] = useState(false);
 
     const handleFormChange = (event) => {
         const { name, value } = event.target;
@@ -34,21 +36,18 @@ export default function FuncGroupForm()
         if (current_value > 1 && current_value % 1 === 0) 
         {
             // The current value is a sufficiently large whole number, decrement it
-            current_value -= 1;
-            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: current_value });
+            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: current_value - 1 });
         } 
         else if (current_value > 2 && current_value % 1 !== 0) 
         {
-            // The current value is a sufficiently large decimal number, floor and then decrement it
-            current_value = Math.floor(current_value);
-            current_value -= 1;
+            // The current value is a sufficiently large decimal number, floor and then decrement
+            current_value = Math.floor(current_value) - 1;
             setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: current_value });
         } 
         else if (current_value > 1 && current_value < 2 && current_value % 1 !== 0) 
         {
             // The current value is a decimal number between 1 and 2, set it to 1
-            current_value = 1;
-            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: current_value });
+            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: 1 });
         } 
         else 
         {
@@ -64,50 +63,18 @@ export default function FuncGroupForm()
         if (current_value % 1 === 0) 
         {
             // The current value is a whole number, increment it
-            current_value += 1;
-            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: current_value });
+            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: current_value + 1 });
         } 
         else if (current_value % 1 > 0) 
         {
             // The current value is a decimal number, floor and then increment it
-            current_value = Math.floor(current_value);
-            current_value += 1;
+            current_value = Math.floor(current_value) + 1;
             setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: current_value });
         } 
         else 
         {
             // Set unexpected value to 1
             setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: 1 });
-        }
-    }
-
-    const toggleCheckBox = (event) => {
-        event.preventDefault();
-
-        const check_box = event.target;
-        const molar_eq_section = document.getElementById("molar_eq_container");
-
-        // Saving and Resetting Current State of Check Box
-        const current_state = check_box.classList[1];
-        check_box.classList.remove(current_state);
-
-        // Update checkbox based on current state
-        switch(current_state)
-        {
-            case 'unchecked':
-                check_box.classList.add("checked");
-                // The checkbox is checked, so the molar eq section should be visible
-                molar_eq_section.className = 'visible';
-                break;
-            case 'checked':
-                check_box.classList.add("unchecked");
-                // The checkbox is unchecked, so the molar eq section should be hidden
-                molar_eq_section.className = 'hidden';
-                break;
-            default:
-                check_box.classList.add("unchecked");
-                molar_eq_section.className = 'hidden';
-                break;
         }
     }
 
@@ -336,16 +303,17 @@ export default function FuncGroupForm()
                     <div className="input_block">
                         <label>
                             Is either group in excess?
-                            <button 
-                                type="button" name="molar_eq_check" 
+                            <input 
+                                type="checkbox" name="molar_eq_check" 
                                 id="molar_eq_check"
-                                onClick={toggleCheckBox}
-                                className="check_box unchecked" tabIndex="-1"
-                            ></button>
+                                onClick={({ target }) => setIsExcessEQ(target.checked)}
+                                className="check_box" tabIndex="-1"
+                            ></input>
                         </label>
                     </div>
                     <br />
-                    <div id="molar_eq_container" className="hidden">
+                    {isExcessEQ ?
+                    <div id="molar_eq_container">
                         <div className="input_block">
                             {DEFAULT_FUNC_GROUP_DATA.map(({ letter }) =>
                                 <div className="unselected" id={`func${letter}_eq`} key={`func${letter}_eq`} >
@@ -372,6 +340,7 @@ export default function FuncGroupForm()
                             </label>
                         </div>
                     </div>
+                    : ''}
                 </section>
                 
                 <div className="submit_container">
