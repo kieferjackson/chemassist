@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useFuncGroups, useFuncDispatch } from '../../contexts/FuncContext';
-import { UPDATE_MONOMERS } from '../../contexts/actions';
+import { UPDATE_FUNC, UPDATE_MONOMERS } from '../../contexts/actions';
 import { FUNC_FORM, FINAL_RESULTS } from '../../contexts/page_names';
 // Import default generation function for Monomer Form fields
 import { GENERATE_MONOMER_FORM_FIELDS } from './defaults/monomer_data';
@@ -153,13 +153,27 @@ export default function FuncGroupForm()
 
     }
 
-    // React.useEffect(() => {
-    //     if (funcGroups !== undefined && funcGroups.length > 0) {
-    //         setPage({ page: MONOMER_FORM });
-    //     } 
-    // }, [funcGroups, setPage]);
+    React.useEffect(() => {
+        if (funcGroups.length > 0)
+        {
+            const [ funcA, funcB ] = funcGroups;
+            const monomersDefined = funcA.monomers.length > 0 && funcB.monomers.length > 0;
+            
+            // All necessary information has been given, so display final results
+            if (monomersDefined) {
+                setPage({ page: FINAL_RESULTS });
+            } 
+        }
+        else
+        {
+            // Func Groups were reset, so return to Func Group Form
+            setPage({ page: FUNC_FORM });
+        }
+    }, [funcGroups, setPage]);
 
-    const changePage = () => setPage({ page: FUNC_FORM });
+    const backToFuncForm = () => {
+        setFuncGroup({ type: UPDATE_FUNC, funcGroups: [] });
+    }
     
     return (
         <div className="form_container">
@@ -215,7 +229,7 @@ export default function FuncGroupForm()
                     )
                 })}
                 <div id='monomer_submit_container' className='submit_container'>
-                    <button type='button' onClick={() => changePage()} className='back_button'>Back</button>
+                    <button type='button' onClick={() => backToFuncForm()} className='back_button'>Back</button>
                     <button type='button' onClick={() => handleFormSubmission()} className='submit_button'>Next</button>
                 </div>
             </div>

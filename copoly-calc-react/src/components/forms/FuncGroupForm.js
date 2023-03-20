@@ -20,6 +20,8 @@ export default function FuncGroupForm()
     const [funcGroupsForm, setFuncGroupsForm] = useState(FUNC_FORM_FIELDS);
     // Tracks whether or not to display Molar EQ section
     const [isExcessEQ, setIsExcessEQ] = useState(false);
+    // Tracks the current excess func group, e.g. 'A' or '' if none selected
+    const [xsGroup, setXSGroup] = useState('');
 
     const handleFormChange = (event) => {
         const { name, value } = event.target;
@@ -78,45 +80,6 @@ export default function FuncGroupForm()
         }
     }
 
-    const toggleMolarEQ = (event) => {
-        event.preventDefault();
-
-        const molar_eq_container = event.target.parentElement;
-        const molar_eq_status = molar_eq_container.className;
-
-        // Deselect previous molar equivalents if one has already been selected
-        switch(molar_eq_container.id)
-        {
-            case 'funcA_eq':
-                const b_eq = document.getElementById("funcB_eq");
-                b_eq.className = 'unselected';
-                break;
-            case 'funcB_eq': 
-                const a_eq = document.getElementById("funcA_eq");
-                a_eq.className = 'unselected';
-                break;
-            default:
-                console.log('No associated id with this selected element.');
-                break;
-        }
-
-        // Update button to reflect new state by changing class name
-        switch(molar_eq_status)
-        {
-            case 'unselected':
-                molar_eq_container.className = 'selected';
-                break;
-
-            case 'selected':
-                molar_eq_container.className = 'unselected';
-                break;
-
-            default:
-                molar_eq_container.className = 'unselected';
-                break;
-        }
-    }
-
     const handleFormSubmission = () => {
         // Determine percent type by selecting Weight Percent Radio Button and see if it is checked
         const wt_percent_checked = document.getElementById("wpercent").checked;
@@ -137,10 +100,10 @@ export default function FuncGroupForm()
         }
 
         // Check whether an excess functional group has been selected, and determine the molar eq
-        const xs_A_selected = document.getElementById("funcA_eq").className === 'selected';
-        const xs_B_selected = document.getElementById("funcB_eq").className === 'selected';
+        const xs_A_selected = xsGroup === 'A';
+        const xs_B_selected = xsGroup === 'B';
 
-        const molar_eq_is_checked = document.getElementById("molar_eq_check").classList[1] === 'checked';
+        const molar_eq_is_checked = isExcessEQ;
         const molar_eq_selected = xs_A_selected || xs_B_selected;
 
         if (molar_eq_is_checked && !molar_eq_selected) {
@@ -223,11 +186,11 @@ export default function FuncGroupForm()
     React.useEffect(() => {
         const funcContextUpdated = funcGroups !== undefined && funcGroups.length > 0;
         // Count the number of form fields, then count the func group fields with input given
-        const numFuncFields = Object.keys(funcGroupsForm).length;
+        const numFuncFields = Object.keys(funcGroupsForm).length - 1;
         const numFuncFieldsFilled = Object.values(funcGroupsForm).filter(field => field !== '').length;
         
         // Molar EQ section is optional, so one fewer fields is required than the total number
-        const funcFormFilled = numFuncFieldsFilled >= numFuncFields - 1;
+        const funcFormFilled = numFuncFieldsFilled >= numFuncFields;
         
         if (funcContextUpdated && funcFormFilled) {
             setPage({ page: MONOMER_FORM });
@@ -316,11 +279,11 @@ export default function FuncGroupForm()
                     <div id="molar_eq_container">
                         <div className="input_block">
                             {DEFAULT_FUNC_GROUP_DATA.map(({ letter }) =>
-                                <div className="unselected" id={`func${letter}_eq`} key={`func${letter}_eq`} >
+                                <div className={xsGroup === letter ? "selected" : "unselected"} id={`func${letter}_eq`} key={`func${letter}_eq`} >
                                     <button 
                                         type="button" 
                                         name={`xs_${letter}`} 
-                                        onClick={toggleMolarEQ} 
+                                        onClick={() => setXSGroup(xsGroup === letter ? '' : letter)} 
                                         className="square_button inactive_button"
                                     >
                                         {letter}
