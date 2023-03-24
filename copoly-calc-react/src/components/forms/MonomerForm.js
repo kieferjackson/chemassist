@@ -1,9 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useFuncGroups, useFuncDispatch } from '../../contexts/FuncContext';
 import { UPDATE_FUNC, UPDATE_MONOMERS } from '../../contexts/actions';
-import { FUNC_FORM, FINAL_RESULTS } from '../../contexts/page_names';
-// Import default generation function for Monomer Form fields
-import { GENERATE_MONOMER_FORM_FIELDS } from './defaults/monomer_data';
+import { FUNC_FORM, MONOMER_FORM, FINAL_RESULTS } from '../../contexts/page_names';
 
 // Import FuncGroup Class for defining input data
 import Monomer from '../../utils/Monomer';
@@ -15,17 +13,14 @@ import { capitalizeFirstLetter, convertToScientificNotation } from '../../utils/
 
 export default function FuncGroupForm()
 {
-    const { funcGroups } = useFuncGroups();
-    const { setFuncGroup, setPage } = useFuncDispatch();
-    
-    // Manages the entered Functional Group form values
-    const [monomersForm, setMonomersForm] = useState(GENERATE_MONOMER_FORM_FIELDS(funcGroups));
+    const { formData, funcGroups } = useFuncGroups();
+    const { setFormData, setFuncGroup, setPage } = useFuncDispatch();
     
     const handleFormChange = (event) => {
         const { name, value } = event.target;
         
         // Update form field to new value
-        setMonomersForm({ ...monomersForm, [name]: value });
+        setFormData({ formType: MONOMER_FORM, formField: name, value });
     }
 
     const handleFormSubmission = () => {
@@ -42,8 +37,9 @@ export default function FuncGroupForm()
 
             for (let i = 0 ; i < num ; i++)
             {
-                const monomerName = `${funcName}-${i + 1}`
-
+                const monomerName = `${funcName}-${i + 1}`;
+                const { monomersForm } = formData;
+                
                 // Get given monomer form values, accessed with key value, identified by monomer name
                 const given_mass = monomersForm[`mass${monomerName}`];
                 const given_percent = monomersForm[`percent${monomerName}`];
@@ -193,7 +189,7 @@ export default function FuncGroupForm()
                                     <input 
                                         type="text" 
                                         name={`mass${funcName}-${index + 1}`} 
-                                        value={monomersForm[`mass${funcName}-${index + 1}`]}
+                                        value={formData.monomersForm[`mass${funcName}-${index + 1}`]}
                                         onChange={handleFormChange}
                                         className="dyn_input_field"
                                     />
@@ -206,7 +202,7 @@ export default function FuncGroupForm()
                                         // Disable percent input and display 100 if there is only one monomer
                                         disabled={num === 1}
                                         placeholder={ num === 1 ? '100' : '' }
-                                        value={monomersForm[`percent${funcName}-${index + 1}`]}
+                                        value={num === 1 ? '100' : formData.monomersForm[`percent${funcName}-${index + 1}`]}
                                         onChange={handleFormChange}
                                         className="dyn_input_field"
                                     />
@@ -216,7 +212,7 @@ export default function FuncGroupForm()
                                     <input 
                                         type="text" 
                                         name={`molar_mass${funcName}-${index + 1}`} 
-                                        value={monomersForm[`molar_mass${funcName}-${index + 1}`]}
+                                        value={formData.monomersForm[`molar_mass${funcName}-${index + 1}`]}
                                         onChange={handleFormChange}
                                         className="dyn_input_field" 
                                     />

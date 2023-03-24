@@ -1,9 +1,11 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useFuncGroups, useFuncDispatch } from '../../contexts/FuncContext';
-import { UPDATE_FUNC } from '../../contexts/actions';
-import { MONOMER_FORM } from '../../contexts/page_names';
+import { UPDATE_FUNC, INITIALIZE_MONOMERS } from '../../contexts/actions';
+import { FUNC_FORM, MONOMER_FORM } from '../../contexts/page_names';
 // Import default starting values for Functional Group and Form fields
-import { DEFAULT_FUNC_GROUP_DATA, FUNC_FORM_FIELDS } from './defaults/func_group_data';
+import { DEFAULT_FUNC_GROUP_DATA, REQUIRED_FUNC_FIELDS } from './defaults/func_group_data';
+// Import default generation function for Monomer Form fields
+import { GENERATE_MONOMER_FORM_FIELDS } from './defaults/monomer_data';
 
 // Import FuncGroup Class for defining input data
 import FuncGroup from '../../utils/FuncGroup';
@@ -13,70 +15,63 @@ import { invalidErrorMessage } from '../../utils/helpers';
 
 export default function FuncGroupForm()
 {
-    const { funcGroups } = useFuncGroups();
-    const { setFuncGroup, setPage } = useFuncDispatch();
-    
-    // Manages the entered Functional Group form values
-    const [funcGroupsForm, setFuncGroupsForm] = useState(FUNC_FORM_FIELDS);
-    // Tracks whether or not to display Molar EQ section
-    const [isExcessEQ, setIsExcessEQ] = useState(false);
-    // Tracks the current excess func group, e.g. 'A' or '' if none selected
-    const [xsGroup, setXSGroup] = useState('');
+    const { formData, funcGroups } = useFuncGroups();
+    const { setFormData, setFuncGroup, setPage } = useFuncDispatch();
 
     const handleFormChange = (event) => {
         const { name, value } = event.target;
 
         // Update form field to new value
-        setFuncGroupsForm({ ...funcGroupsForm, [name]: value });
+        setFormData({ formType: FUNC_FORM, formField: name, value });
     }
 
     // Functions to increment/decrement monomer number fields
     const subtractMonomerNum = (func_letter) => {
         const num_field_name = `func${func_letter}_num`;
-        let current_value = parseInt(funcGroupsForm[num_field_name]);
+        let current_value = parseInt(formData.funcGroupsForm[num_field_name]);
         
         if (current_value > 1 && current_value % 1 === 0) 
         {
             // The current value is a sufficiently large whole number, decrement it
-            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: current_value - 1 });
+            setFormData({ formType: FUNC_FORM, formField: num_field_name, value: current_value - 1 });
         } 
         else if (current_value > 2 && current_value % 1 !== 0) 
         {
             // The current value is a sufficiently large decimal number, floor and then decrement
             current_value = Math.floor(current_value) - 1;
-            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: current_value });
+            setFormData({ formType: FUNC_FORM, formField: num_field_name, value: current_value });
         } 
         else if (current_value > 1 && current_value < 2 && current_value % 1 !== 0) 
         {
             // The current value is a decimal number between 1 and 2, set it to 1
-            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: 1 });
+            setFormData({ formType: FUNC_FORM, formField: num_field_name, value: 1 });
         } 
         else 
         {
             // Set unexpected value to 1
-            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: 1 });
+            setFormData({ formType: FUNC_FORM, formField: num_field_name, value: 1 });
         }
     }
 
     const addMonomerNum = (func_letter) => {
         const num_field_name = `func${func_letter}_num`;
-        let current_value = parseInt(funcGroupsForm[num_field_name]);
+        let current_value = parseInt(formData.funcGroupsForm[num_field_name]);
         
         if (current_value % 1 === 0) 
         {
             // The current value is a whole number, increment it
-            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: current_value + 1 });
+            setFormData({ formType: FUNC_FORM, formField: num_field_name, value: current_value + 1 });
         } 
         else if (current_value % 1 > 0) 
         {
             // The current value is a decimal number, floor and then increment it
             current_value = Math.floor(current_value) + 1;
-            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: current_value });
+            setFormData({ formType: FUNC_FORM, formField: num_field_name, value: current_value });
         } 
         else 
         {
             // Set unexpected value to 1
-            setFuncGroupsForm({ ...funcGroupsForm, [num_field_name]: 1 });
+            setFormData({ formType: FUNC_FORM, formField: num_field_name, value: 1 });
         }
     }
 
@@ -90,7 +85,7 @@ export default function FuncGroupForm()
             : 'mole';
 
         // Check that functional group names are unique (duplicate names are not allowed)
-        const { funcA_name, funcB_name } = funcGroupsForm;
+        const { funcA_name, funcB_name } = formData.funcGroupsForm;
         const funcNamesIdentical = checkParity(funcA_name.toLowerCase(), funcB_name.toLowerCase());
 
         if (funcNamesIdentical) {
@@ -100,10 +95,10 @@ export default function FuncGroupForm()
         }
 
         // Check whether an excess functional group has been selected, and determine the molar eq
-        const xs_A_selected = xsGroup === 'A';
-        const xs_B_selected = xsGroup === 'B';
+        const xs_A_selected = formData.funcGroupsForm.xsGroup === 'A';
+        const xs_B_selected = formData.funcGroupsForm.xsGroup === 'B';
 
-        const molar_eq_is_checked = isExcessEQ;
+        const molar_eq_is_checked = formData.funcGroupsForm.isExcessEQ;
         const molar_eq_selected = xs_A_selected || xs_B_selected;
 
         if (molar_eq_is_checked && !molar_eq_selected) {
@@ -117,14 +112,14 @@ export default function FuncGroupForm()
 
         const parsedFuncGroups = DEFAULT_FUNC_GROUP_DATA.map(({ letter }) => {
             // Get functional group form values, accessed with key value, identified by `letter`
-            const name = funcGroupsForm[`func${letter}_name`];
-            const num = parseInt(funcGroupsForm[`func${letter}_num`]);
+            const name = formData.funcGroupsForm[`func${letter}_name`];
+            const num = parseInt(formData.funcGroupsForm[`func${letter}_num`]);
             // Depending on whether excess molar eq was selected, determine molar eq for this func group
             const determineMolarEq = () => {
                 if (xs_A_selected && letter === 'A') 
-                    return parseFloat(funcGroupsForm.func_xs);
+                    return parseFloat(formData.funcGroupsForm.func_xs);
                 else if (xs_B_selected && letter === 'B') 
-                    return parseFloat(funcGroupsForm.func_xs);
+                    return parseFloat(formData.funcGroupsForm.func_xs);
                 else
                     return 1.0;
             }
@@ -177,6 +172,9 @@ export default function FuncGroupForm()
         {
             // Update the Functional Group Context with the validated func group data
             setFuncGroup({ type: UPDATE_FUNC, funcGroups: validFuncGroups });
+            
+            // Initialize starting monomer form fields based on functional group information
+            setFormData({ formType: INITIALIZE_MONOMERS, formField: null, value: GENERATE_MONOMER_FORM_FIELDS(validFuncGroups) });
         }
         else
             throw Error('One of the functional groups was given invalid input. Please try again.');
@@ -184,18 +182,27 @@ export default function FuncGroupForm()
     }
 
     React.useEffect(() => {
+        const { funcGroupsForm, monomersForm } = formData;
+        
         const funcContextUpdated = funcGroups !== undefined && funcGroups.length > 0;
-        // Count the number of form fields, then count the func group fields with input given
-        const numFuncFields = Object.keys(funcGroupsForm).length - 1;
-        const numFuncFieldsFilled = Object.values(funcGroupsForm).filter(field => field !== '').length;
+        const monomerFieldsGenerated = monomersForm !== undefined;
+
+        // Check that all required fields are not blank, ignore any that are not required
+        let numReqFieldsNotFilled = 0;
+
+        for (let field in funcGroupsForm) 
+        {
+            const fieldIsRequired = REQUIRED_FUNC_FIELDS[field];
+            const fieldValue = funcGroupsForm[field];
+            
+            if (fieldIsRequired && fieldValue === '')
+                numReqFieldsNotFilled++;
+        }
         
-        // Molar EQ section is optional, so one fewer fields is required than the total number
-        const funcFormFilled = numFuncFieldsFilled >= numFuncFields;
-        
-        if (funcContextUpdated && funcFormFilled) {
+        if (funcContextUpdated && (numReqFieldsNotFilled === 0) && monomerFieldsGenerated) {
             setPage({ page: MONOMER_FORM });
         } 
-    }, [funcGroupsForm, funcGroups, setPage]);
+    }, [formData, funcGroups, setPage]);
     
     return(
         <div className="form_container">
@@ -220,7 +227,7 @@ export default function FuncGroupForm()
                                     <input 
                                         type="text" 
                                         name={`func${letter}_name`} 
-                                        value={funcGroupsForm[`func${letter}_name`]} 
+                                        value={formData.funcGroupsForm[`func${letter}_name`]} 
                                         onChange={handleFormChange}
                                         placeholder={`e.g. '${name_placeholder}'`} 
                                         id={`func${letter}_name`} 
@@ -235,7 +242,7 @@ export default function FuncGroupForm()
                                     <input 
                                         type="text" 
                                         name={`func${letter}_num`} 
-                                        value={funcGroupsForm[`func${letter}_num`]} 
+                                        value={formData.funcGroupsForm[`func${letter}_num`]} 
                                         onChange={handleFormChange}
                                         placeholder={`e.g. '${num_placeholder}'`} 
                                         id={`func${letter}_num`} 
@@ -269,21 +276,21 @@ export default function FuncGroupForm()
                             <input 
                                 type="checkbox" name="molar_eq_check" 
                                 id="molar_eq_check"
-                                onClick={({ target }) => setIsExcessEQ(target.checked)}
+                                onClick={({ target }) => setFormData({ formType: FUNC_FORM, formField: 'isExcessEQ', value: target.checked })}
                                 className="check_box" tabIndex="-1"
                             ></input>
                         </label>
                     </div>
                     <br />
-                    {isExcessEQ ?
+                    {formData.funcGroupsForm.isExcessEQ ?
                     <div id="molar_eq_container">
                         <div className="input_block">
                             {DEFAULT_FUNC_GROUP_DATA.map(({ letter }) =>
-                                <div className={xsGroup === letter ? "selected" : "unselected"} id={`func${letter}_eq`} key={`func${letter}_eq`} >
+                                <div className={formData.funcGroupsForm.xsGroup === letter ? "selected" : "unselected"} id={`func${letter}_eq`} key={`func${letter}_eq`} >
                                     <button 
                                         type="button" 
                                         name={`xs_${letter}`} 
-                                        onClick={() => setXSGroup(xsGroup === letter ? '' : letter)} 
+                                        onClick={() => setFormData({ formType: FUNC_FORM, formField: 'xsGroup', value: formData.funcGroupsForm.xsGroup === letter ? '' : letter })} 
                                         className="square_button inactive_button"
                                     >
                                         {letter}
@@ -295,7 +302,7 @@ export default function FuncGroupForm()
                                 <input 
                                     type="text" 
                                     name="func_xs" 
-                                    value={funcGroupsForm.func_xs} 
+                                    value={formData.funcGroupsForm.func_xs} 
                                     onChange={handleFormChange}
                                     placeholder="e.g. '1.1'" 
                                     id="func_xs" 

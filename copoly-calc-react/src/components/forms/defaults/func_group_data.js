@@ -15,13 +15,12 @@ export const DEFAULT_FUNC_GROUP_DATA =
     }
 ];
 
-// Starting values for Functional Group Form
-export const FUNC_FORM_FIELDS =
+export const REQUIRED_FUNC_FIELDS = 
 {
     // Functional Group A Form Fields
-    funcA_name: '', funcA_num: '',
+    funcA_name: true, funcA_num: true,
     // Functional Group B Form Fields
-    funcB_name: '', funcB_num: '', 
+    funcB_name: true, funcB_num: true, 
     // Unique Form fields
-    func_xs: ''
-};
+    func_xs: false, xsGroup: false, isExcessEQ: false
+}
