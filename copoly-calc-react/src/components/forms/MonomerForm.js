@@ -9,7 +9,7 @@ import Monomer from '../../utils/Monomer';
 import { checkDataTypes } from '../../utils/validators';
 import { invalidErrorMessage } from '../../utils/helpers';
 // Import ornamental functions for improving displayed data
-import { capitalizeFirstLetter, convertToScientificNotation } from '../../utils/ornaments';
+import { capitalizeFirstLetter } from '../../utils/ornaments';
 
 export default function FuncGroupForm()
 {
