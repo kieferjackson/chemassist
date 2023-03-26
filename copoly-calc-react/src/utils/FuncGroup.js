@@ -62,6 +62,31 @@ export default class FuncGroup {
         return this.monomerStatCount;
     }
 
+    findRefMonomer = () => {
+        let i = 0;
+        let refMonomerFound = false;
+
+        // Loop through monomers array until the first monomer with mass and percent value known is found
+        while (i < this.monomers.length && !refMonomerFound)
+        {
+            const monomer = monomers[i];
+            refMonomerFound = monomer.massGiven() && (monomer.weightPercentGiven() || monomer.molePercentGiven());
+
+            // Go to the next monomer if no reference monomer was found
+            if (!refMonomerFound) i++;
+        }
+
+        if (refMonomerFound) {
+            const referenceMonomer = this.monomers[i];
+            return referenceMonomer;
+        }
+        else {
+            // No reference monomer could be found for this group
+            console.error(Error(`No reference monomer could be found for the ${this.name} functional group.`));
+            return false;
+        }
+    }
+
     sumMonomerStat = (monomer_stat) => {
         const sumValue = this.monomers.reduce((statSum, monomer) => {
             const statValue = monomer[monomer_stat];
