@@ -96,7 +96,50 @@ function ref_wtpZipper(refGroup)
 
 function ref_mlpZipper(refGroup)
 {
-    
+    // Cycle through functional group to find comonomers with mass, and calculate their moles if so
+    refGroup.getMonomers().forEach((monomer) => {
+        if (monomer.massGiven()) {
+            const moles = monomer.getMass() / monomer.getMolarMass();
+            monomer.setMoles(moles);
+        }
+    });
+
+    // These represent their respective partial sums where they each make up a fraction of the functional group with the other making up the difference
+    const mol_sum = refGroup.sumMonomerStat('moles');
+    const percent_sum = refGroup.sumMonomerStat('mpercent');
+
+    // Total mole percent is the percentage that moles take up that is unaccounted for (e.g. total percents are 60%, therefore the knowns moles account for 40%)
+    const total_mol_percent = 100.0 - percent_sum;
+
+    // This gives the ratio between moles and percent (e.g. 0.04 mol for 40% means that 20% would be 0.02 mol or that 55% would be 0.055 mol)
+    const mol_per_percent = mol_sum / total_mol_percent;
+
+    refGroup.getMonomers().forEach((monomer) => {
+        // Moles are known, so calculate the value for mole percent
+        if (!monomer.molePercentGiven() && monomer.molesGiven()) {
+            const mpercent = monomer.getMoles() / mol_per_percent;
+            monomer.setMolePercent(mpercent);
+        }
+        // Mole percent is known, so calculate the value for moles
+        else if (monomer.molePercentGiven() && !monomer.molesGiven()) {
+            const moles = monomer.getMolePercent() * mol_per_percent;
+            monomer.setMoles(moles);
+        }
+        
+        // Moles should be known, so calculate mass using molar mass
+        const mass = monomer.getMoles() * monomer.getMolarMass();
+        monomer.setMass(mass);
+    });
+
+    const mass_sum = refGroup.sumMonomerStat('mass');
+
+    // Calculate weight percent for each comonomer using their individual mass and the mass sum
+    refGroup.getMonomers().forEach((monomer) => {
+        const wpercent = monomer.getMass() / mass_sum;
+        monomer.setWeightPercent(wpercent);
+    });
+
+    return true;
 }
 
 function ref_xsWeight(refGroup)
