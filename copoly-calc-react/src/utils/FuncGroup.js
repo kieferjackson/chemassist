@@ -26,6 +26,9 @@ export default class FuncGroup {
         return this.isReference;
     }
 
+    // Indicates whether or not this functional group has an unknown value
+    hasUnknown = () => this.unknown !== null;
+
     #increment_monomer_stat_count = (monomer_stat) => {
         this.monomerStatCount[monomer_stat]++;
     }
