@@ -137,7 +137,7 @@ function ref_mlpZipper(refGroup)
 
     // Calculate weight percent for each comonomer using their individual mass and the mass sum
     refGroup.getMonomers().forEach((monomer) => {
-        const wpercent = monomer.getMass() / mass_sum;
+        const wpercent = (monomer.getMass() / mass_sum) * 100.0;
         monomer.setWeightPercent(wpercent);
     });
 
@@ -163,7 +163,7 @@ function ref_xsWeight(refGroup)
     refGroup.getMonomers().forEach((monomer) => {
         // If both mass and percent given, then check their ratio to the reference
         if (monomer.massGiven() && monomer.weightPercentGiven()) {
-            const current_ratio = ref_monomer.getMass() / ref_monomer.getWeightPercent();
+            const current_ratio = monomer.getMass() / monomer.getWeightPercent();
             const wt_ratios_match = compareFloatValues(g_per_percent, current_ratio, ERROR_TOLERANCE);
 
             if (!wt_ratios_match) {
@@ -198,8 +198,8 @@ function ref_xsWeight(refGroup)
 
         // Calculate unknown monomer's values
         const unknown_wpercent = 100.0 - part_percent_sum;
-        const unknown_mass = unknown_monomer.getWeightPercent() * g_per_percent;
-        const unknown_moles = unknown_monomer.getMass() / unknown_monomer.getMolarMass();
+        const unknown_mass = unknown_wpercent * g_per_percent;
+        const unknown_moles = unknown_mass / unknown_monomer.getMolarMass();
 
         // Set calculated unknown monomer values
         unknown_monomer.setWeightPercent(unknown_wpercent);
@@ -221,7 +221,87 @@ function ref_xsWeight(refGroup)
 
 function ref_xsMole(refGroup)
 {
-    
+    // Find the reference monomer with mass and percent given
+    const ref_monomer = refGroup.findRefMonomer();
+
+    if (!ref_monomer) {
+        // There was no reference monomer
+        console.error(Error(`Cannot proceed calculations for ${refGroup.getName()} because there was no reference monomer`));
+        return false;
+    }
+
+    // Calculate and set moles for reference comonomer, and use that value for the ratio between moles and percent
+    const reference_moles = ref_monomer.getMass() / ref_monomer.getMolarMass();
+    ref_monomer.setMoles(reference_moles);
+
+    // This gives the ratio between moles and percent (e.g. 0.04 mol for 40% means that 20% would be 0.02 mol or that 55% would be 0.055 mol)
+    const mol_per_percent = ref_monomer.getMoles() / ref_monomer.getMolePercent();
+
+    // Iterate through each comonomer and calculate their mass and moles
+    refGroup.getMonomers().forEach((monomer) => {
+        // If both mass and percent given, then check their ratio to the reference
+        if (monomer.massGiven() && monomer.molePercentGiven()) {
+            // Calculate the comonomer's moles
+            const moles = monomer.getMass() / monomer.getMolarMass();
+
+            const current_ratio = moles / monomer.getMolePercent();
+            const ml_ratios_match = compareFloatValues(mol_per_percent, current_ratio, ERROR_TOLERANCE);
+
+            if (ml_ratios_match) {
+                // The ratios match, so update the monomer's moles
+                monomer.setMoles(moles);
+            }
+            else {
+                // The ratio between mass and percent for one of the comonomers did not match the reference within the tolerance
+                console.error(Error(`Moles/Percent ratios don't match the reference for ${refGroup.getName()}...`));
+                return false;
+            }
+        }
+        // Mole percent is given but mass is undetermined, so calculate moles and mass using ratio between calculated moles and percent
+        else if (!monomer.massGiven() && monomer.molePercentGiven()) {
+            const moles = monomer.getMolePercent() * mol_per_percent;
+            monomer.setMoles(moles);
+            const mass = monomer.getMoles() * monomer.getMolarMass();
+            monomer.setMass(mass);
+        }
+        // Mass is given but mole percent is undetermined, so calculate using ratio between calculated moles and percent
+        else if (monomer.massGiven() && !monomer.molePercentGiven()) {
+            const moles = monomer.getMass() / monomer.getMolarMass();
+            monomer.setMoles(moles);
+            const mpercent = monomer.getMoles() / mol_per_percent;
+            monomer.setMolePercent(mpercent);
+        }
+        // No `else` statement should be here to prevent preemptive calculations of the unknown comonomer
+    });
+
+    // Unknown can only be calculated once mole percent for all other comonomers values have been found
+    if (FUNC_FORM_FIELDS.hasUnknown()) {
+        // Find the partial mole percent sum, and get the unknown monomer
+        const part_percent_sum = refGroup.sumMonomerStat('mpercent');
+        const unknown_index = refGroup.getUnknown();
+        const unknown_monomer = refGroup.getMonomers()[unknown_index];
+
+        // Calculate unknown monomer's values
+        const unknown_mpercent = 100.0 - part_percent_sum;
+        const unknown_moles = unknown_mpercent * mol_per_percent;
+        const unknown_mass = unknown_moles * unknown_monomer.getMolarMass();
+
+        // Set calculated unknown monomer values
+        unknown_monomer.setMolePercent(unknown_mpercent);
+        unknown_monomer.setMoles(unknown_moles);
+        unknown_monomer.setMass(unknown_mass);
+    }
+
+    const mass_sum = refGroup.sumMonomerStat('mass');
+
+    // Calculate weight percent for each comonomer using their individual mass and the mass sum
+    refGroup.getMonomers().forEach((monomer) => {
+        const wpercent = (monomer.getMass() / mass_sum) * 100.0;
+        monomer.setWeightPercent(wpercent);
+    });
+
+    // Calculations were successful for the Excess Mole Percent Route (or Tetris Route)
+    return true;
 }
 
 // Complimentary Calculations
