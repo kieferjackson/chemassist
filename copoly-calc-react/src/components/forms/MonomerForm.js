@@ -5,6 +5,7 @@ import { FUNC_FORM, MONOMER_FORM, FINAL_RESULTS } from '../../contexts/page_name
 
 // Import FuncGroup Class for defining input data
 import Monomer from '../../utils/Monomer';
+import { startDataSorting } from '../../utils/data_sorting';
 // Import validator functions and error message generation
 import { checkDataTypes } from '../../utils/validators';
 import { invalidErrorMessage } from '../../utils/helpers';
@@ -57,13 +58,17 @@ export default function FuncGroupForm()
 
                 // Set weight percent value depending on given conditions
                 const weight_percent = percentAcceptable && percent_type === 'weight'
-                    ? percent   // Set this monomer to the given percent value
-                    : 0;        // Set weight percent to 0 to indicate that it is undetermined
-
+                    // Set this monomer to the given percent value
+                    ? num === 1 ? 100 : percent   
+                    // Set weight percent to 0 to indicate that it is undetermined
+                    : num === 1 ? 100 : 0;
+                
                 // Set mole percent value depending on given conditions
                 const mole_percent = percentAcceptable && percent_type === 'mole'
-                    ? percent   // Set this monomer to the given percent value
-                    : 0;        // Set weight percent to 0 to indicate that it is undetermined
+                    // Set this monomer to the given percent value
+                    ? num === 1 ? 100 : percent   
+                    // Set weight percent to 0 to indicate that it is undetermined
+                    : num === 1 ? 100 : 0;       
 
                 // Check if mass and percents are unknown
                 if (mass === 0 && weight_percent === 0 && mole_percent === 0) 
@@ -157,7 +162,17 @@ export default function FuncGroupForm()
             
             // All necessary information has been given, so display final results
             if (monomersDefined) {
-                setPage({ page: FINAL_RESULTS });
+                // Start Data Sorting: returns updated functional groups with monomer stat counts in addition to calculation routes for functional groups
+                const routes = startDataSorting(funcGroups);
+
+                if (!routes) {
+                    console.error(Error(`There was a problem finding one of the calculation routes`));
+                }
+                else {
+                    const [ funcA_route, funcB_route ] = routes;
+                    
+                    setPage({ page: FINAL_RESULTS });
+                }
             } 
         }
         else

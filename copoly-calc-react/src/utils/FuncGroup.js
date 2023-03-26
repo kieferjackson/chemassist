@@ -17,7 +17,7 @@ export default class FuncGroup {
         this.monomers = monomers;
         this.isReference = false;
         this.unknown = unknown;
-        this.monomerStatCount = startingMonomerStatCount;
+        this.monomerStatCount = { ...startingMonomerStatCount };
     }
 
     // Indicates whether this functional group is the reference (true) or complimentary group (false). Necessary for calculations
@@ -32,7 +32,7 @@ export default class FuncGroup {
 
     determineMonomerStatCount = () => {
         // Reset previous stat counts back to 0
-        this.monomerStatCount = startingMonomerStatCount;
+        this.monomerStatCount = { ...startingMonomerStatCount };
 
         this.monomers.forEach((monomer) => {
             // Get Mass, Weight Percent, and Mole Percent
@@ -41,21 +41,22 @@ export default class FuncGroup {
             const massGiven = mass > 0;
             const percentGiven = wpercent > 0 || mpercent > 0;
 
-
-            // Increment Mass Count if it is a positive number
-            if (massGiven)
+            if (massGiven) {
                 this.#increment_monomer_stat_count('mass');
+            }
 
-            if (percentGiven)
+            if (percentGiven) {
                 this.#increment_monomer_stat_count('percent');
-            
-            if (massGiven && percentGiven)
+            }
+                
+            if (massGiven && percentGiven) {
                 this.#increment_monomer_stat_count('determined');
+            }
 
             // For groups with more than 1 comonomer, increment Partial Count if Mass is given and Percent is not given, and vice-versa
             if (this.num > 1) {
                 const partial_info_given = (massGiven && !percentGiven) || (!massGiven && percentGiven);
-
+                
                 if (partial_info_given)
                     this.#increment_monomer_stat_count('partial');
             }

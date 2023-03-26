@@ -70,7 +70,7 @@ export function startDataSorting(funcGroups) {
         return false;
     }
     
-    return [funcA, funcA_route, funcB, funcB_route];
+    return [funcA_route, funcB_route];
 }
 
 function findRoute(funcGroup) {
@@ -131,7 +131,7 @@ function findRoute(funcGroup) {
     if (funcIsReference) {
 
        // All Mass Route - All comonomer masses given and no percent values given
-        if (all_mass && !percent_present) {
+        if (all_mass && (funcNum === 1 || !percent_present)) {
             console.log("Your calculation route for reference group is: All Mass");
             return 'ALLMASSROUTE';
         }
@@ -145,6 +145,8 @@ function findRoute(funcGroup) {
                 case 'mole':
                     console.log("Your calculation route for reference group is: ml% Zipper");
                     return 'MLP_ZIPPERROUTE';
+                default:
+                    return false;
             }
             
         }
@@ -171,6 +173,8 @@ function findRoute(funcGroup) {
                     }
 
                     return 'XS_MLPROUTE';
+                default:
+                    return false;
             }
         }
         
@@ -204,6 +208,8 @@ function findRoute(funcGroup) {
                 case 'weight':
                     console.log("Your calculation route for complimentary group is: Wt Percent Zipper");
                     return 'WTP_ZIPPERROUTE';
+                default:
+                    return false;
             }
         }
 
