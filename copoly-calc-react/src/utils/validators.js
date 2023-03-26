@@ -2,8 +2,8 @@ import { typeErrorMessage, invalidErrorMessage } from "./helpers";
 
 /**
  * 
- * @param {String} data_type - Identifies which datatype to check of three options: 'int', 'string', and 'float'
- * @param {Object} data - An object which must contain a `value` property (the value to be checked) 
+ * @param {string} data_type - Identifies which datatype to check of three options: 'int', 'string', and 'float'
+ * @param {object} data - An object which must contain a `value` property (the value to be checked) 
  * and an `isMonomer` property which is required when checking 'float' values
  * @returns A boolean which indicates whether the data matches the expected datatype
  */
@@ -92,4 +92,47 @@ function checkParity(var1, var2) {
     }
 }
 
-export { checkDataTypes, checkParity }
+function compareFloatValues(reference_value, comparison_value, error_tolerance)
+{
+    // Check that reference and compare values are floats
+    const referenceIsFloat = checkDataTypes('float', { value: reference_value });
+    const comparisonIsFloat = checkDataTypes('float', { value: comparison_value });
+    const toleranceIsFloat = checkDataTypes('float', { value: error_tolerance });
+
+    if (toleranceIsFloat) {
+        if (referenceIsFloat && comparisonIsFloat) {
+            // Compare values to see if they are close to each other within bounds of error tolerance
+            const withinLowerBounds = comparison_value > (reference_value - error_tolerance);
+            const withinUpperBounds = comparison_value < (reference_value + error_tolerance);
+    
+            return withinLowerBounds && withinUpperBounds;
+        }
+        else if (!referenceIsFloat && comparisonIsFloat) {
+            // Reference value given was not a float value
+            console.error(typeErrorMessage('float', typeof reference_value, 'reference value'));
+    
+            return false;
+        }
+        else if (referenceIsFloat && !comparisonIsFloat) {
+            // Comparison value given was not a float value
+            console.error(typeErrorMessage('float', typeof comparison_value, 'comparison value'));
+    
+            return false;
+        }
+        else {
+            // Neither values given were a float value
+            console.error(typeErrorMessage('float', typeof reference_value, 'reference value'));
+            console.error(typeErrorMessage('float', typeof comparison_value, 'comparison value'));
+    
+            return false;
+        }
+    }
+    else {
+        // A non float error tolerance value was given
+        console.error(typeErrorMessage('float', typeof error_tolerance, 'error tolerance'));
+    
+        return false;
+    }
+}
+
+export { checkDataTypes, checkParity, compareFloatValues }
