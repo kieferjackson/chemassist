@@ -1,6 +1,13 @@
 import { typeErrorMessage, invalidErrorMessage } from './helpers';
 import { checkDataTypes } from './validators';
 
+const startingMonomerStatCount = {
+    mass:         0,    // Total number of masses given
+    percent:      0,    // Total number of percents given
+    determined:   0,    // Total number of comonomers with both mass and percent given
+    partial:      0     // Total number of comonomers with only either mass or percent given
+}
+
 export default class FuncGroup {
     constructor(percent_type, name, num, molar_eq, monomers, unknown = null) {
         this.percent_type = percent_type;
@@ -8,7 +15,53 @@ export default class FuncGroup {
         this.num = num;
         this.molar_eq = molar_eq;
         this.monomers = monomers;
+        this.isReference = false;
         this.unknown = unknown;
+        this.monomerStatCount = startingMonomerStatCount;
+    }
+
+    // Indicates whether this functional group is the reference (true) or complimentary group (false). Necessary for calculations
+    setIsReference = (reference_state = true) => {
+        this.isReference = reference_state;
+        return this.isReference;
+    }
+
+    #increment_monomer_stat_count = (monomer_stat) => {
+        this.monomerStatCount[monomer_stat]++;
+    }
+
+    determineMonomerStatCount = () => {
+        // Reset previous stat counts back to 0
+        this.monomerStatCount = startingMonomerStatCount;
+
+        this.monomers.forEach((monomer) => {
+            // Get Mass, Weight Percent, and Mole Percent
+            const { mass, wpercent, mpercent } = monomer;
+
+            const massGiven = mass > 0;
+            const percentGiven = wpercent > 0 || mpercent > 0;
+
+
+            // Increment Mass Count if it is a positive number
+            if (massGiven)
+                this.#increment_monomer_stat_count('mass');
+
+            if (percentGiven)
+                this.#increment_monomer_stat_count('percent');
+            
+            if (massGiven && percentGiven)
+                this.#increment_monomer_stat_count('determined');
+
+            // For groups with more than 1 comonomer, increment Partial Count if Mass is given and Percent is not given, and vice-versa
+            if (this.num > 1) {
+                const partial_info_given = (massGiven && !percentGiven) || (!massGiven && percentGiven);
+
+                if (partial_info_given)
+                    this.#increment_monomer_stat_count('partial');
+            }
+        });
+
+        return this.monomerStatCount;
     }
 
     // Get Functional Group property
@@ -17,7 +70,9 @@ export default class FuncGroup {
     getNum = () => this.num;
     getMolarEQ = () => this.molar_eq;
     getMonomers = () => this.monomers;
+    getIsReference = () => this.isReference;
     getUnknown = () => this.unknown;
+    getMonomerStatCount = () => this.monomerStatCount;
 
     #set_func_property(property_name, expected_type, value)
     {

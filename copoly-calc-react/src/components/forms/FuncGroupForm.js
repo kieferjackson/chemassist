@@ -76,6 +76,9 @@ export default function FuncGroupForm()
     }
 
     const handleFormSubmission = () => {
+        // Get Func Groups Form
+        const { funcGroupsForm } = formData;
+
         // Determine percent type by selecting Weight Percent Radio Button and see if it is checked
         const wt_percent_checked = document.getElementById("wpercent").checked;
 
@@ -85,7 +88,7 @@ export default function FuncGroupForm()
             : 'mole';
 
         // Check that functional group names are unique (duplicate names are not allowed)
-        const { funcA_name, funcB_name } = formData.funcGroupsForm;
+        const { funcA_name, funcB_name } = funcGroupsForm;
         const funcNamesIdentical = checkParity(funcA_name.toLowerCase(), funcB_name.toLowerCase());
 
         if (funcNamesIdentical) {
@@ -95,10 +98,10 @@ export default function FuncGroupForm()
         }
 
         // Check whether an excess functional group has been selected, and determine the molar eq
-        const xs_A_selected = formData.funcGroupsForm.xsGroup === 'A';
-        const xs_B_selected = formData.funcGroupsForm.xsGroup === 'B';
+        const xs_A_selected = funcGroupsForm.xsGroup === 'A';
+        const xs_B_selected = funcGroupsForm.xsGroup === 'B';
 
-        const molar_eq_is_checked = formData.funcGroupsForm.isExcessEQ;
+        const molar_eq_is_checked = funcGroupsForm.isExcessEQ;
         const molar_eq_selected = xs_A_selected || xs_B_selected;
 
         if (molar_eq_is_checked && !molar_eq_selected) {
@@ -112,14 +115,14 @@ export default function FuncGroupForm()
 
         const parsedFuncGroups = DEFAULT_FUNC_GROUP_DATA.map(({ letter }) => {
             // Get functional group form values, accessed with key value, identified by `letter`
-            const name = formData.funcGroupsForm[`func${letter}_name`];
-            const num = parseInt(formData.funcGroupsForm[`func${letter}_num`]);
+            const name = funcGroupsForm[`func${letter}_name`];
+            const num = parseInt(funcGroupsForm[`func${letter}_num`]);
             // Depending on whether excess molar eq was selected, determine molar eq for this func group
             const determineMolarEq = () => {
                 if (xs_A_selected && letter === 'A') 
-                    return parseFloat(formData.funcGroupsForm.func_xs);
+                    return parseFloat(funcGroupsForm.func_xs);
                 else if (xs_B_selected && letter === 'B') 
-                    return parseFloat(formData.funcGroupsForm.func_xs);
+                    return parseFloat(funcGroupsForm.func_xs);
                 else
                     return 1.0;
             }
@@ -177,7 +180,7 @@ export default function FuncGroupForm()
             setFormData({ formType: INITIALIZE_MONOMERS, formField: null, value: GENERATE_MONOMER_FORM_FIELDS(validFuncGroups) });
         }
         else
-            throw Error('One of the functional groups was given invalid input. Please try again.');
+            console.error(Error('One of the functional groups was given invalid input. Please try again.'));
         
     }
 
