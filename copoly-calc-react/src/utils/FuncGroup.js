@@ -35,11 +35,8 @@ export default class FuncGroup {
         this.monomerStatCount = { ...startingMonomerStatCount };
 
         this.monomers.forEach((monomer) => {
-            // Get Mass, Weight Percent, and Mole Percent
-            const { mass, wpercent, mpercent } = monomer;
-
-            const massGiven = mass > 0;
-            const percentGiven = wpercent > 0 || mpercent > 0;
+            const massGiven = monomer.massGiven();
+            const percentGiven = monomer.weightPercentGiven() || monomer.molePercentGiven();
 
             if (massGiven) {
                 this.#increment_monomer_stat_count('mass');
@@ -63,6 +60,25 @@ export default class FuncGroup {
         });
 
         return this.monomerStatCount;
+    }
+
+    sumMonomerStat = (monomer_stat) => {
+        const sumValue = this.monomers.reduce((statSum, monomer) => {
+            const statValue = monomer[monomer_stat];
+            
+            if (statValue !== undefined) {
+                // Add this value to the stat sum
+                statSum += statValue;
+                return statSum;
+            }
+            else {
+                // Invalid monomer stat selected
+                console.error(Error(`Cannot sum ${monomer_stat}`));
+                return 0;
+            }
+        }, 0);
+
+        return sumValue;
     }
 
     // Get Functional Group property

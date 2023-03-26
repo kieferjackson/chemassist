@@ -5,7 +5,9 @@ import { FUNC_FORM, MONOMER_FORM, FINAL_RESULTS } from '../../contexts/page_name
 
 // Import FuncGroup Class for defining input data
 import Monomer from '../../utils/Monomer';
+// Functions for determining calculation routes and performing calculations
 import { startDataSorting } from '../../utils/data_sorting';
+import { doReferenceCalculations, doComplimentaryCalculations } from '../../utils/func_calculations';
 // Import validator functions and error message generation
 import { checkDataTypes } from '../../utils/validators';
 import { invalidErrorMessage } from '../../utils/helpers';
@@ -170,8 +172,27 @@ export default function FuncGroupForm()
                 }
                 else {
                     const [ funcA_route, funcB_route ] = routes;
-                    
-                    setPage({ page: FINAL_RESULTS });
+
+                    if (funcA.isReference) {
+                        // Func Group A is reference, Func Group B is complimentary
+                        const refCalculationsSuccessful = doReferenceCalculations(funcA, funcA_route);
+                        const compCalculationsSuccessful = doComplimentaryCalculations(funcB, funcB_route);
+
+                        // Display Final Results
+                        if (refCalculationsSuccessful && compCalculationsSuccessful) setPage({ page: FINAL_RESULTS });
+                    }
+                    else if (funcB.isReference) {
+                        // Func Group B is reference, Func Group A is complimentary
+                        const refCalculationsSuccessful = doReferenceCalculations(funcB, funcB_route);
+                        const compCalculationsSuccessful = doComplimentaryCalculations(funcA, funcA_route);
+
+                        // Display Final Results
+                        if (refCalculationsSuccessful && compCalculationsSuccessful) setPage({ page: FINAL_RESULTS });
+                    }
+                    else {
+                        // No reference group for either functional group
+                        console.error(Error(`No valid reference group`));
+                    }
                 }
             } 
         }

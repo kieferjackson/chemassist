@@ -49,6 +49,11 @@ export default class Monomer {
     setMolarMass = (molar_mass_value) => this.#set_monomer_property('molar_mass', EXPECTED_TYPE, molar_mass_value);
     setMoles = (moles_value) => this.#set_monomer_property('moles', EXPECTED_TYPE, moles_value);
 
+    // Indicates if mass, weight percent, or moles percent have been given
+    massGiven = () => this.mass > 0;
+    weightPercentGiven = () => this.wpercent > 0;
+    molePercentGiven = () => this.mpercent > 0;
+
     // Display Monomer properties
     display = (monomer_property) => {
         const property_value = this[monomer_property];
