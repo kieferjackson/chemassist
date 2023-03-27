@@ -528,9 +528,9 @@ function comp_mlpZipper(refGroup, compGroup)
     const unknown_mpercent = 100.0 - part_percent_sum;
     const unknown_moles = (unknown_mpercent / 100.0) * comp_mol_sum;
     const unknown_mass = unknown_moles * unknown_monomer.getMolarMass();
-    // Add the unknown's found moles to the calculated mole sum and make sure it is equivalent to the expected mole sum
+    // Add the unknown's found moles to the calculated mole sum and make sure it is less than the expected mole sum
     calc_mol_sum += unknown_moles;
-    const calc_mol_sum_valid = compareFloatValues(comp_mol_sum, calc_mol_sum, ERROR_TOLERANCE);
+    const calc_mol_sum_valid = comp_mol_sum > calc_mol_sum;
 
     if (!calc_mol_sum_valid) {
         // The user's masses exceeded the expected mole sum for the complimentary group
@@ -559,7 +559,138 @@ function comp_mlpZipper(refGroup, compGroup)
 
 function comp_wtpZipper(refGroup, compGroup)
 {
-    
+    // Find the mole sums for the complimentary group based on the their molar equivalents
+    const comp_mol_sum = (refGroup.sumMonomerStat('moles') / refGroup.getMolarEQ()) * compGroup.getMolarEQ();
+    var part_percent_sum = 0.0,                 // Indicates the weight percent occupied by comonomer(s) with known mass in addition to the unknown comonomer
+        part_mol_sum = comp_mol_sum,            // Initialized with complimentary mole sum, decremented by calculated moles
+        unknown_mol_offset = 0.0,               // Found value by putting known masses in terms of the unknown monomer's molar mass
+        percent_contribution_to_mol_sum = 0.0;  // Indicates how much weight percents contribute to the total mole sum
+
+    // Get the complimentary group's unknown monomer
+    const unknown_monomer = compGroup.getUnknown();
+
+    compGroup.getMonomers().forEach((monomer) => {
+        // Mass is known, so calculate moles and then mole percent
+        if (monomer.massGiven())
+        {
+            // Mass is given, so calculate moles and mole percent
+            const moles = monomer.getMass() / monomer.getMolarMass();
+            const mpercent = (moles / comp_mol_sum) * 100.0;
+
+            // Divide this monomer's mass by the unknown comonomer's molar mass
+            unknown_mol_offset += monomer.getMass() / unknown_monomer.getMolarMass();
+
+            // Subtract this monomer's moles from the partial mole sum to find the moles accounted by the weight percents and unknown comonomer
+            part_mol_sum -= moles;
+            // Make sure that partial mole sum is greater than 0
+            if (part_mol_sum <= 0.0) {
+                // The calculated moles from given masses are invalid for the complimentary group
+                console.error(Error(
+                    `Calculated moles from given masses are invalid for the complimentary (${compGroup.getName()}) group. 
+                    \nPlease enter valid masses or remove invalid ones.`
+                ));
+                return false;
+            }
+
+            // Set the monomer's calculated moles and mole percent
+            monomer.setMoles(moles);
+            monomer.setMolePercent(mpercent);
+        }
+        // Weight Percent is known, so calculate the weight percent's contribution to the total moles
+        else if (monomer.weightPercentGiven())
+        {
+            const percent_contribution = (monomer.getWeightPercent() / 100.0) / monomer.getMolarMass();
+            percent_contribution_to_mol_sum += percent_contribution;
+
+            // Add this weight percent to the partial percent sum to find the weight percent occupied by the known masses and unknown comonomer
+            part_percent_sum += monomer.getWeightPercent();
+        }
+    });
+
+    // Find the moles contributed by the comonomers with weight percent given in addition to the unknown comonomer's moles
+    const all_non_mass_mol_contribution = percent_contribution_to_mol_sum + (((100.0 - part_percent_sum) / 100.0) / unknown_monomer.getMolarMass());
+    const mass_sum = (part_mol_sum + unknown_mol_offset) / all_non_mass_mol_contribution;
+
+    // Initialize calculated mole sum with partial mole sum
+    let calc_mol_sum = part_mol_sum;        // Any moles calculated with given percent will be added to this
+    let calc_mass_sum = 0.0;                // Makes sure that the calculated mass sum matches the expected mass sum previously calculated
+
+    compGroup.getMonomers().forEach((monomer) => {
+        // For known masses, calculate their weight percents using the mass sum
+        if (monomer.massGive())
+        {
+            const wpercent = (monomer.getMass() / mass_sum) * 100.0;
+            // Add calculated weight percent to partial percent sum and update the monomer
+            part_percent_sum += wpercent;
+            monomer.setWeightPercent(wpercent);
+        }
+        // For known weight percents, calculate their mass using the mass sum, then their moles and mole percent
+        else if (monomer.weightPercentGiven())
+        {
+            const mass = (monomer.getWeightPercent() / 100.0) * mass_sum;
+            const moles = mass / monomer.getMolarMass();
+            const mpercent = (moles / comp_mol_sum) * 100.0;
+
+            // Add calculated moles to calculated mole sum and update the monomer
+            calc_mol_sum += moles;
+            monomer.setMass(mass);
+            monomer.setMoles(moles);
+            monomer.setMolePercent(mpercent);
+        }
+
+        // Add this comonomer's calculated/given mass to the calculated mass sum
+        calc_mass_sum += monomer.getMass();
+    });
+
+    // Check that the calculated mass sum is less than the expected mass sum
+    const user_mass_sum_valid = mass_sum > calc_mass_sum;
+
+    if (!user_mass_sum_valid) {
+        // The calculated mass sum exceeded the expected mass sum for the complimentary group
+        console.error(Error(
+            `Calculated mass sum (${calc_mass_sum} g) exceeded or equaled the expected mass sum (${mass_sum} g) for the complimentary (${compGroup.getName()}) group. 
+            \nPlease enter valid masses or remove invalid ones.`
+        ));
+        return false;
+    }
+
+    // Check that the calculated mole sum does not exceed or equal the expected mole sum 
+    const user_mol_sum_valid = comp_mol_sum > calc_mol_sum;
+                
+    if (!user_mol_sum_valid) {
+        // The user's masses exceeded the expected mole sum for the complimentary group
+        console.error(Error(
+            `Calculated mole sum (${calc_mol_sum} mol) exceeded or equaled the expected mole sum (${comp_mol_sum} mol) for the complimentary (${compGroup.getName()}) group. 
+            \nPlease enter valid masses or remove invalid ones.`
+        ));
+        return false;
+    }
+
+    // Check that the partial percent sum is less than 100
+    const part_percent_sum_valid = part_percent_sum < 100.0;
+                
+    if (!part_percent_sum_valid) {
+        // The calculated sum of all mole percents exceeded 100 for the complimentary group
+        console.error(Error(
+            `Calculated sum of all mole percents (${part_percent_sum}%) exceeded 100 for the complimentary (${compGroup.getName()}) group. 
+            \nPlease enter valid masses or remove invalid ones.`
+        ));
+        return false;
+    }
+
+    // Calculate wt%, mass, moles, and ml% for unknown comonomer
+    const unknown_wpercent = 100.0 - part_percent_sum;
+    const unknown_mass = (unknown_wpercent / 100.0) * mass_sum;
+    const unknown_moles = unknown_mass / unknown_monomer.getMolarMass();
+    const unknown_mpercent = (unknown_moles / comp_mol_sum) * 100.0;
+    // Set calculated values for unknown comonomer
+    unknown_monomer.setWeightPercent(unknown_wpercent);
+    unknown_monomer.setMass(unknown_mass);
+    unknown_monomer.setMoles(unknown_moles);
+    unknown_monomer.setMolePercent(unknown_mpercent);
+
+    // Calculations were successful for the Weight Percent Zipper Route
+    return true;
 }
 
 function ref_xsInfo(refGroup, compGroup)
