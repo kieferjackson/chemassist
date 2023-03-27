@@ -176,7 +176,7 @@ export default function FuncGroupForm()
                     if (funcA.isReference) {
                         // Func Group A is reference, Func Group B is complimentary
                         const refCalculationsSuccessful = doReferenceCalculations(funcA, funcA_route);
-                        const compCalculationsSuccessful = doComplimentaryCalculations(funcB, funcB_route);
+                        const compCalculationsSuccessful = doComplimentaryCalculations(funcA, funcB, funcB_route);
 
                         // Display Final Results
                         if (refCalculationsSuccessful && compCalculationsSuccessful) setPage({ page: FINAL_RESULTS });
@@ -184,7 +184,7 @@ export default function FuncGroupForm()
                     else if (funcB.isReference) {
                         // Func Group B is reference, Func Group A is complimentary
                         const refCalculationsSuccessful = doReferenceCalculations(funcB, funcB_route);
-                        const compCalculationsSuccessful = doComplimentaryCalculations(funcA, funcA_route);
+                        const compCalculationsSuccessful = doComplimentaryCalculations(funcB, funcA, funcA_route);
 
                         // Display Final Results
                         if (refCalculationsSuccessful && compCalculationsSuccessful) setPage({ page: FINAL_RESULTS });

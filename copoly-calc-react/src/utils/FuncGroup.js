@@ -26,7 +26,7 @@ export default class FuncGroup {
         return this.isReference;
     }
 
-    // Indicates whether or not this functional group has an unknown value
+    // Indicates whether or not this functional group has an unknown monomer (no mass or percent given)
     hasUnknown = () => this.unknown !== null;
 
     #increment_monomer_stat_count = (monomer_stat) => {
@@ -116,8 +116,25 @@ export default class FuncGroup {
     getMolarEQ = () => this.molar_eq;
     getMonomers = () => this.monomers;
     getIsReference = () => this.isReference;
-    getUnknown = () => this.unknown;
-    getMonomerStatCount = () => this.monomerStatCount;
+    getUnknown = () => this.monomers[this.unknown];
+    getMonomerStatCount = (stat_name = null) => {
+        switch (stat_name)
+        {
+            case null:
+                // Return the whole stat count object if stat name is `null`
+                return this.monomerStatCount;
+            case 'mass':
+            case 'percent':
+            case 'determined':
+            case 'partial':
+                // Return the selected stat count
+                return this.monomerStatCount[stat_name];
+            default:
+                // Invalid stat name selected
+                console.error(Error(`'${stat_name}' is not a valid monomerStatCount property selected`));
+                return 0;
+        }
+    }
 
     #set_func_property(property_name, expected_type, value)
     {

@@ -14,15 +14,15 @@ export function doReferenceCalculations(refGroup, calculation_route)
     }
 }
 
-export function doComplimentaryCalculations(refGroup, calculation_route)
+export function doComplimentaryCalculations(refGroup, compGroup, calculation_route)
 {
     switch (calculation_route)
     {
-        case 'ALLPERCENTROUTE':     return      comp_allPercent(refGroup);
-        case 'GIVENMASSROUTE':      return      comp_givenMass(refGroup); 
-        case 'MLP_ZIPPERROUTE':     return      comp_mlpZipper(refGroup); 
-        case 'WTP_ZIPPERROUTE':     return      comp_wtpZipper(refGroup); 
-        case 'XS_INFOROUTE':        return      ref_xsInfo(refGroup);     
+        case 'ALLPERCENTROUTE':     return      comp_allPercent(refGroup, compGroup);
+        case 'GIVENMASSROUTE':      return      comp_givenMass(refGroup, compGroup); 
+        case 'MLP_ZIPPERROUTE':     return      comp_mlpZipper(refGroup, compGroup); 
+        case 'WTP_ZIPPERROUTE':     return      comp_wtpZipper(refGroup, compGroup); 
+        case 'XS_INFOROUTE':        return      ref_xsInfo(refGroup, compGroup);     
         default:                    return      false;  
     }
 }
@@ -193,8 +193,7 @@ function ref_xsWeight(refGroup)
     if (refGroup.hasUnknown()) {
         // Find the partial weight percent sum, and get the unknown monomer
         const part_percent_sum = refGroup.sumMonomerStat('wpercent');
-        const unknown_index = refGroup.getUnknown();
-        const unknown_monomer = refGroup.getMonomers()[unknown_index];
+        const unknown_monomer = refGroup.getUnknown();
 
         // Calculate unknown monomer's values
         const unknown_wpercent = 100.0 - part_percent_sum;
@@ -275,11 +274,10 @@ function ref_xsMole(refGroup)
     });
 
     // Unknown can only be calculated once mole percent for all other comonomers values have been found
-    if (FUNC_FORM_FIELDS.hasUnknown()) {
+    if (refGroup.hasUnknown()) {
         // Find the partial mole percent sum, and get the unknown monomer
         const part_percent_sum = refGroup.sumMonomerStat('mpercent');
-        const unknown_index = refGroup.getUnknown();
-        const unknown_monomer = refGroup.getMonomers()[unknown_index];
+        const unknown_monomer = refGroup.getUnknown();
 
         // Calculate unknown monomer's values
         const unknown_mpercent = 100.0 - part_percent_sum;
@@ -305,27 +303,104 @@ function ref_xsMole(refGroup)
 }
 
 // Complimentary Calculations
-function comp_allPercent(refGroup)
+function comp_allPercent(refGroup, compGroup)
 {
+    // For partial percent sum calculations to find the unknown comonomer's percent
+    // Check that there is more than one comonomer in the complimentary group and that there are n - 1 percents given
+    if (compGroup.getNum() > 1 && compGroup.getMonomerStatCount('percent') === compGroup.getNum() - 1)
+    {
+        // The unknown monomer to find its percent value
+        const unknown_monomer = compGroup.getUnknown();
 
+        // The partial sum is defined by the given percent type chosen and its values given, so branch the path based on the chosen percent type
+        switch (compGroup.getPercentType())
+        {
+            case 'weight':
+                const part_wpercent_sum = compGroup.sumMonomerStat('wpercent');
+                
+                // Calculate the unknown comonomer's weight percent by finding the difference between the sum of every other's comonomer's weight percent and 100
+                const unknown_wpercent = 100.0 - part_wpercent_sum;
+                unknown_monomer.setWeightPercent(unknown_wpercent);
+                break;
+            case 'mole':
+                const part_mpercent_sum = compGroup.sumMonomerStat('mpercent');
+
+                // Calculate the unknown comonomer's mole percent by finding the difference between the sum of every other's comonomer's mole percent and 100
+                const unknown_mpercent = 100.0 - part_mpercent_sum;
+                unknown_monomer.setMolePercent(unknown_mpercent);
+                break;
+        }
+    }
+
+    // Calculate Weight Percent for groups with more than one comonomer
+    if (compGroup.getNum() > 1 && compGroup.getPercentType() === 'weight')
+    {
+        // Initialize the proportion sum and collection to put weight percents in terms of moles
+        var wtp_proportion_sum = 0.0; 
+        const wtp_proportions = [];     // The indices of this array should match the comp group's monomers array
+
+        // Iterate through each comonomer in the complimentary group
+        compGroup.getMonomers().forEach((monomer) => {
+            // Put weight percent in terms of moles and set this comonomer's proportion
+            const wtp_proportion = monomer.getWeightPercent() / monomer.getMolarMass();
+            wtp_proportions.push(wtp_proportion);
+
+            // Add the calculated proportion to the current proportion total
+            wtp_proportion_sum += wtp_proportion;
+        });
+
+        // Calculate Mole Percent from Weight Percent  using proportion
+        compGroup.getMonomers().forEach((monomer, proportion_index) => {
+            // Calculate mole percent using the ratio between an individual complimentary comonomer's proportion and the sum of those proportions
+            const mpercent = (wtp_proportions[proportion_index] / wtp_proportion_sum) * 100;
+            monomer.setMolePercent(mpercent);
+        });
+    }
+
+    // Find the mole sums for the complimentary group based on the their molar equivalents
+    const comp_mol_sum = (refGroup.sumMonomerStat('moles') / refGroup.getMolarEQ()) * compGroup.getMolarEQ();
+
+    // Iterate through complimentary group to calculate missing values (Moles & Mass)
+    compGroup.getMonomers().forEach((monomer) => {
+        // Mole percent is known and mass is unknown, so calculate moles then mass
+        const moles = comp_mol_sum * (monomer.getMolePercent() / 100.0);
+        const mass = moles * monomer.getMolarMass();
+        monomer.setMoles(moles);
+        monomer.setMass(mass);
+    });
+
+    // For mole percent calculations, calculate the still unknown weight percent values for each comonomer
+    if (compGroup.getPercentType() === 'mole')
+    {
+        const mass_sum = compGroup.sumMonomerStat('mass');
+        
+        // Calculate weight percent for each comonomer using their individual mass and the mass sum
+        compGroup.getMonomers().forEach((monomer) => {
+            const wpercent = (monomer.getMass() / mass_sum) * 100.0;
+            monomer.setWeightPercent(wpercent);
+        });
+    }
+
+    // Calculations were successful for the All Percent Route
+    return true;
 }
 
-function comp_givenMass(refGroup)
+function comp_givenMass(refGroup, compGroup)
 {
     
 }
 
-function comp_mlpZipper(refGroup)
+function comp_mlpZipper(refGroup, compGroup)
 {
     
 }
 
-function comp_wtpZipper(refGroup)
+function comp_wtpZipper(refGroup, compGroup)
 {
     
 }
 
-function ref_xsInfo(refGroup)
+function ref_xsInfo(refGroup, compGroup)
 {
     
 }
