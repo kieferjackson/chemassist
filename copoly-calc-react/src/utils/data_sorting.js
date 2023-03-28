@@ -119,8 +119,10 @@ function findRoute(funcGroup) {
         // Complimentary Group
         const comp_knowns = massCount + percentCount;
 
-        // Only n (funcNum) - 1  information needs to be given for calculations to be possible, anything more is unnecessary and must be accounted for user error
-        excess_info = comp_knowns > funcNum - 1;
+        // Determines if more information than necessary was given
+        excess_info = funcNum === 1 
+            ? mass_present                  // Excess info if there is only one monomer with mass given
+            : comp_knowns > funcNum - 1;    // Excess info if knowns exceeds n - 1
 
         // The Complimentary Zipper Route requires that nearly all comonomers be partially known with at least one mass given, and that there is an unknown comonomer present
         zpr_possible = partialCount === funcNum - 1 && mass_present && unknown !== null;
@@ -215,8 +217,16 @@ function findRoute(funcGroup) {
 
         // Excess Info - The user has given more information than necessary. User error is a concern for this route
         else if (excess_info) {
-            console.log("Your calculation route for complimentary group is: Excess Info");
-            return 'XS_INFOROUTE';
+            switch (percent_type) {
+                case 'mole':
+                    console.log("Your calculation route for complimentary group is: Mol Percent Excess Info");
+                    return 'MLP_XS_INFOROUTE';
+                case 'weight':
+                    console.log("Your calculation route for complimentary group is: Wt Percent Excess Info");
+                    return 'WTP_XS_INFOROUTE';
+                default:
+                    return false;
+            }
         }
 
         // No calculation route was able to be found for the complimentary group with the information given
