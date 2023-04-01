@@ -186,4 +186,13 @@ export default class FuncGroup {
     // Set Monomer properties, checking that given value is valid
     setMonomers = (monomers) => this.#set_func_property('monomers', 'Array', monomers);
     setUnknown = (unknown_monomer_index) => this.#set_func_property('unknown', 'number', unknown_monomer_index);
+
+    // Clears Monomer values given, so that new monomers can be easily entered
+    clearMonomers = () => {
+        // Manually set `monomers` array to empty list
+        this.monomers = [];
+        
+        // Return the empty monomer array
+        return this.monomers;
+    }
 }
