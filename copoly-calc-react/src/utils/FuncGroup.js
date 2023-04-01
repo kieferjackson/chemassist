@@ -72,7 +72,7 @@ export default class FuncGroup {
         // Loop through monomers array until the first monomer with mass and percent value known is found
         while (i < this.monomers.length && !refMonomerFound)
         {
-            const monomer = monomers[i];
+            const monomer = this.monomers[i];
             refMonomerFound = monomer.massGiven() && (monomer.weightPercentGiven() || monomer.molePercentGiven());
 
             // Go to the next monomer if no reference monomer was found

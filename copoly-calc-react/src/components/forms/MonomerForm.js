@@ -76,6 +76,7 @@ export default function FuncGroupForm()
                 if (mass === 0 && weight_percent === 0 && mole_percent === 0) 
                 {
                     unknownCount[funcGroupIndex] += 1;
+                    funcGroups[funcGroupIndex].setUnknown(i);
 
                     if (unknownCount[funcGroupIndex] > 1)
                     {
@@ -176,18 +177,26 @@ export default function FuncGroupForm()
                     if (funcA.isReference) {
                         // Func Group A is reference, Func Group B is complimentary
                         const refCalculationsSuccessful = doReferenceCalculations(funcA, funcA_route);
-                        const compCalculationsSuccessful = doComplimentaryCalculations(funcA, funcB, funcB_route);
+                        if (refCalculationsSuccessful) {
+                            const compCalculationsSuccessful = doComplimentaryCalculations(funcA, funcB, funcB_route);
 
-                        // Display Final Results
-                        if (refCalculationsSuccessful && compCalculationsSuccessful) setPage({ page: FINAL_RESULTS });
+                            if (compCalculationsSuccessful) {
+                                // Display Final Results
+                                setPage({ page: FINAL_RESULTS });
+                            }
+                        }
                     }
                     else if (funcB.isReference) {
                         // Func Group B is reference, Func Group A is complimentary
                         const refCalculationsSuccessful = doReferenceCalculations(funcB, funcB_route);
-                        const compCalculationsSuccessful = doComplimentaryCalculations(funcB, funcA, funcA_route);
+                        if (refCalculationsSuccessful) {
+                            const compCalculationsSuccessful = doComplimentaryCalculations(funcB, funcA, funcA_route);
 
-                        // Display Final Results
-                        if (refCalculationsSuccessful && compCalculationsSuccessful) setPage({ page: FINAL_RESULTS });
+                            if (compCalculationsSuccessful) {
+                                // Display Final Results
+                                setPage({ page: FINAL_RESULTS });
+                            }
+                        }
                     }
                     else {
                         // No reference group for either functional group

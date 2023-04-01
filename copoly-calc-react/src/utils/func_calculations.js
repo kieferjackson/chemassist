@@ -531,7 +531,7 @@ function comp_mlpZipper(refGroup, compGroup)
     const unknown_mass = unknown_moles * unknown_monomer.getMolarMass();
     // Add the unknown's found moles to the calculated mole sum and make sure it is equivalent to the expected mole sum
     calc_mol_sum += unknown_moles;
-    const calc_mol_sum_valid = compareFloatValues(comp_mol_sum, calc_mol_sum, TOLERANCE);
+    const calc_mol_sum_valid = compareFloatValues(comp_mol_sum, calc_mol_sum, ERROR_TOLERANCE);
 
     if (!calc_mol_sum_valid) {
         // The user's masses exceeded the expected mole sum for the complimentary group
@@ -646,7 +646,7 @@ function comp_wtpZipper(refGroup, compGroup)
     });
 
     // Check that the calculated mass sum is less than the expected mass sum
-    const user_mass_sum_valid = compareFloatValues(mass_sum, calc_mass_sum, TOLERANCE);
+    const user_mass_sum_valid = compareFloatValues(mass_sum, calc_mass_sum, ERROR_TOLERANCE);
 
     if (!user_mass_sum_valid) {
         // The calculated mass sum exceeded the expected mass sum for the complimentary group
@@ -658,7 +658,7 @@ function comp_wtpZipper(refGroup, compGroup)
     }
 
     // Check that the calculated mole sum does not exceed or equal the expected mole sum 
-    const user_mol_sum_valid = compareFloatValues(comp_mol_sum, calc_mol_sum, TOLERANCE);
+    const user_mol_sum_valid = compareFloatValues(comp_mol_sum, calc_mol_sum, ERROR_TOLERANCE);
                 
     if (!user_mol_sum_valid) {
         // The user's masses exceeded the expected mole sum for the complimentary group
@@ -732,7 +732,7 @@ function comp_mlpXS(refGroup, compGroup)
             const given_mpercent = monomer.getMolePercent();
 
             // Validate that the user's mole percent is equivalent to the expected mole percent within reasonable error
-            const mpercents_match = compareFloatValues(expected_mpercent, given_mpercent, TOLERANCE);
+            const mpercents_match = compareFloatValues(expected_mpercent, given_mpercent, ERROR_TOLERANCE);
 
             if (!mpercents_match) {
                 // The given mole percents do not match the expected mole percent
@@ -752,7 +752,7 @@ function comp_mlpXS(refGroup, compGroup)
             const mol_per_percent = monomer.getMoles() / monomer.getMolePercent();
 
             // Validate that the user's mole ratio is equivalent to the reference ratio within reasonable error
-            const ml_ratios_match = compareFloatValues(reference_ratio, mol_per_percent, TOLERANCE);
+            const ml_ratios_match = compareFloatValues(reference_ratio, mol_per_percent, ERROR_TOLERANCE);
 
             if (!ml_ratios_match) {
                 console.error(Error(
@@ -840,7 +840,7 @@ function comp_mlpXS(refGroup, compGroup)
 
         // Check that the mole sum matches the expected mole sum within reasonable error
         const user_mol_sum = compGroup.sumMonomerStat('moles');
-        const user_mol_sum_valid = compareFloatValues(comp_mol_sum, user_mol_sum, TOLERANCE);
+        const user_mol_sum_valid = compareFloatValues(comp_mol_sum, user_mol_sum, ERROR_TOLERANCE);
 
         if (!user_mol_sum_valid) {
             // The user's masses did not match the expected mole sum for the complimentary group
@@ -899,7 +899,7 @@ function comp_wtpXS(refGroup, compGroup)
             const g_per_percent = monomer.getMass() / monomer.getWeightPercent();
 
             // Validate that the user's weight ratio is equivalent to the reference ratio within reasonable error
-            const wt_ratios_match = compareFloatValues(reference_ratio, g_per_percent, TOLERANCE);
+            const wt_ratios_match = compareFloatValues(reference_ratio, g_per_percent, ERROR_TOLERANCE);
 
             if (!wt_ratios_match) {
                 // The given weight ratios do not match the reference ratio
@@ -987,7 +987,7 @@ function comp_wtpXS(refGroup, compGroup)
 
         // Check that the mole sum matches the expected mole sum within reasonable error
         const user_mol_sum = compGroup.sumMonomerStat('moles');
-        const user_mol_sum_valid = compareFloatValues(comp_mol_sum, user_mol_sum, TOLERANCE);
+        const user_mol_sum_valid = compareFloatValues(comp_mol_sum, user_mol_sum, ERROR_TOLERANCE);
 
         if (!user_mol_sum_valid) {
             // The user's masses did not match the expected mole sum for the complimentary group
@@ -1023,7 +1023,7 @@ function xsInfo_validateMasses(compGroup, comp_mol_sum)
     if (ALL_MASSES_GIVEN)
     {
         // Validate that the user's mole sum is equivalent to the calculated mole sum within reasonable error
-        const user_mol_sum_valid = compareFloatValues(comp_mol_sum, user_mol_sum, TOLERANCE);
+        const user_mol_sum_valid = compareFloatValues(comp_mol_sum, user_mol_sum, ERROR_TOLERANCE);
 
         if (!user_mol_sum_valid) {
             // The user's masses exceeded the expected mole sum for the complimentary group
