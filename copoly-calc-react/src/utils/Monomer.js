@@ -103,9 +103,9 @@ export default class Monomer {
 function improveScientificNotation(scientific_value)
 {
     // Get notation components
-    const base_ten = '&#215; 10';
+    const base_ten = `${String.fromCodePoint(215)} 10`;
     const [ coefficient, exponent ] = scientific_value.split('E'); 
 
     // Format the moles to display in markup
-    return `${coefficient} ${base_ten}<sup>${exponent}</sup>`;
+    return <span>{`${coefficient} ${base_ten}`}<sup>{exponent}</sup></span>;
 }
