@@ -1034,6 +1034,20 @@ function xsInfo_validateMasses(compGroup, comp_mol_sum)
             return { calc_complete: false, calc_failed: true };
         }
     }
+    else 
+    {
+        // Not all masses were given, so user mole sum should be less than expected mole sum
+        const user_mol_sum_valid = comp_mol_sum > user_mol_sum;
+
+        if (!user_mol_sum_valid) {
+            // The user's masses exceeded the expected mole sum for the complimentary group
+            console.error(Error(
+                `Calculated mole sum must be less than the expected mole sum for the complimentary (${compGroup.getName()}) group. 
+                \nPlease enter valid masses or remove invalid ones.`
+            ));
+            return { calc_complete: false, calc_failed: true };
+        }
+    }
 
     // If there is only one monomer (mass must be given to to use this calc route)
     if (compGroup.getNum() === 1) {

@@ -9,10 +9,11 @@ import Monomer from '../../utils/Monomer';
 import { startDataSorting } from '../../utils/data_sorting';
 import { doReferenceCalculations, doComplimentaryCalculations } from '../../utils/func_calculations';
 // Import validator functions and error message generation
-import { checkDataTypes } from '../../utils/validators';
+import { checkDataTypes, compareFloatValues } from '../../utils/validators';
 import { invalidErrorMessage } from '../../utils/helpers';
 // Import ornamental functions for improving displayed data
 import { capitalizeFirstLetter } from '../../utils/ornaments';
+import { ERROR_TOLERANCE } from '../../utils/standards';
 
 export default function FuncGroupForm()
 {
@@ -37,6 +38,9 @@ export default function FuncGroupForm()
             let unknownCount = [0, 0];
             // Track that all given inputs are acceptable
             let inputsAcceptable = true;
+            // Track the Percent Sum (should be less than 100 if not all percents given, should be 100 if all percents given)
+            let percentsGiven = 0;
+            let percentSum = 0.0;
 
             for (let i = 0 ; i < num ; i++)
             {
@@ -70,7 +74,15 @@ export default function FuncGroupForm()
                     // Set this monomer to the given percent value
                     ? num === 1 ? 100 : percent   
                     // Set weight percent to 0 to indicate that it is undetermined
-                    : num === 1 ? 100 : 0;       
+                    : num === 1 ? 100 : 0;  
+                    
+                // Add the given percent to the percent sum
+                percentSum += percent_type === 'weight' ? weight_percent : mole_percent;
+                if (weight_percent > 0 || mole_percent > 0) percentsGiven++;
+                const allPercentsEntered = percentsGiven === num;
+                const percentsSumValid = allPercentsEntered 
+                    ? compareFloatValues(100.0, percentSum, ERROR_TOLERANCE)
+                    : percentSum < 100.0;
 
                 // Check if mass and percents are unknown
                 if (mass === 0 && weight_percent === 0 && mole_percent === 0) 
@@ -93,7 +105,7 @@ export default function FuncGroupForm()
                     inputsAcceptable = false;
                 }
 
-                if (massAcceptable && percentAcceptable && molar_massAcceptable)
+                if (massAcceptable && percentAcceptable && percentsSumValid && molar_massAcceptable)
                 {
                     const monomer = new Monomer(
                         mass,
@@ -107,10 +119,10 @@ export default function FuncGroupForm()
                     funcGroupMonomers.push({ data: monomer, isOK: inputsAcceptable });
                 } else
                 {
-                    const ERROR_MESSAGE = `One or multiple of the values given for the ${monomerName} monomer name is missing or invalid.`;
+                    const ERROR_MESSAGE = `One or multiple of the values given for the ${monomerName} monomer is missing or invalid.`;
                     console.error(ERROR_MESSAGE);
                     inputsAcceptable = false;
-                    return { message: ERROR_MESSAGE, isOK: inputsAcceptable };
+                    funcGroupMonomers.push({ message: ERROR_MESSAGE, isOK: inputsAcceptable });
                 }
             }
 
@@ -148,12 +160,12 @@ export default function FuncGroupForm()
         }
         // Only the monomers for functional group A were invalid
         else if (funcA_monomersOK)
-            throw Error('One of the monomers for Functional Group A was given invalid input. Please try again.');
+            console.error(Error('One of the monomers for Functional Group A was given invalid input. Please try again.'));
         // Only the monomers for functional group B were invalid
         else if (funcB_monomersOK)
-            throw Error('One of the monomers for Functional Group B was given invalid input. Please try again.');
+            console.error(Error('One of the monomers for Functional Group B was given invalid input. Please try again.'));
         else
-            throw Error('One of the monomers was given invalid input. Please try again.');
+            console.error(Error('One of the monomers was given invalid input. Please try again.'));
 
     }
 
