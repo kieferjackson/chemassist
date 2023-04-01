@@ -571,7 +571,10 @@ function comp_wtpZipper(refGroup, compGroup)
     // Get the complimentary group's unknown monomer
     const unknown_monomer = compGroup.getUnknown();
 
-    compGroup.getMonomers().forEach((monomer) => {
+    for (let i = 0 ; i < compGroup.getMonomers().length ; i++) 
+    {
+        const monomer = compGroup.getMonomers(i);
+
         // Mass is known, so calculate moles and then mole percent
         if (monomer.massGiven())
         {
@@ -608,7 +611,7 @@ function comp_wtpZipper(refGroup, compGroup)
             // Add this weight percent to the partial percent sum to find the weight percent occupied by the known masses and unknown comonomer
             part_percent_sum += monomer.getWeightPercent();
         }
-    });
+    }
 
     // Find the moles contributed by the comonomers with weight percent given in addition to the unknown comonomer's moles
     const all_non_mass_mol_contribution = percent_contribution_to_mol_sum + (((100.0 - part_percent_sum) / 100.0) / unknown_monomer.getMolarMass());
@@ -646,7 +649,7 @@ function comp_wtpZipper(refGroup, compGroup)
     });
 
     // Check that the calculated mass sum is less than the expected mass sum
-    const user_mass_sum_valid = compareFloatValues(mass_sum, calc_mass_sum, ERROR_TOLERANCE);
+    const user_mass_sum_valid = mass_sum > calc_mass_sum;
 
     if (!user_mass_sum_valid) {
         // The calculated mass sum exceeded the expected mass sum for the complimentary group
@@ -658,7 +661,7 @@ function comp_wtpZipper(refGroup, compGroup)
     }
 
     // Check that the calculated mole sum does not exceed or equal the expected mole sum 
-    const user_mol_sum_valid = compareFloatValues(comp_mol_sum, calc_mol_sum, ERROR_TOLERANCE);
+    const user_mol_sum_valid = comp_mol_sum > calc_mol_sum;
                 
     if (!user_mol_sum_valid) {
         // The user's masses exceeded the expected mole sum for the complimentary group
@@ -727,7 +730,10 @@ function comp_mlpXS(refGroup, compGroup)
     if (determined_comonomers.length >= 1) 
     {
         // Because mole percent was chosen, a given mole percent may not match the expected mole percent based on the calculated moles of each given mass
-        determined_comonomers.forEach((monomer) => {
+        for (let i = 0 ; i < determined_comonomers.length ; i++) 
+        {
+            const monomer = determined_comonomers[i];
+    
             const expected_mpercent = monomer.getMoles() / comp_mol_sum;
             const given_mpercent = monomer.getMolePercent();
 
@@ -742,13 +748,15 @@ function comp_mlpXS(refGroup, compGroup)
                 ));
                 return false;
             }
-        });
+        }
 
         // Set the reference comonomer to the first one in the index. Any ratio value which differ from this reference are invalid
         const [ reference_monomer ] = determined_comonomers;
         const reference_ratio = reference_monomer.getMoles() / reference_monomer.getMolePercent();
 
-        determined_comonomers.forEach((monomer) => {
+        for (let i = 0 ; i < determined_comonomers.length ; i++) 
+        {
+            const monomer = determined_comonomers[i];
             const mol_per_percent = monomer.getMoles() / monomer.getMolePercent();
 
             // Validate that the user's mole ratio is equivalent to the reference ratio within reasonable error
@@ -761,7 +769,7 @@ function comp_mlpXS(refGroup, compGroup)
                 ));
                 return false;
             }
-        });
+        }
 
         // No issues detected with ratios, so calculate remaining undetermined mole percent and mass/moles values
         if (determined_comonomers.length < compGroup.getNum())
@@ -895,7 +903,9 @@ function comp_wtpXS(refGroup, compGroup)
         const reference_ratio = reference_monomer.getMass() / reference_monomer.getWeightPercent();
 
         // Check ratios of mass to percent for comonomers with both given
-        determined_comonomers.forEach((monomer) => {
+        for (let i = 0 ; i < determined_comonomers.length ; i++) 
+        {
+            const monomer = determined_comonomers[i];
             const g_per_percent = monomer.getMass() / monomer.getWeightPercent();
 
             // Validate that the user's weight ratio is equivalent to the reference ratio within reasonable error
@@ -909,7 +919,7 @@ function comp_wtpXS(refGroup, compGroup)
                 ));
                 return false;
             }
-        });
+        }
 
         // No issues detected with ratios, so calculate remaining undetermined weight percent values
         if (determined_comonomers.length < compGroup.getNum())

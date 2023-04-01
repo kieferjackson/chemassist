@@ -11,6 +11,36 @@ function checkDataTypes(data_type, data) {
     const { value } = data;
 
     switch (data_type) {
+        case 'index':
+            console.log("checking index value...");
+            var indexAcceptable;
+
+            const { value: index, index_end } = data;
+            const index_isInteger = index % 1 === 0 && index >= 0;
+            const index_inBounds = index <= index_end
+
+            if (index_isInteger && index_inBounds) {
+                // The input value is a positive, whole number within the set bounds, therefore it is acceptable
+                indexAcceptable = true;
+            }
+            else if (!index_isInteger && index_inBounds) {
+                const index_ltz_error = invalidErrorMessage('greater than or equal to 0', 'Index');
+                console.error(index_ltz_error);
+                indexAcceptable = false;
+            }
+            else if (index_isInteger && !index_inBounds) {
+                const index_bnd_error = invalidErrorMessage(`within bounds of array (0-${index_end})`, 'Index');
+                console.error(index_bnd_error);
+                indexAcceptable = false;
+            }
+            else {
+                const index_error = Error(`Index must be a valid index value and within bounds of array (0-${index_end})`);
+                console.error(index_error);
+                indexAcceptable = false;
+            }
+
+            return indexAcceptable;
+
         case 'int':     // Integer Checker
             console.log("checking integer value...");
             var intAcceptable;

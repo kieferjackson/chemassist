@@ -114,7 +114,27 @@ export default class FuncGroup {
     getName = () => this.name;
     getNum = () => this.num;
     getMolarEQ = () => this.molar_eq;
-    getMonomers = () => this.monomers;
+    getMonomers = (index = null) => {
+        // Check if index value was given
+        if (index === null) {
+            // Return monomers array if no index given
+            return this.monomers 
+        } 
+        // Return individual monomer at given index
+        else {
+            // Check that `index` is a valid index value (integer within bounds of monomers array)
+            const index_isValid = checkDataTypes('index', { value: index, index_end: this.num - 1 });
+            
+            if (index_isValid) {
+                // Return monomer at given index
+                return this.monomers[index];
+            }
+            else {
+                // Neither condition was acceptable
+                console.error(Error(`Index (${index}) must be a valid index value and within bounds of monomers array (0-${this.num - 1})`));
+            }
+        }
+    }
     getIsReference = () => this.isReference;
     getUnknown = () => this.monomers[this.unknown];
     getMonomerStatCount = (stat_name = null) => {
@@ -164,15 +184,10 @@ export default class FuncGroup {
 
                 break;
             case 'unknown':
-                // Check that the value being set for unknown is an integer value
-                const unknown_isInteger = checkDataTypes('int', { value });
-                if (!unknown_isInteger)
-                    throw invalidErrorMessage('A functional group unknown must be an index value of type integer', value);
-
-                // Check that index value given is within bounds of the monomers and greater than 0
-                const unknown_isIndex = value < this.num && value >= 0;
+                // Check that the value being set for unknown is a valid index value
+                const unknown_isIndex = checkDataTypes('index', { value, index_end: this.num - 1 });
                 if (!unknown_isIndex)
-                    throw invalidErrorMessage('Unknown value must be within bounds of functional group', property_name);
+                    throw invalidErrorMessage('A functional group unknown must be an index value of type integer', value);
                 
                 break;
             default:
