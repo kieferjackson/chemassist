@@ -1,20 +1,20 @@
 {
   "files": {
     "main.css": "/copoly-calc/static/css/main.a5f0003a.chunk.css",
-    "main.js": "/copoly-calc/static/js/main.d5939f74.chunk.js",
-    "main.js.map": "/copoly-calc/static/js/main.d5939f74.chunk.js.map",
+    "main.js": "/copoly-calc/static/js/main.b8f1558c.chunk.js",
+    "main.js.map": "/copoly-calc/static/js/main.b8f1558c.chunk.js.map",
     "runtime-main.js": "/copoly-calc/static/js/runtime-main.d2e0fd2f.js",
     "runtime-main.js.map": "/copoly-calc/static/js/runtime-main.d2e0fd2f.js.map",
-    "static/js/2.968f1c83.chunk.js": "/copoly-calc/static/js/2.968f1c83.chunk.js",
-    "static/js/2.968f1c83.chunk.js.map": "/copoly-calc/static/js/2.968f1c83.chunk.js.map",
+    "static/js/2.58160ddc.chunk.js": "/copoly-calc/static/js/2.58160ddc.chunk.js",
+    "static/js/2.58160ddc.chunk.js.map": "/copoly-calc/static/js/2.58160ddc.chunk.js.map",
     "index.html": "/copoly-calc/index.html",
     "static/css/main.a5f0003a.chunk.css.map": "/copoly-calc/static/css/main.a5f0003a.chunk.css.map",
-    "static/js/2.968f1c83.chunk.js.LICENSE.txt": "/copoly-calc/static/js/2.968f1c83.chunk.js.LICENSE.txt"
+    "static/js/2.58160ddc.chunk.js.LICENSE.txt": "/copoly-calc/static/js/2.58160ddc.chunk.js.LICENSE.txt"
   },
   "entrypoints": [
     "static/js/runtime-main.d2e0fd2f.js",
-    "static/js/2.968f1c83.chunk.js",
+    "static/js/2.58160ddc.chunk.js",
     "static/css/main.a5f0003a.chunk.css",
-    "static/js/main.d5939f74.chunk.js"
+    "static/js/main.b8f1558c.chunk.js"
   ]
 }
